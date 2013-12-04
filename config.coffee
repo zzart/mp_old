@@ -36,12 +36,12 @@ exports.config =
     stylesheets:
       joinTo:
         'stylesheets/app.css': /^(app|vendor)/
-        'test/stylesheets/test.css': /^test/
+        #'test/stylesheets/test.css': /^test/
       order:
         before: [
                 #'vendor/styles/jquery.mobile-1.3.min.css'
-                'vendor/styles/jquery.mobile-1.4.0-rc.1.css'
-                'vendor/styles/mine.css'
+                'vendor/styles/jquery.mobile-1.4.0-rc.1.css',
+                #'vendor/styles/jqm-icon-pack-fa.css',
                 ]
                 #after: ['vendor/styles/helpers.css']
                 #'vendor/styles/normalize-2.0.1.css',

@@ -12,3 +12,6 @@ table.tablesorter thead tr .headerSortDown {
 	background-image: url(../images/desc.gif);
 }
 
+hr{color:#333333; border:2px; }
+.help-block{color:red}
+

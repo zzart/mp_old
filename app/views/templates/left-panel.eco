@@ -47,20 +47,21 @@
     <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
                     <h3>Etykiety</h3>
                     <ul data-role="listview" >
+                        <li data-icon="tag"><a href="" >Oferty robocze</a></li>
                     </ul>
                 </div>
 
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
                     <h3>Ustawienia</h3>
                     <ul data-role="listview" >
-                        <li><a href="" >Dodaj Etykietę</a></li>
-                        <li><a href="" >Zmień Hasło</a></li>
-                        <li><a href="" >Dane Profilu</a></li>
-                        <li><a href="" >Dane Biura Nieruchomości</a></li>
-                        <li><a href="" >Logo</a></li>
-                        <li><a href="" >Watermark</a></li>
-                        <li><a href="" >Importy</a></li>
-                        <li><a href="" >Eksporty</a></li>
+                        <li data-icon="plus"><a href="" >Dodaj Etykietę</a></li>
+                        <li data-icon="alert"><a href="" >Zmień Hasło</a></li>
+                        <li data-icon="user"><a href="" >Dane Profilu</a></li>
+                        <li data-icon="star"><a href="" >Dane Biura Nieruchomości</a></li>
+                        <li data-icon="heart"><a href="" >Logo</a></li>
+                        <li data-icon="camera"><a href="" >Watermark</a></li>
+                        <li data-icon="back"><a href="" >Importy</a></li>
+                        <li data-icon="forward"><a href="" >Eksporty</a></li>
                         <li><a href="" >Portale zewnętrzne</a></li>
                         <li data-role='list-divider' > </li>
                     </ul>
@@ -80,12 +81,9 @@
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
                     <h3>Kontrahenci</h3>
                     <ul data-role="listview" >
-                        <li><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>
-                        <li><a href="/klienci" >Wszyscy</a></li>
-                        <li><a href="/klienci/sprzedajacy" >Sprzedający</a></li>
-                        <li><a href="/klienci/kupujacy" >Kupujący</a></li>
-                        <li><a href="/klienci/wynajmujacy" >Wynajmujący</a></li>
-                        <li><a href="/klienci/szukajacy" >Poszukujący</a></li>
+                        <li data-icon="edit"><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>
+                        <li data-icon="phone"><a href="/klienci" >Moi</a></li>
+                        <li data-icon="lock"><a href="/klienci/wspolni" >Wspólni</a></li>
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>

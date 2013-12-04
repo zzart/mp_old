@@ -8,9 +8,9 @@
                 <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
                 <select name="select-action" id="select-action">
                     <option selected disabled>Akcja</option>
-                    <option value="drukuj">Drukuj</option>
                     <option value="usun">Usuń</option>
-                    <option value="eksport">Eksport do pliku</option>
+                    <option value="drukuj" disabled>Drukuj</option>
+                    <option value="eksport" disabled>Eksport do pliku</option>
                 </select>
                 <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
                 <select name="select-filter" id="select-filter">
@@ -42,8 +42,8 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
          <th data-priority="2">Email&nbsp;&nbsp;</th>
          <th data-priority="4">Telefon&nbsp;&nbsp;</th>
          <th data-priority="5">Firma&nbsp;&nbsp;</th>
-         <th data-priority="6">Typ&nbsp;&nbsp;</th>
-         <th data-priority="6"><abbr title="Ostatnia aktualizacja">Aktual.&nbsp;&nbsp;</abbr></th>
+         <th data-priority="6">Adres&nbsp;&nbsp;</th>
+         <th data-priority="6">Budżet&nbsp;&nbsp;</th>
        </tr>
      </thead>
      <tbody>
@@ -58,8 +58,8 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
          <td><%= item['email'] %></td>
          <td><%= item['phone'] %></td>
          <td><%= item['company_name'] %></td>
-         <td><%= item['client_type'] %></td>
-         <td><%= item['date'] %></td>
+         <td><%= item['address'] %></td>
+         <td><%= item['budget'] %></td>
        </tr>
       <% end %>
      </tbody>
