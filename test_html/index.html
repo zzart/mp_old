@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.0-rc.1/jquery.mobile-1.4.0-rc.1.min.css">
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="http://code.jquery.com/mobile/1.4.0-rc.1/jquery.mobile-1.4.0-rc.1.min.js"></script>
+<script>
+		$( document ).on( "pagecreate", function() {
+			$( "body > [data-role='panel']" ).panel();
+			$( "body > [data-role='panel'] [data-role='listview']" ).listview();
+		});
+	</script>
+</head>
+<body>
+
+<div id="page" data-role="page">        <!-- this is REGIONS ONLY -->
+        <div id="header-region"><div id="header" data-role="header">    <a href="#left-panel" data-icon="grid" data-theme="b">Menu</a>
+    <h1>Mobilny Pośrednik</h1>
+    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">
+        <a href="#info" data-rel="popup" data-transition="pop" data-iconpos="notext" id="info-btn" data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</a>
+        <a href="#" id="first-name-placeholder" class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-user"></a>
+    </div>
+</div></div><!-- header -->
+
+        <div id="content-region">
+        </div><!-- content -->
+
+        <div id="footer-region"><div id="footer" data-position="fixed" data-role="footer"><h4>Projekt i wykonanie <a href="pixey.pl">Pixey.pl</a> ©</h4>
+
+</div></div><!-- footer -->
+
+
+        <div id="info-region"><div id="info" data-position-to="window" data-theme="b" data-role="popup"><p>Hi im info popup</p>
+</div></div><!-- info-region -->
+        <div id="login-region">
+        <div id="login" style="max-width:400px;" data-dismissible="false" data-theme="b" data-overlay-theme="b" data-role="popup">    <div data-role="header" data-theme="a">
+    <h1>Logowianie</h1>
+    </div>
+    <div role="main" class="ui-content">
+    <p class="login-error"></p>
+    <form>
+            <input name="user" id="user" placeholder="Użytkownik" value="" type="text">
+            <input name="pass" id="pass" placeholder="Hasło" value="" type="password">
+            <button id="login-verification" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b">Zaloguj</button>
+    </form></div>
+</div></div><!-- info-region -->
+
+
+</div><div id="left-panel" data-theme="a" data-display="push" data-position="left" data-role="panel"><!-- ##################################  PANEL -->
+
+					<ul data-role="listview">
+						<li data-icon="delete"> <a href="#header" data-rel="close">Zamknij menu</a> </li>
+						<li data-icon="home"> <a href="/">Początek</a> </li>
+                        <li data-role="list-divider"> </li>
+                    </ul>
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h4>Przeglądaj oferty</h4>
+                    <ul data-role="listview">
+                        <li><a href="/oferty/robocze" data-panel="main">Robocze<span class="ui-li-count">34</span></a> </li>
+                        <li><a href="/oferty/archiwalne" data-panel="main">Archiwalne<span class="ui-li-count">34</span></a> </li>
+                        <li><a href="/oferty/mieszkania/wynajem" data-panel="main">Mieszkania Wynajem<span class="ui-li-count">34</span></a> </li>
+                        <li><a href="/oferty/mieszkania/sprzedaz" data-panel="main">Mieszkania Sprzedaż<span class="ui-li-count">34</span></a> </li>
+                        <li><a href="/oferty/domy/wynajem" data-panel="main">Domy Wynajem</a></li>
+                        <li><a href="/oferty/domy/sprzedaz" data-panel="main">Domy Sprzedaż</a></li>
+                        <li><a href="/oferty/grunty/wynajem" data-panel="main">Grunty Dzierżawa</a></li>
+                        <li><a href="/oferty/grunty/sprzedaz" data-panel="main">Grunty Sprzedaż</a></li>
+                        <li><a href="/oferty/lokale/wynajem" data-panel="main">Lokale Wynajem</a></li>
+                        <li><a href="/oferty/lokale/sprzedaz" data-panel="main">Lokale Sprzedaż</a></li>
+                        <li><a href="/oferty/lokale?/" data-panel="main">Lokale użytkowe Wynajem</a></li>
+                        <li><a href="/oferty/lokale?/" data-panel="main">Lokale użytkowe Sprzedaż</a></li>
+                        <li><a href="/oferty/obiekty/wynajem" data-panel="main">Obiekty Wynajem</a></li>
+                        <li><a href="/oferty/obiekty/sprzedaz" data-panel="main">Obiekty Sprzedaż</a></li>
+                        <li data-role="list-divider"> </li>
+                    </ul>
+                </div>
+
+                <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h4>Dodaj ofertę</h4>
+                    <ul data-role="listview">
+                        <li><a href="dodaj_oferte?sch=1" data-panel="main">Mieszkania Wynajem</a></li>
+                        <li><a href="dodaj_oferte?sch=2" data-panel="main">Mieszkania Sprzedaż</a></li>
+                        <li><a href="dodaj_oferte?sch=3" data-panel="main">Domy Wynajem</a></li>
+                        <li><a href="dodaj_oferte?sch=4" data-panel="main">Domy Sprzedaż</a></li>
+                        <li><a href="dodaj_oferte?sch=5" data-panel="main">Grunty Dzierżawa</a></li>
+                        <li><a href="dodaj_oferte?sch=6" data-panel="main">Grunty Sprzedaż</a></li>
+                        <li><a href="dodaj_oferte?sch=7" data-panel="main">Lokale Wynajem</a></li>
+                        <li><a href="dodaj_oferte?sch=8" data-panel="main">Lokale Sprzedaż</a></li>
+                        <li><a href="dodaj_oferte?sch=9" data-panel="main">Lokale użytkowe Wynajem</a></li>
+                        <li><a href="dodaj_oferte?sch=10" data-panel="main">Lokale użytkowe Sprzedaż</a></li>
+                        <li><a href="dodaj_oferte?sch=11" data-panel="main">Obiekty Wynajem</a></li>
+                        <li><a href="dodaj_oferte?sch=12" data-panel="main">Obiekty Sprzedaż</a></li>
+                        <li data-role="list-divider"> </li>
+                    </ul>
+                </div>
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h3>Etykiety</h3>
+                    <ul data-role="listview">
+                    </ul>
+                </div>
+
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h3>Ustawienia</h3>
+                    <ul data-role="listview">
+                        <li><a href="" data-panel="main">Dodaj Etykietę</a></li>
+                        <li><a href="" data-panel="main">Zmień Hasło</a></li>
+                        <li><a href="" data-panel="main">Dane Profilu</a></li>
+                        <li><a href="" data-panel="main">Dane Biura Nieruchomości</a></li>
+                        <li><a href="" data-panel="main">Logo</a></li>
+                        <li><a href="" data-panel="main">Watermark</a></li>
+                        <li><a href="" data-panel="main">Importy</a></li>
+                        <li><a href="" data-panel="main">Eksporty</a></li>
+                        <li><a href="" data-panel="main">Portale zewnętrzne</a></li>
+                        <li data-role="list-divider"> </li>
+                    </ul>
+                </div>
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h3>Wyszukiwania</h3>
+                    <ul data-role="listview">
+                        <li><a href="" data-panel="main">Wyszukiwanie Zaawansowane</a></li>
+                        <li data-role="list-divider">Portale Zewnętrzne </li>
+                        <li><a href="" data-panel="main">Gumtree</a></li>
+                        <li><a href="" data-panel="main">aleGratka</a></li>
+                        <li><a href="" data-panel="main">Tablica</a></li>
+                        <li data-role="list-divider"> </li>
+                    </ul>
+                </div>
+
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h3>Kontrahenci</h3>
+                    <ul data-role="listview">
+                        <li><a href="/klienci/dodaj" data-panel="main">Dodaj Kontrahenta</a></li>
+                        <li><a href="/klienci/sprzedajacy" data-panel="main">Sprzedający</a></li>
+                        <li><a href="/klienci/kupujacy" data-panel="main">Kupujący</a></li>
+                        <li><a href="/klienci/wynajmujacy" data-panel="main">Wynajmujący</a></li>
+                        <li><a href="/klienci/szukajacy" data-panel="main">Szukający</a></li>
+                        <li data-role="list-divider"> </li>
+                    </ul>
+                </div>
+
+
+<!-- ##################################  PANEL -->
+</div>
+
+
+</body>
+</html>
+

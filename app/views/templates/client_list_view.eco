@@ -1,0 +1,67 @@
+<div class="ui-grid-a">
+	<div class="ui-block-a">
+        <form>
+            <fieldset data-role="controlgroup" data-type="horizontal">
+                <button data-icon="refresh" data-iconpos="notext" id='refresh'>Odśwież</button>
+                <a href='/klienci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>
+
+                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
+                <select name="select-action" id="select-action">
+                    <option selected disabled>Akcja</option>
+                    <option value="drukuj">Drukuj</option>
+                    <option value="usun">Usuń</option>
+                    <option value="eksport">Eksport do pliku</option>
+                </select>
+                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+                <select name="select-filter" id="select-filter">
+                    <option selected disabled>Filtr</option>
+                    <option value="kupujacy">Kupujący</option>
+                    <option value="sprzedajacy">Sprzedający</option>
+                    <option value="najemca">Najemca</option>
+                    <option value="wynajmujacy">Wynajmujący</option>
+                </select>
+            </fieldset>
+        </form>
+    </div>
+
+	<div class="ui-block-b">
+         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />
+	</div>
+</div><!-- /grid-b -->
+
+<table data-role="table" id="client-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
+data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">
+     <thead>
+       <tr>
+         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>
+         <th>ID</th>
+         <th>Agent&nbsp;&nbsp;</th>
+         <th>Imię&nbsp;&nbsp;</th>
+         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>
+         <th data-priority="2">Email&nbsp;&nbsp;</th>
+         <th data-priority="4">Telefon&nbsp;&nbsp;</th>
+         <th data-priority="5">Firma&nbsp;&nbsp;</th>
+         <th data-priority="6">Typ&nbsp;&nbsp;</th>
+         <th data-priority="6"><abbr title="Ostatnia aktualizacja">Aktual.&nbsp;&nbsp;</abbr></th>
+       </tr>
+     </thead>
+     <tbody>
+      <% for item in @client : %>
+
+       <tr>
+         <td> <label> <input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true"  type="checkbox"> </label> </td>
+         <td><%= item['id'] %></td>
+         <td><%= item['agent'] %></td>
+         <td><a href='/klienci/<%= item['id'] %>'><%= item['name'] %></a></td>
+         <td><a href='/klienci/<%= item['id'] %>'><%= item['surname'] %></a></td>
+         <td><%= item['email'] %></td>
+         <td><%= item['phone'] %></td>
+         <td><%= item['company_name'] %></td>
+         <td><%= item['client_type'] %></td>
+         <td><%= item['date'] %></td>
+       </tr>
+      <% end %>
+     </tbody>
+   </table>
+
+

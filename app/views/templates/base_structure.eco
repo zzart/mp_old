@@ -1,0 +1,19 @@
+        <!-- this is REGIONS ONLY -->
+        <div id='header-region'>
+        </div><!-- header -->
+
+        <div id='content-region'>
+        </div><!-- content -->
+
+        <div id='footer-region'>
+        </div><!-- footer -->
+
+
+        <div id="info-region">
+        </div><!-- info-region -->
+        <div id="login-region">
+        </div><!-- info-region -->
+
+        <div id="confirm-region">
+        </div><!-- info-region -->
+

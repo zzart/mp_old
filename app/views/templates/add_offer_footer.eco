@@ -1,0 +1,9 @@
+  <div data-role="navbar" data-iconpos="left">
+            <ul>
+        <li><a href="#" class="ui-btn-active" data-role="button" data-icon="grid">Dane oferty</a></li>
+        <li><a href="#oferta_zdjecia" data-role="button" data-icon="edit" >Zdjęcia oferty</a></li>
+        <li><a href="#oferta_notatki" data-role="button" data-icon="edit" >Ustawienia oferty</a></li>
+        <li><a href="#oferta_ustawienia" data-role="button" data-icon="edit">Informacje wewnętrzne</a></li>
+            </ul>
+          </div><!-- /navbar -->
+

@@ -1,0 +1,52 @@
+<div class="ui-grid-b">
+	<div class="ui-block-a">
+        <div data-role="fieldcontain" data-type="horizontal" >
+				<select name="select-choice-a" data-native-menu="false" id="select-choice-a" data-mini="true" >
+					<option>zaznaczanie</option>
+					<option value="">wszystkie</option>
+					<option value="">moje</option>
+    			</select>
+        </div>
+
+
+
+	</div>
+	<div class="ui-block-b">
+        <div data-role="fieldcontain" data-type="horizontal" >
+				<select name="select-choice-a" id="select-choice-a" data-mini="true" >
+					<option>Akcja</option>
+					<option value="">domyślny</option>
+					<option value="">biura spokrewnione?</option>
+    			</select>
+        </div>
+
+
+	</div>
+	<div class="ui-block-c">
+        <div data-role="fieldcontain" data-type="horizontal" >
+				<select name="select-choice-a" id="select-choice-a" data-mini="true" >
+					<option>Filtr</option>
+					<option value="">moje</option>
+					<option value="">całego biura</option>
+					<option value="">inne biura</option>
+    			</select>
+        </div>
+
+
+	</div>
+</div><!-- /grid-b -->
+         <ul data-role="listview" data-filter="true" data-filter-placeholder="Szukaj ofert ... " >
+
+      <% for item, i in @ : %>
+			<li><a href="#<%= item.oferta['id'] %>">
+				<img src="images/test.jpg" />
+        <h3><%= item.oferta['id'] %> <strong><%= item.oferta['typ']['kategoria'] %></strong> / <%= item.oferta['typ']['typ_transakcji'] %></h3>
+        <p><%= item.oferta['adres']['wojewodztwo'] %> <%= item.oferta['adres']['miasto'] %> <%= item.oferta['adres']['ulica'] %></p>
+        <p class="ui-li-aside"><strong><%= item.oferta['atrybuty']['cena'] %></strong></p>
+			<span class="ui-li-count"><%= item.oferta['atrybuty']['data_aktualizacji'] %></span>
+			</a>
+			</li>
+      <% end %>
+		</ul>
+
+

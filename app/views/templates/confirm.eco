@@ -1,0 +1,9 @@
+    <div data-role="header" data-theme="a">
+    <h1>Potwierdz usuwanie</h1>
+    </div>
+    <div role="main" class="ui-content">
+        <h3 class="ui-title">Napewno chcesz usunąć te elementy?</h3>
+    <p>Ta akcja jest nieodwracalna.</p>
+        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Powrót</a>
+        <a href="#" id='confirmed' class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">Potwierdz</a>
+    </div>

@@ -1,0 +1,61 @@
+<div class="ui-grid-b">
+	<div class="ui-block-a">
+
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+                            <input type="radio" name="radio-choice1" id="list_view_a" value="on" checked="checked" />
+                            <label for="list_view_a">Lista</label>
+                            <input type="radio" name="radio-choice1" id="list_view_b" value="off" />
+                            <label for="list_view_b">Siatka</label>
+                            <input type="radio" name="radio-choice1" id="list_view_c" value="other" />
+                            <label for="list_view_c">Galeria</label>
+                    </fieldset>
+                </div>
+
+
+	</div>
+	<div class="ui-block-b">
+
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+                            <label for="user">Moje</label>
+                            <input type="radio" name="radio-choice2" id="user" value="user" checked="checked" />
+                            <label for="agency">Agencji</label>
+                            <input type="radio" name="radio-choice2" id="agency" value="agency" />
+                            <label for="all">Wszystke</label>
+                            <input type="radio" name="radio-choice2" id="all" value="other" />
+                    </fieldset>
+                </div>
+
+	</div>
+	<div class="ui-block-c">
+
+        <div data-role="fieldcontain">
+				<label for="select-choice-a" class="select">Oddział:</label>
+				<select name="select-choice-a" id="select-choice-a" >
+					<option>Oddział:</option>
+					<option value=""></option>
+					<option value=""></option>
+					<option value=""></option>
+					<option value=""></option>
+				</select>
+        </div>
+
+
+	</div>
+</div><!-- /grid-b -->
+
+         <ul data-role="listview" data-filter="true" data-filter-placeholder="Szukaj ofert ..." >
+      <% for item, i in @ : %>
+			<li><a href="#<%= item.oferta['id'] %>">
+				<img src="images/test.jpg" />
+        <h3><%= item.oferta['id'] %> <strong><%= item.oferta['typ']['kategoria'] %></strong> / <%= item.oferta['typ']['typ_transakcji'] %></h3>
+        <p><%= item.oferta['adres']['wojewodztwo'] %> <%= item.oferta['adres']['miasto'] %> <%= item.oferta['adres']['ulica'] %></p>
+        <p class="ui-li-aside"><strong><%= item.oferta['atrybuty']['cena'] %></strong></p>
+			<span class="ui-li-count"><%= item.oferta['atrybuty']['data_aktualizacji'] %></span>
+			</a>
+			</li>
+      <% end %>
+		</ul>
+
+

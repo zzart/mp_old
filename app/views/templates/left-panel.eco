@@ -1,0 +1,104 @@
+<!-- ##################################  PANEL -->
+
+					<ul data-role="listview" >
+						<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>
+						<li data-icon="home" > <a href="/" >Początek</a> </li>
+                        <li data-role='list-divider' > </li>
+                    </ul>
+    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h4>Przeglądaj oferty</h4>
+                    <ul data-role="listview" >
+                        <li><a href="/oferty/robocze" >Robocze<span class='ui-li-count'>34</span></a> </li>
+                        <li><a href="/oferty/archiwalne" >Archiwalne<span class='ui-li-count'>34</span></a> </li>
+                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class='ui-li-count'>34</span></a> </li>
+                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class='ui-li-count'>34</span></a> </li>
+                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>
+                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>
+                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>
+                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>
+                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>
+                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>
+                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>
+                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>
+                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>
+                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>
+                        <li data-role='list-divider' > </li>
+                    </ul>
+                </div>
+
+                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h4>Dodaj ofertę</h4>
+                    <ul data-role="listview">
+                        <li><a href="dodaj_oferte?sch=1"    >Mieszkania Wynajem</a></li>
+                        <li><a href="dodaj_oferte?sch=2"    >Mieszkania Sprzedaż</a></li>
+                        <li><a href="dodaj_oferte?sch=3"    >Domy Wynajem</a></li>
+                        <li><a href="dodaj_oferte?sch=4"    >Domy Sprzedaż</a></li>
+                        <li><a href="dodaj_oferte?sch=5"    >Grunty Dzierżawa</a></li>
+                        <li><a href="dodaj_oferte?sch=6"    >Grunty Sprzedaż</a></li>
+                        <li><a href="dodaj_oferte?sch=7"    >Lokale Wynajem</a></li>
+                        <li><a href="dodaj_oferte?sch=8"    >Lokale Sprzedaż</a></li>
+                        <li><a href="dodaj_oferte?sch=9"    >Lokale użytkowe Wynajem</a></li>
+                        <li><a href="dodaj_oferte?sch=10"   >Lokale użytkowe Sprzedaż</a></li>
+                        <li><a href="dodaj_oferte?sch=11"   >Obiekty Wynajem</a></li>
+                        <li><a href="dodaj_oferte?sch=12"   >Obiekty Sprzedaż</a></li>
+                        <li data-role='list-divider' > </li>
+                    </ul>
+                </div>
+    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h3>Etykiety</h3>
+                    <ul data-role="listview" >
+                    </ul>
+                </div>
+
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h3>Ustawienia</h3>
+                    <ul data-role="listview" >
+                        <li><a href="" >Dodaj Etykietę</a></li>
+                        <li><a href="" >Zmień Hasło</a></li>
+                        <li><a href="" >Dane Profilu</a></li>
+                        <li><a href="" >Dane Biura Nieruchomości</a></li>
+                        <li><a href="" >Logo</a></li>
+                        <li><a href="" >Watermark</a></li>
+                        <li><a href="" >Importy</a></li>
+                        <li><a href="" >Eksporty</a></li>
+                        <li><a href="" >Portale zewnętrzne</a></li>
+                        <li data-role='list-divider' > </li>
+                    </ul>
+                </div>
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h3>Wyszukiwania</h3>
+                    <ul data-role="listview">
+                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>
+                        <li data-role='list-divider' >Portale Zewnętrzne </li>
+                        <li><a href="" >Gumtree</a></li>
+                        <li><a href="" >aleGratka</a></li>
+                        <li><a href="" >Tablica</a></li>
+                        <li data-role='list-divider' > </li>
+                    </ul>
+                </div>
+
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h3>Kontrahenci</h3>
+                    <ul data-role="listview" >
+                        <li><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>
+                        <li><a href="/klienci" >Wszyscy</a></li>
+                        <li><a href="/klienci/sprzedajacy" >Sprzedający</a></li>
+                        <li><a href="/klienci/kupujacy" >Kupujący</a></li>
+                        <li><a href="/klienci/wynajmujacy" >Wynajmujący</a></li>
+                        <li><a href="/klienci/szukajacy" >Poszukujący</a></li>
+                        <li data-role='list-divider' > </li>
+                    </ul>
+                </div>
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                    <h3>Narzędzia</h3>
+                    <ul data-role="listview" >
+                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>
+                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>
+                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>
+                        <li><a href="/kw" >Księgi wieczyste</a></li>
+                        <li data-role='list-divider' > </li>
+                    </ul>
+                </div>
+
+
+<!-- ##################################  PANEL -->

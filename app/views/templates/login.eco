@@ -1,0 +1,10 @@
+    <div data-role="header" data-theme="a">
+    <h1>Logowianie</h1>
+    </div>
+    <div role="main" class="ui-content">
+    <p class='login-error'></p>
+    <form>
+            <input name="user" id="user" placeholder="Użytkownik" value="" type="text">
+            <input name="pass" id="pass" placeholder="Hasło" value="" type="password">
+            <button id="login-verification" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" >Zaloguj</button>
+    </div>
