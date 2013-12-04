@@ -1152,8 +1152,12 @@ module.exports = ClientAddView = (function(_super) {
             url: '/klienci'
           });
         },
-        error: function(model, response) {
-          return _this.publishEvent('tell_user', response.responseJSON['title']);
+        error: function(model, response, options) {
+          if (response.responseJSON != null) {
+            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+          } else {
+            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+          }
         }
       });
     } else {
@@ -1257,8 +1261,12 @@ module.exports = ClientEditView = (function(_super) {
             url: '/klienci'
           });
         },
-        error: function(model, response) {
-          return _this.publishEvent('tell_user', response.responseJSON['title']);
+        error: function(model, response, options) {
+          if (response.responseJSON != null) {
+            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+          } else {
+            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+          }
         }
       });
     } else {
@@ -1277,7 +1285,11 @@ module.exports = ClientEditView = (function(_super) {
         });
       },
       error: function(model, response, options) {
-        return _this.publishEvent('tell_user', response.responseJSON['title']);
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
       }
     });
   };
@@ -1349,7 +1361,7 @@ module.exports = ClientListView = (function(_super) {
 
   ClientListView.prototype.initialize = function(options) {
     ClientListView.__super__.initialize.apply(this, arguments);
-    this.collection = mediator.collections.clients;
+    this.collection = _.clone(mediator.collections.clients);
     this.params = options.params;
     this.template = list_view;
     this.last_check_view = 'list_view';
@@ -1357,7 +1369,8 @@ module.exports = ClientListView = (function(_super) {
     this.delegate('change', '#select-action', this.action);
     this.delegate('change', '#select-filter', this.change_query);
     this.delegate('change', '#all', this.select_all);
-    return this.delegate('click', '#refresh', this.refresh_offers);
+    this.delegate('click', '#refresh', this.refresh_offers);
+    return window.collection = this.collection;
   };
 
   ClientListView.prototype.select_all = function() {
@@ -1393,7 +1406,11 @@ module.exports = ClientListView = (function(_super) {
                 return Chaplin.EventBroker.publishEvent('tell_user', 'Klient został usunięty');
               },
               error: function(model, response, options) {
-                return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+                if (response.responseJSON != null) {
+                  return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+                } else {
+                  return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+                }
               }
             });
           }
@@ -1408,37 +1425,35 @@ module.exports = ClientListView = (function(_super) {
   };
 
   ClientListView.prototype.change_query = function(event) {
-    var _this = this;
-    this.publishEvent('log:debug', event);
-    this.params['filter'] = event.target.value;
-    return this.collection.fetch({
-      data: this.params,
-      success: function() {
-        _this.publishEvent('log:debug', _this.params);
-        _this.publishEvent('loading_stop');
-        _this.render();
-        _this.last_check_query = event.target.id;
-        return _this.refresh_radios();
-      },
-      beforeSend: function() {
-        return _this.publishEvent('loading_start');
-      }
-    });
+    var list_of_models;
+    this.publishEvent('log:debug', event.target.value);
+    if (_.isEmpty(event.target.value)) {
+      this.collection = _.clone(mediator.collections.clients);
+    } else {
+      list_of_models = mediator.collections.clients.where({
+        'client_type': parseInt(event.target.value)
+      });
+      this.collection.reset(list_of_models);
+    }
+    return this.render();
   };
 
   ClientListView.prototype.refresh_offers = function(event) {
     var _this = this;
     event.preventDefault();
-    this.publishEvent('log:debug', this.params);
-    return this.collection.fetch({
-      data: this.params,
+    this.publishEvent('log:debug', 'refresh');
+    return mediator.collections.clients.fetch({
       success: function() {
-        _this.publishEvent('loading_stop');
-        _this.render();
-        return _this.last_check_query = event.target.id;
+        _this.publishEvent('tell_user', 'Odświeżam listę kontaktów');
+        _this.collection = _.clone(mediator.collections.clients);
+        return _this.render();
       },
-      beforeSend: function() {
-        return _this.publishEvent('loading_start');
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
       }
     });
   };
@@ -1976,9 +1991,13 @@ module.exports = LoginView = (function(_super) {
           url: ''
         });
       },
-      error: function() {
-        _this.publishEvent('log:info', 'login FAILED');
-        return $('.login-error').text('Ojj... coś niedobrze');
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          $('.login-error').text(response.responseJSON['title']);
+        } else {
+          $('.login-error').text('Brak kontaktu z serwerem');
+        }
+        return _this.publishEvent('log:info', 'login FAILED');
       }
     });
   };
@@ -2472,7 +2491,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="drukuj">Drukuj</option>\n                    <option value="usun">Usuń</option>\n                    <option value="eksport">Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="kupujacy">Kupujący</option>\n                    <option value="sprzedajacy">Sprzedający</option>\n                    <option value="najemca">Najemca</option>\n                    <option value="wynajmujacy">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="client-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n         <th data-priority="6"><abbr title="Ostatnia aktualizacja">Aktual.&nbsp;&nbsp;</abbr></th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="drukuj">Drukuj</option>\n                    <option value="usun">Usuń</option>\n                    <option value="eksport">Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="client-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n         <th data-priority="6"><abbr title="Ostatnia aktualizacja">Aktual.&nbsp;&nbsp;</abbr></th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.client;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {

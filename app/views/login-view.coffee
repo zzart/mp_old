@@ -45,9 +45,12 @@ module.exports = class LoginView extends View
                 $('#first-name-placeholder').text(@model.get('first_name'))
                 $('#login').popup('close')
                 Chaplin.helpers.redirectTo {url: ''}
-            error: =>
+            error:(model, response, options) =>
+                if response.responseJSON?
+                    $('.login-error').text(response.responseJSON['title'])
+                else
+                    $('.login-error').text('Brak kontaktu z serwerem')
                 @publishEvent('log:info', 'login FAILED')
-                $('.login-error').text('Ojj... coś niedobrze')
 
     attach: =>
         super

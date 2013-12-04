@@ -15,10 +15,11 @@
                 <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
                 <select name="select-filter" id="select-filter">
                     <option selected disabled>Filtr</option>
-                    <option value="kupujacy">Kupujący</option>
-                    <option value="sprzedajacy">Sprzedający</option>
-                    <option value="najemca">Najemca</option>
-                    <option value="wynajmujacy">Wynajmujący</option>
+                    <option value="">Wszyscy</option>
+                    <option value="1">Kupujący</option>
+                    <option value="2">Sprzedający</option>
+                    <option value="3">Najemca</option>
+                    <option value="4">Wynajmujący</option>
                 </select>
             </fieldset>
         </form>

@@ -34,8 +34,11 @@ module.exports = class ClientEditView extends View
                 success:(event) =>
                     @publishEvent 'tell_user', 'Klient zaktualizowany'
                     Chaplin.helpers.redirectTo {url: '/klienci'}
-                error:(model, response) =>
-                    @publishEvent 'tell_user', response.responseJSON['title']
+                error:(model, response, options) =>
+                    if response.responseJSON?
+                        Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                    else
+                        Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
             })
         else
             @publishEvent 'tell_user', 'Błąd w formularzu!'
@@ -47,7 +50,10 @@ module.exports = class ClientEditView extends View
                 @publishEvent 'tell_user', 'Klient został usunięty'
                 Chaplin.helpers.redirectTo {url: '/klienci'}
             error:(model, response, options) =>
-                @publishEvent 'tell_user', response.responseJSON['title']
+                if response.responseJSON?
+                    Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                else
+                    Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
     render: =>
         super

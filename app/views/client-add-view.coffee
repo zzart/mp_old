@@ -35,8 +35,11 @@ module.exports = class ClientAddView extends View
                         mediator.collections.clients.add(@model)
                     @publishEvent 'tell_user', 'Klient dodany'
                     Chaplin.helpers.redirectTo {url: '/klienci'}
-                error:(model, response) =>
-                    @publishEvent 'tell_user', response.responseJSON['title']
+                error:(model, response, options) =>
+                    if response.responseJSON?
+                        Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                    else
+                        Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
             })
         else
             @publishEvent 'tell_user', 'Błąd w formularzu!'

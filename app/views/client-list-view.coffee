@@ -11,7 +11,7 @@ module.exports = class ClientListView extends View
     initialize: (options) ->
         super
         # send url data from controler
-        @collection = mediator.collections.clients
+        @collection = _.clone(mediator.collections.clients)
         @params = options.params
         @template = list_view
         @last_check_view = 'list_view'
@@ -20,6 +20,8 @@ module.exports = class ClientListView extends View
         @delegate 'change', '#select-filter', @change_query
         @delegate 'change', '#all', @select_all
         @delegate 'click',  '#refresh', @refresh_offers
+        window.collection = @collection
+
     select_all: =>
         selected = $('#client-table>thead input:checkbox ').prop('checked')
         $('#client-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh")
@@ -47,7 +49,10 @@ module.exports = class ClientListView extends View
                                 mediator.collections.clients.remove(model)
                                 Chaplin.EventBroker.publishEvent 'tell_user', 'Klient został usunięty'
                             error:(model, response, options) =>
-                                Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                                if response.responseJSON?
+                                    Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                                else
+                                    Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
                     #clean only after the CLICK event
@@ -59,30 +64,28 @@ module.exports = class ClientListView extends View
 
 
     change_query: (event) =>
-        @publishEvent('log:debug', event)
-        @params['filter'] = event.target.value
-        @collection.fetch
-            data: @params
-            success: =>
-                @publishEvent('log:debug', @params)
-                @publishEvent 'loading_stop'
-                @render()
-                @last_check_query = event.target.id
-                @refresh_radios()
-            beforeSend: =>
-                @publishEvent 'loading_start'
+        @publishEvent('log:debug', event.target.value)
+        if _.isEmpty(event.target.value)
+            @collection = _.clone(mediator.collections.clients)
+        else
+            list_of_models = mediator.collections.clients.where({'client_type': parseInt(event.target.value)})
+            @collection.reset(list_of_models)
+        @render()
+
 
     refresh_offers: (event) =>
         event.preventDefault()
-        @publishEvent('log:debug', @params)
-        @collection.fetch
-            data: @params
+        @publishEvent('log:debug', 'refresh')
+        mediator.collections.clients.fetch
             success: =>
-                @publishEvent 'loading_stop'
+                @publishEvent 'tell_user', 'Odświeżam listę kontaktów'
+                @collection = _.clone(mediator.collections.clients)
                 @render()
-                @last_check_query = event.target.id
-            beforeSend: =>
-                @publishEvent 'loading_start'
+            error:(model, response, options) =>
+                if response.responseJSON?
+                    Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                else
+                    Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
     getTemplateData: =>
         client: @collection.toJSON()
