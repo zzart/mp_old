@@ -1321,6 +1321,8 @@ module.exports = ClientListView = (function(_super) {
   function ClientListView() {
     this.attach = __bind(this.attach, this);
 
+    this.render = __bind(this.render, this);
+
     this.getTemplateData = __bind(this.getTemplateData, this);
 
     this.refresh_offers = __bind(this.refresh_offers, this);
@@ -1365,23 +1367,44 @@ module.exports = ClientListView = (function(_super) {
   };
 
   ClientListView.prototype.action = function(event) {
-    var _this = this;
-    this.selected = $('#client-table>tbody input:checked ');
-    if (event.target.value === 'usun' && this.selected.length > 0) {
-      $("#confirm").popup('open');
-      $("#confirmed").click(function() {
-        console.log(_this.selected);
-        return _this.clean_after_action();
-      });
-    } else {
-      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
-    }
-    return this.clean_after_action = function() {
-      this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + this.selected);
+    var clean_after_action, selected,
+      _this = this;
+    selected = $('#client-table>tbody input:checked ');
+    clean_after_action = function(selected) {
       $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
       $("#select-action :selected").removeAttr('selected');
-      this.selected = null;
+      selected = null;
+      _this.render();
     };
+    this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + selected);
+    if (selected.length > 0) {
+      if (event.target.value === 'usun') {
+        $("#confirm").popup('open');
+        return $("#confirmed").click(function() {
+          var i, model, _i, _len,
+            _this = this;
+          for (_i = 0, _len = selected.length; _i < _len; _i++) {
+            i = selected[_i];
+            model = mediator.collections.clients.get($(i).attr('id'));
+            model.destroy({
+              success: function(event) {
+                Chaplin.EventBroker.publishEvent('log:info', "klient usunięty id" + (model.get('id')));
+                mediator.collections.clients.remove(model);
+                return Chaplin.EventBroker.publishEvent('tell_user', 'Klient został usunięty');
+              },
+              error: function(model, response, options) {
+                return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+              }
+            });
+          }
+          $(this).off('click');
+          return clean_after_action(selected);
+        });
+      }
+    } else {
+      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
+      return clean_after_action(selected);
+    }
   };
 
   ClientListView.prototype.change_query = function(event) {
@@ -1424,6 +1447,10 @@ module.exports = ClientListView = (function(_super) {
     return {
       client: this.collection.toJSON()
     };
+  };
+
+  ClientListView.prototype.render = function() {
+    return ClientListView.__super__.render.apply(this, arguments);
   };
 
   ClientListView.prototype.attach = function() {

@@ -26,34 +26,36 @@ module.exports = class ClientListView extends View
 
     action: (event) =>
         #get all selected offers
-        @selected = $('#client-table>tbody input:checked ')
-        #TODO: for each action publishEvent
-        if event.target.value == 'usun' and @selected.length > 0
-            $("#confirm").popup('open')
-            $("#confirmed").click =>
-                console.log(@selected)
-                @clean_after_action()
-                # for i in selected
-                #     model = @collection.get($(i).attr('id'))
-                #     console.log(model)
-                #     # model.destroy
-                #     #     success: (event) =>
-                #     #         @publishEvent('log:info', "klient usunięty id#{i}")
-                #     #         mediator.collections.clients.remove(model)
-                #     #         @publishEvent 'tell_user', 'Klient został usunięty'
-                #     #     error:(model, response, options) =>
-                #     #         @publishEvent 'tell_user', response.responseJSON['title']
-                #     Chaplin.helpers.redirectTo {url: '/klienci'}
-        else
-            @publishEvent 'tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)'
-
-        @clean_after_action = ->
-            @publishEvent('log:info', "performing action #{event.target.value} for offers #{@selected}")
+        selected = $('#client-table>tbody input:checked ')
+        clean_after_action = (selected) =>
             #Once action is done clear the selection
             $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh")
             $("#select-action :selected").removeAttr('selected')
-            @selected = null
+            selected = null
+            @render()
             return
+        @publishEvent('log:info', "performing action #{event.target.value} for offers #{selected}")
+        if selected.length > 0
+            if event.target.value == 'usun'
+                $("#confirm").popup('open')
+                $("#confirmed").click ->
+                    for i in selected
+                        model = mediator.collections.clients.get($(i).attr('id'))
+                        model.destroy
+                            success: (event) =>
+                                Chaplin.EventBroker.publishEvent('log:info', "klient usunięty id#{model.get('id')}")
+                                mediator.collections.clients.remove(model)
+                                Chaplin.EventBroker.publishEvent 'tell_user', 'Klient został usunięty'
+                            error:(model, response, options) =>
+                                Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                    # Remove click event !!!!!!!!!!!!!!!!!
+                    $(@).off('click')
+                    #clean only after the CLICK event
+                    clean_after_action(selected)
+        else
+            @publishEvent 'tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)'
+            clean_after_action(selected)
+
 
 
     change_query: (event) =>
@@ -84,6 +86,9 @@ module.exports = class ClientListView extends View
 
     getTemplateData: =>
         client: @collection.toJSON()
+
+    render: =>
+        super
 
     attach: =>
         super
