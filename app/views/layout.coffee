@@ -14,10 +14,8 @@ module.exports = class Layout extends Chaplin.Layout
             @subscribeEvent('leftpanel:render', @jqm_leftpanel)
             #@subscribeEvent('index:render', @jqm_init)
             #@subscribeEvent('login:render', @jqm_init)
-            @subscribeEvent('offerlistview:render', @jqm_refersh)
-            @subscribeEvent('clientlistview:render', @jqm_refersh)
             #@subscribeEvent('addofferview:render', @jqm_refersh)
-            @subscribeEvent('clientaddview:render', @jqm_refersh)
+            @subscribeEvent('jqm_refersh:render', @jqm_refersh)
             @subscribeEvent('loading_start', @jqm_loading_start)
             @subscribeEvent('loading_stop', @jqm_loading_stop)
 

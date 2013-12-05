@@ -1,5 +1,6 @@
 View = require 'views/base/view'
 template = require 'views/templates/left-panel'
+mediator = require 'mediator'
 
 module.exports = class LeftPanelView extends View
     attributes: {

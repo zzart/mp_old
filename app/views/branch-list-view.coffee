@@ -1,8 +1,8 @@
 View = require 'views/base/view'
-list_view = require 'views/templates/client_list_view'
+list_view = require 'views/templates/branch_list_view'
 mediator = require 'mediator'
 
-module.exports = class ClientListView extends View
+module.exports = class BranchListView extends View
     autoRender: true
     containerMethod: "html"
     attributes: { 'data-role':'content' }
@@ -11,15 +11,14 @@ module.exports = class ClientListView extends View
     initialize: (options) ->
         super
         # send url data from controler
-        @collection = _.clone(mediator.collections.clients)
+        @collection = _.clone(mediator.collections.branches)
         @params = options.params
         @template = list_view
         @last_check_view = 'list_view'
         @last_check_query = 'user'
         @delegate 'change', '#select-action', @action
-        @delegate 'change', '#select-filter', @change_query
         @delegate 'change', '#all', @select_all
-        @delegate 'click',  '#refresh', @refresh_offers
+        @delegate 'click',  '#refresh', @refresh_branches
 
     select_all: =>
         selected = $('#client-table>thead input:checkbox ').prop('checked')
@@ -41,12 +40,13 @@ module.exports = class ClientListView extends View
                 $("#confirm").popup('open')
                 $("#confirmed").click ->
                     for i in selected
-                        model = mediator.collections.clients.get($(i).attr('id'))
+                        model = mediator.collections.branches.get($(i).attr('id'))
+                        # TODO: przepisać oferty tego brancha do innego ?
                         model.destroy
                             success: (event) =>
-                                Chaplin.EventBroker.publishEvent('log:info', "klient usunięty id#{model.get('id')}")
-                                mediator.collections.clients.remove(model)
-                                Chaplin.EventBroker.publishEvent 'tell_user', 'Klient został usunięty'
+                                Chaplin.EventBroker.publishEvent('log:info', "Oddzial usunięty id#{model.get('id')}")
+                                mediator.collections.branches.remove(model)
+                                Chaplin.EventBroker.publishEvent 'tell_user', 'Oddział został usunięty'
                             error:(model, response, options) =>
                                 if response.responseJSON?
                                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -62,23 +62,13 @@ module.exports = class ClientListView extends View
 
 
 
-    change_query: (event) =>
-        @publishEvent('log:debug', event.target.value)
-        if _.isEmpty(event.target.value)
-            @collection = _.clone(mediator.collections.clients)
-        else
-            list_of_models = mediator.collections.clients.where({'client_type': parseInt(event.target.value)})
-            @collection.reset(list_of_models)
-        @render()
-
-
-    refresh_offers: (event) =>
+    refresh_branches: (event) =>
         event.preventDefault()
         @publishEvent('log:debug', 'refresh')
-        mediator.collections.clients.fetch
+        mediator.collections.branches.fetch
             success: =>
-                @publishEvent 'tell_user', 'Odświeżam listę kontaktów'
-                @collection = _.clone(mediator.collections.clients)
+                @publishEvent 'tell_user', 'Odświeżam listę oddziałów'
+                @collection = _.clone(mediator.collections.branches)
                 @render()
             error:(model, response, options) =>
                 if response.responseJSON?
@@ -87,7 +77,7 @@ module.exports = class ClientListView extends View
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
     getTemplateData: =>
-        client: @collection.toJSON()
+        collection: @collection.toJSON()
 
     render: =>
         super

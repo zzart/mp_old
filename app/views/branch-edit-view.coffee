@@ -1,7 +1,7 @@
 View = require 'views/base/view'
-template = require 'views/templates/client_form'
+template = require 'views/templates/branch_form'
 mediator = require 'mediator'
-module.exports = class ClientEditView extends View
+module.exports = class BranchEditView extends View
     autoRender: true
     containerMethod: "html"
     attributes: { 'data-role':'content' }
@@ -12,18 +12,18 @@ module.exports = class ClientEditView extends View
         # send url data from controler
         @params = options.params
         @publishEvent('log:info', console.log(@params))
-        @model = mediator.collections.clients.get(@params.id)
-        @model.schema = mediator.models.user.get('schemas').client
+        @model = mediator.collections.branches.get(@params.id)
+        @model.schema = mediator.models.user.get('schemas').branch
         @template_form = template
         # events
-        @delegate 'click', 'a#client-edit-delete', @delete_client
-        @delegate 'click', 'a#client-edit-update', @save_form
+        @delegate 'click', 'a#branch-edit-delete', @delete
+        @delegate 'click', 'a#branch-edit-update', @save_form
 
         @form = new Backbone.Form {
             model: @model
             template: @template_form
             templateData:{
-                heading: 'Edytuj kontrahenta'
+                heading: 'Edytuj oddział'
                 mode: 'edit'
                 is_admin: mediator.models.user.get('is_admin')
             }
@@ -36,8 +36,8 @@ module.exports = class ClientEditView extends View
         if _.isUndefined(@form.commit({validate:true}))
             @model.save({},{
                 success:(event) =>
-                    @publishEvent 'tell_user', 'Klient zaktualizowany'
-                    Chaplin.helpers.redirectTo {url: '/klienci'}
+                    @publishEvent 'tell_user', 'Oddział zaktualizowany'
+                    Chaplin.helpers.redirectTo {url: '/oddzialy'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -47,12 +47,13 @@ module.exports = class ClientEditView extends View
         else
             @publishEvent 'tell_user', 'Błąd w formularzu!'
 
-    delete_client: =>
+    delete: =>
+        # TODO: oferty tego oddzaiłu do innego
         @model.destroy
             success: (event) =>
-                mediator.collections.clients.remove(@model)
-                @publishEvent 'tell_user', 'Klient został usunięty'
-                Chaplin.helpers.redirectTo {url: '/klienci'}
+                mediator.collections.branches.remove(@model)
+                @publishEvent 'tell_user', 'Oddział został usunięty'
+                Chaplin.helpers.redirectTo {url: '/oddzialy'}
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']

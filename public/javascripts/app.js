@@ -305,43 +305,153 @@ module.exports = Controller = (function(_super) {
 
 });
 
-;require.register("controllers/client-add-controller", function(exports, require, module) {
-var ClientAddController, ClientAddView, Controller, Model, mediator,
+;require.register("controllers/bon-controller", function(exports, require, module) {
+var BonController, BonEditView, Controller, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Controller = require('controllers/auth-controller');
 
-ClientAddView = require('views/client-add-view');
+BonEditView = require('views/bon-edit-view');
 
-Model = require('models/client-model');
+Model = require('models/bon-model');
 
 mediator = require('mediator');
 
-module.exports = ClientAddController = (function(_super) {
+module.exports = BonController = (function(_super) {
 
-  __extends(ClientAddController, _super);
+  __extends(BonController, _super);
 
-  function ClientAddController() {
-    return ClientAddController.__super__.constructor.apply(this, arguments);
+  function BonController() {
+    return BonController.__super__.constructor.apply(this, arguments);
   }
 
-  ClientAddController.prototype.show = function(params, route, options) {
+  BonController.prototype.show = function(params, route, options) {
+    var _this = this;
+    console.log(params, route, options);
+    this.publishEvent('log:info', 'in bon show controller');
+    if (_.isObject(mediator.models.bon)) {
+      return this.view = new BonEditView({
+        params: params,
+        region: 'content'
+      });
+    } else {
+      mediator.models.bon = new Model({
+        id: params.id
+      });
+      return mediator.models.bon.fetch({
+        beforeSend: function() {
+          _this.publishEvent('loading_start');
+          return _this.publishEvent('tell_user', 'Ładuje ustawienia biura ...');
+        },
+        success: function() {
+          _this.publishEvent('log:info', "data with " + params + " fetched ok");
+          _this.publishEvent('loading_stop');
+          return _this.view = new BonEditView({
+            params: params,
+            region: 'content'
+          });
+        },
+        error: function() {
+          _this.publishEvent('loading_stop');
+          return _this.publishEvent('server_error');
+        }
+      });
+    }
+  };
+
+  return BonController;
+
+})(Controller);
+
+});
+
+;require.register("controllers/branch-controller", function(exports, require, module) {
+var BranchAddView, BranchController, BranchEditView, BranchListView, Collection, Controller, Model, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Controller = require('controllers/auth-controller');
+
+BranchListView = require('views/branch-list-view');
+
+BranchAddView = require('views/branch-add-view');
+
+BranchEditView = require('views/branch-edit-view');
+
+Collection = require('models/branch-collection');
+
+Model = require('models/branch-model');
+
+mediator = require('mediator');
+
+module.exports = BranchController = (function(_super) {
+
+  __extends(BranchController, _super);
+
+  function BranchController() {
+    return BranchController.__super__.constructor.apply(this, arguments);
+  }
+
+  BranchController.prototype.list = function(params, route, options) {
+    var _this = this;
+    this.publishEvent('log:info', 'in branch list controller');
+    if (_.isObject(mediator.collections.branches)) {
+      return this.view = new BranchListView({
+        params: params,
+        region: 'content'
+      });
+    } else {
+      mediator.collections.branches = new Collection;
+      console.log(mediator.collections.branches);
+      return mediator.collections.branches.fetch({
+        data: params,
+        beforeSend: function() {
+          _this.publishEvent('loading_start');
+          return _this.publishEvent('tell_user', 'Ładuje listę oddziałów ...');
+        },
+        success: function() {
+          _this.publishEvent('log:info', "data with " + params + " fetched ok");
+          _this.publishEvent('loading_stop');
+          return _this.view = new BranchListView({
+            params: params,
+            region: 'content'
+          });
+        },
+        error: function() {
+          _this.publishEvent('loading_stop');
+          return _this.publishEvent('server_error');
+        }
+      });
+    }
+  };
+
+  BranchController.prototype.add = function(params, route, options) {
     var schema;
-    this.publishEvent('log:info', 'in clientadd controller');
-    this.publishEvent('log:debug', params);
-    this.publishEvent('log:debug', route);
-    this.publishEvent('log:debug', options);
-    mediator.models.client = new Model;
-    schema = mediator.models.user.get('schemas').client;
-    mediator.models.client.schema = schema;
-    return this.view = new ClientAddView({
+    this.publishEvent('log:info', 'in branchadd controller');
+    mediator.models.branch = new Model;
+    schema = mediator.models.user.get('schemas').branch;
+    mediator.models.branch.schema = schema;
+    return this.view = new BranchAddView({
       params: params,
       region: 'content'
     });
   };
 
-  return ClientAddController;
+  BranchController.prototype.show = function(params, route, options) {
+    this.publishEvent('log:info', 'in branch show controller');
+    if (!_.isObject(mediator.collections.branches.get(params.id))) {
+      this.redirectTo({
+        '/oddzialy': '/oddzialy'
+      });
+    }
+    return this.view = new BranchEditView({
+      params: params,
+      region: 'content'
+    });
+  };
+
+  return BranchController;
 
 })(Controller);
 
@@ -736,6 +846,81 @@ module.exports = Model = (function(_super) {
 
 });
 
+;require.register("models/bon-model", function(exports, require, module) {
+var Bon, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+mediator = require('mediator');
+
+module.exports = Bon = (function(_super) {
+
+  __extends(Bon, _super);
+
+  function Bon() {
+    return Bon.__super__.constructor.apply(this, arguments);
+  }
+
+  Bon.prototype.urlRoot = 'http://localhost:8080/v1/biura';
+
+  Bon.prototype.schema = {};
+
+  return Bon;
+
+})(Chaplin.Model);
+
+});
+
+;require.register("models/branch-collection", function(exports, require, module) {
+var ClientList, Model,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Model = require('models/branch-model');
+
+module.exports = ClientList = (function(_super) {
+
+  __extends(ClientList, _super);
+
+  function ClientList() {
+    return ClientList.__super__.constructor.apply(this, arguments);
+  }
+
+  ClientList.prototype.model = Model;
+
+  ClientList.prototype.url = 'http://localhost:8080/v1/oddzialy';
+
+  return ClientList;
+
+})(Chaplin.Collection);
+
+});
+
+;require.register("models/branch-model", function(exports, require, module) {
+var Branch, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+mediator = require('mediator');
+
+module.exports = Branch = (function(_super) {
+
+  __extends(Branch, _super);
+
+  function Branch() {
+    return Branch.__super__.constructor.apply(this, arguments);
+  }
+
+  Branch.prototype.urlRoot = 'http://localhost:8080/v1/oddzialy';
+
+  Branch.prototype.schema = {};
+
+  return Branch;
+
+})(Chaplin.Model);
+
+});
+
 ;require.register("models/client-collection", function(exports, require, module) {
 var ClientList, Model,
   __hasProp = {}.hasOwnProperty,
@@ -883,7 +1068,11 @@ module.exports = function(match) {
   match('klienci/dodaj', 'client#add');
   match('klienci', 'client#list');
   match('klienci/:id', 'client#show');
-  return match('login', 'login#show');
+  match('login', 'login#show');
+  match('biura/:id', 'bon#show');
+  match('oddzialy/dodaj', 'branch#add');
+  match('oddzialy', 'branch#list');
+  return match('oddzialy/:id', 'branch#show');
 };
 
 });
@@ -1007,11 +1196,18 @@ module.exports = LoginView = (function(_super) {
           user_pass: _this.pass
         });
         $('#first-name-placeholder').text(_this.model.get('first_name'));
+        $('#bon-config-link').attr('href', "/biura/" + (_this.model.get('company_id')));
+        $('#login').popup('close');
         return Chaplin.helpers.redirectTo({
           url: ''
         });
       },
-      error: function() {
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          $('.login-error').text(response.responseJSON['title']);
+        } else {
+          $('.login-error').text('Brak kontaktu z serwerem');
+        }
         return _this.publishEvent('log:info', 'login FAILED');
       }
     });
@@ -1078,6 +1274,529 @@ module.exports = View = (function(_super) {
 
 });
 
+;require.register("views/bon-edit-view", function(exports, require, module) {
+var BonEditView, View, mediator, template,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+template = require('views/templates/bon_edit_form');
+
+mediator = require('mediator');
+
+module.exports = BonEditView = (function(_super) {
+
+  __extends(BonEditView, _super);
+
+  function BonEditView() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.getTemplateData = __bind(this.getTemplateData, this);
+
+    this.delete_bon = __bind(this.delete_bon, this);
+
+    this.save_form = __bind(this.save_form, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return BonEditView.__super__.constructor.apply(this, arguments);
+  }
+
+  BonEditView.prototype.autoRender = true;
+
+  BonEditView.prototype.containerMethod = "html";
+
+  BonEditView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  BonEditView.prototype.id = 'content';
+
+  BonEditView.prototype.className = 'ui-content';
+
+  BonEditView.prototype.initialize = function(options) {
+    BonEditView.__super__.initialize.apply(this, arguments);
+    this.params = options.params;
+    this.model = mediator.models.bon;
+    this.model.schema = mediator.models.user.get('schemas').company;
+    this.template_form = template;
+    this.delegate('click', 'a#bon-edit-delete', this.delete_bon);
+    this.delegate('click', 'a#bon-edit-update', this.save_form);
+    this.form = new Backbone.Form({
+      model: this.model,
+      template: this.template_form,
+      templateData: {
+        heading: 'Edytuj dane biura nieruchomości'
+      }
+    });
+    return this.form.render();
+  };
+
+  BonEditView.prototype.save_form = function() {
+    var _this = this;
+    this.publishEvent('log:info', 'commmit form');
+    if (_.isUndefined(this.form.commit({
+      validate: true
+    }))) {
+      return this.model.save({}, {
+        success: function(event) {
+          return _this.publishEvent('tell_user', 'Dane biura zostały zaktualizowane');
+        },
+        error: function(model, response, options) {
+          if (response.responseJSON != null) {
+            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+          } else {
+            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+          }
+        }
+      });
+    } else {
+      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+    }
+  };
+
+  BonEditView.prototype.delete_bon = function() {
+    var _this = this;
+    return this.model.destroy({
+      success: function(event) {
+        return _this.publishEvent('log:info', 'dyspozycja usunięcia konta przyjęta');
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  BonEditView.prototype.getTemplateData = function() {
+    return BonEditView.__super__.getTemplateData.apply(this, arguments);
+  };
+
+  BonEditView.prototype.render = function() {
+    BonEditView.__super__.render.apply(this, arguments);
+    this.publishEvent('log:info', '5');
+    this.$el.append(this.form.el);
+    return this.publishEvent('log:info', '22');
+  };
+
+  BonEditView.prototype.attach = function() {
+    BonEditView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', '6');
+    this.publishEvent('log:info', 'view: clientadd afterRender()');
+    return this.publishEvent('jqm_refersh:render');
+  };
+
+  return BonEditView;
+
+})(View);
+
+});
+
+;require.register("views/branch-add-view", function(exports, require, module) {
+var ClientAddView, View, mediator, template,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+template = require('views/templates/branch_form');
+
+mediator = require('mediator');
+
+module.exports = ClientAddView = (function(_super) {
+
+  __extends(ClientAddView, _super);
+
+  function ClientAddView() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.refresh_form = __bind(this.refresh_form, this);
+
+    this.save_form = __bind(this.save_form, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return ClientAddView.__super__.constructor.apply(this, arguments);
+  }
+
+  ClientAddView.prototype.autoRender = true;
+
+  ClientAddView.prototype.containerMethod = "html";
+
+  ClientAddView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  ClientAddView.prototype.id = 'content';
+
+  ClientAddView.prototype.className = 'ui-content';
+
+  ClientAddView.prototype.initialize = function(options) {
+    ClientAddView.__super__.initialize.apply(this, arguments);
+    this.params = options.params;
+    this.model = mediator.models.branch;
+    this.template_form = template;
+    this.delegate('click', 'a#branch-add-refresh', this.refresh_form);
+    this.delegate('click', 'a#branch-add-save', this.save_form);
+    this.form = new Backbone.Form({
+      model: this.model,
+      template: this.template_form,
+      templateData: {
+        heading: 'Dodaj oddział',
+        mode: 'add',
+        is_admin: mediator.models.user.get('is_admin')
+      }
+    });
+    return this.form.render();
+  };
+
+  ClientAddView.prototype.save_form = function() {
+    var _this = this;
+    this.publishEvent('log:info', 'commmit form');
+    if (_.isUndefined(this.form.commit({
+      validate: true
+    }))) {
+      return this.model.save({}, {
+        success: function(event) {
+          if (mediator.collections.branches != null) {
+            mediator.collections.branches.add(_this.model);
+          }
+          _this.publishEvent('tell_user', 'Oddział dodany');
+          return Chaplin.helpers.redirectTo({
+            url: '/oddzialy'
+          });
+        },
+        error: function(model, response, options) {
+          if (response.responseJSON != null) {
+            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+          } else {
+            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+          }
+        }
+      });
+    } else {
+      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+    }
+  };
+
+  ClientAddView.prototype.refresh_form = function() {
+    return render();
+  };
+
+  ClientAddView.prototype.render = function() {
+    ClientAddView.__super__.render.apply(this, arguments);
+    return this.$el.append(this.form.el);
+  };
+
+  ClientAddView.prototype.attach = function() {
+    ClientAddView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'view: clientadd afterRender()');
+    return this.publishEvent('jqm_refersh:render');
+  };
+
+  return ClientAddView;
+
+})(View);
+
+});
+
+;require.register("views/branch-edit-view", function(exports, require, module) {
+var BranchEditView, View, mediator, template,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+template = require('views/templates/branch_form');
+
+mediator = require('mediator');
+
+module.exports = BranchEditView = (function(_super) {
+
+  __extends(BranchEditView, _super);
+
+  function BranchEditView() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this["delete"] = __bind(this["delete"], this);
+
+    this.save_form = __bind(this.save_form, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return BranchEditView.__super__.constructor.apply(this, arguments);
+  }
+
+  BranchEditView.prototype.autoRender = true;
+
+  BranchEditView.prototype.containerMethod = "html";
+
+  BranchEditView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  BranchEditView.prototype.id = 'content';
+
+  BranchEditView.prototype.className = 'ui-content';
+
+  BranchEditView.prototype.initialize = function(options) {
+    BranchEditView.__super__.initialize.apply(this, arguments);
+    this.params = options.params;
+    this.publishEvent('log:info', console.log(this.params));
+    this.model = mediator.collections.branches.get(this.params.id);
+    this.model.schema = mediator.models.user.get('schemas').branch;
+    this.template_form = template;
+    this.delegate('click', 'a#branch-edit-delete', this["delete"]);
+    this.delegate('click', 'a#branch-edit-update', this.save_form);
+    this.form = new Backbone.Form({
+      model: this.model,
+      template: this.template_form,
+      templateData: {
+        heading: 'Edytuj oddział',
+        mode: 'edit',
+        is_admin: mediator.models.user.get('is_admin')
+      }
+    });
+    return this.form.render();
+  };
+
+  BranchEditView.prototype.save_form = function() {
+    var _this = this;
+    this.publishEvent('log:info', 'commmit form');
+    if (_.isUndefined(this.form.commit({
+      validate: true
+    }))) {
+      return this.model.save({}, {
+        success: function(event) {
+          _this.publishEvent('tell_user', 'Oddział zaktualizowany');
+          return Chaplin.helpers.redirectTo({
+            url: '/oddzialy'
+          });
+        },
+        error: function(model, response, options) {
+          if (response.responseJSON != null) {
+            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+          } else {
+            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+          }
+        }
+      });
+    } else {
+      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+    }
+  };
+
+  BranchEditView.prototype["delete"] = function() {
+    var _this = this;
+    return this.model.destroy({
+      success: function(event) {
+        mediator.collections.branches.remove(_this.model);
+        _this.publishEvent('tell_user', 'Oddział został usunięty');
+        return Chaplin.helpers.redirectTo({
+          url: '/oddzialy'
+        });
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  BranchEditView.prototype.render = function() {
+    BranchEditView.__super__.render.apply(this, arguments);
+    this.publishEvent('log:info', '5');
+    this.$el.append(this.form.el);
+    return this.publishEvent('log:info', '22');
+  };
+
+  BranchEditView.prototype.attach = function() {
+    BranchEditView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', '6');
+    this.publishEvent('log:info', 'view: clientadd afterRender()');
+    return this.publishEvent('jqm_refersh:render');
+  };
+
+  return BranchEditView;
+
+})(View);
+
+});
+
+;require.register("views/branch-list-view", function(exports, require, module) {
+var BranchListView, View, list_view, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+list_view = require('views/templates/branch_list_view');
+
+mediator = require('mediator');
+
+module.exports = BranchListView = (function(_super) {
+
+  __extends(BranchListView, _super);
+
+  function BranchListView() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.getTemplateData = __bind(this.getTemplateData, this);
+
+    this.refresh_branches = __bind(this.refresh_branches, this);
+
+    this.action = __bind(this.action, this);
+
+    this.select_all = __bind(this.select_all, this);
+    return BranchListView.__super__.constructor.apply(this, arguments);
+  }
+
+  BranchListView.prototype.autoRender = true;
+
+  BranchListView.prototype.containerMethod = "html";
+
+  BranchListView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  BranchListView.prototype.id = 'content';
+
+  BranchListView.prototype.className = 'ui-content';
+
+  BranchListView.prototype.initialize = function(options) {
+    BranchListView.__super__.initialize.apply(this, arguments);
+    this.collection = _.clone(mediator.collections.branches);
+    this.params = options.params;
+    this.template = list_view;
+    this.last_check_view = 'list_view';
+    this.last_check_query = 'user';
+    this.delegate('change', '#select-action', this.action);
+    this.delegate('change', '#all', this.select_all);
+    return this.delegate('click', '#refresh', this.refresh_branches);
+  };
+
+  BranchListView.prototype.select_all = function() {
+    var selected;
+    selected = $('#client-table>thead input:checkbox ').prop('checked');
+    return $('#client-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
+  };
+
+  BranchListView.prototype.action = function(event) {
+    var clean_after_action, selected,
+      _this = this;
+    selected = $('#client-table>tbody input:checked ');
+    clean_after_action = function(selected) {
+      $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
+      $("#select-action :selected").removeAttr('selected');
+      selected = null;
+      _this.render();
+    };
+    this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + selected);
+    if (selected.length > 0) {
+      if (event.target.value === 'usun') {
+        $("#confirm").popup('open');
+        return $("#confirmed").click(function() {
+          var i, model, _i, _len,
+            _this = this;
+          for (_i = 0, _len = selected.length; _i < _len; _i++) {
+            i = selected[_i];
+            model = mediator.collections.branches.get($(i).attr('id'));
+            model.destroy({
+              success: function(event) {
+                Chaplin.EventBroker.publishEvent('log:info', "Oddzial usunięty id" + (model.get('id')));
+                mediator.collections.branches.remove(model);
+                return Chaplin.EventBroker.publishEvent('tell_user', 'Oddział został usunięty');
+              },
+              error: function(model, response, options) {
+                if (response.responseJSON != null) {
+                  return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+                } else {
+                  return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+                }
+              }
+            });
+          }
+          $(this).off('click');
+          return clean_after_action(selected);
+        });
+      }
+    } else {
+      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
+      return clean_after_action(selected);
+    }
+  };
+
+  BranchListView.prototype.refresh_branches = function(event) {
+    var _this = this;
+    event.preventDefault();
+    this.publishEvent('log:debug', 'refresh');
+    return mediator.collections.branches.fetch({
+      success: function() {
+        _this.publishEvent('tell_user', 'Odświeżam listę oddziałów');
+        _this.collection = _.clone(mediator.collections.branches);
+        return _this.render();
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  BranchListView.prototype.getTemplateData = function() {
+    return {
+      collection: this.collection.toJSON()
+    };
+  };
+
+  BranchListView.prototype.render = function() {
+    return BranchListView.__super__.render.apply(this, arguments);
+  };
+
+  BranchListView.prototype.attach = function() {
+    BranchListView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'view: offerlist afterRender()');
+    if (this.collection.length > 1) {
+      $("#client-table").tablesorter({
+        sortList: [[4, 0]],
+        headers: {
+          0: {
+            'sorter': false
+          },
+          1: {
+            'sorter': false
+          }
+        }
+      });
+    }
+    return this.publishEvent('jqm_refersh:render');
+  };
+
+  return BranchListView;
+
+})(View);
+
+});
+
 ;require.register("views/client-add-view", function(exports, require, module) {
 var ClientAddView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1086,7 +1805,7 @@ var ClientAddView, View, mediator, template,
 
 View = require('views/base/view');
 
-template = require('views/templates/client_add_form');
+template = require('views/templates/client_form');
 
 mediator = require('mediator');
 
@@ -1130,7 +1849,9 @@ module.exports = ClientAddView = (function(_super) {
       model: this.model,
       template: this.template_form,
       templateData: {
-        heading: 'Dodaj kontrahenta'
+        heading: 'Dodaj kontrahenta',
+        mode: 'add',
+        is_admin: mediator.models.user.get('is_admin')
       }
     });
     return this.form.render();
@@ -1179,7 +1900,7 @@ module.exports = ClientAddView = (function(_super) {
   ClientAddView.prototype.attach = function() {
     ClientAddView.__super__.attach.apply(this, arguments);
     this.publishEvent('log:info', 'view: clientadd afterRender()');
-    return this.publishEvent('clientaddview:render');
+    return this.publishEvent('jqm_refersh:render');
   };
 
   return ClientAddView;
@@ -1196,7 +1917,7 @@ var ClientEditView, View, mediator, template,
 
 View = require('views/base/view');
 
-template = require('views/templates/client_edit_form');
+template = require('views/templates/client_form');
 
 mediator = require('mediator');
 
@@ -1242,7 +1963,9 @@ module.exports = ClientEditView = (function(_super) {
       model: this.model,
       template: this.template_form,
       templateData: {
-        heading: 'Dodaj kontrahenta'
+        heading: 'Edytuj kontrahenta',
+        mode: 'edit',
+        is_admin: mediator.models.user.get('is_admin')
       }
     });
     return this.form.render();
@@ -1305,7 +2028,7 @@ module.exports = ClientEditView = (function(_super) {
     ClientEditView.__super__.attach.apply(this, arguments);
     this.publishEvent('log:info', '6');
     this.publishEvent('log:info', 'view: clientadd afterRender()');
-    return this.publishEvent('clientaddview:render');
+    return this.publishEvent('jqm_refersh:render');
   };
 
   return ClientEditView;
@@ -1369,8 +2092,7 @@ module.exports = ClientListView = (function(_super) {
     this.delegate('change', '#select-action', this.action);
     this.delegate('change', '#select-filter', this.change_query);
     this.delegate('change', '#all', this.select_all);
-    this.delegate('click', '#refresh', this.refresh_offers);
-    return window.collection = this.collection;
+    return this.delegate('click', '#refresh', this.refresh_offers);
   };
 
   ClientListView.prototype.select_all = function() {
@@ -1484,7 +2206,7 @@ module.exports = ClientListView = (function(_super) {
         }
       });
     }
-    return this.publishEvent('clientlistview:render');
+    return this.publishEvent('jqm_refersh:render');
   };
 
   return ClientListView;
@@ -1762,9 +2484,7 @@ module.exports = Layout = (function(_super) {
     if (jqm) {
       this.subscribeEvent('structureController:render', this.jqm_init);
       this.subscribeEvent('leftpanel:render', this.jqm_leftpanel);
-      this.subscribeEvent('offerlistview:render', this.jqm_refersh);
-      this.subscribeEvent('clientlistview:render', this.jqm_refersh);
-      this.subscribeEvent('clientaddview:render', this.jqm_refersh);
+      this.subscribeEvent('jqm_refersh:render', this.jqm_refersh);
       this.subscribeEvent('loading_start', this.jqm_loading_start);
       this.subscribeEvent('loading_stop', this.jqm_loading_stop);
       this.subscribeEvent('server_error', this.server_error);
@@ -1859,7 +2579,7 @@ module.exports = Layout = (function(_super) {
 });
 
 ;require.register("views/left-panel-view", function(exports, require, module) {
-var LeftPanelView, View, template,
+var LeftPanelView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1867,6 +2587,8 @@ var LeftPanelView, View, template,
 View = require('views/base/view');
 
 template = require('views/templates/left-panel');
+
+mediator = require('mediator');
 
 module.exports = LeftPanelView = (function(_super) {
 
@@ -1986,6 +2708,7 @@ module.exports = LoginView = (function(_super) {
           user_pass: _this.pass
         });
         $('#first-name-placeholder').text(_this.model.get('first_name'));
+        $('#bon-config-link').attr('href', "/biura/" + (_this.model.get('company_id')));
         $('#login').popup('close');
         return Chaplin.helpers.redirectTo({
           url: ''
@@ -2347,7 +3070,7 @@ module.exports = function (__obj) {
 }
 });
 
-;require.register("views/templates/client_add_form", function(exports, require, module) {
+;require.register("views/templates/bon_edit_form", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
   var __out = [], __capture = function(callback) {
@@ -2388,7 +3111,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('  <div class=\'ui-grid-a\'>\n  <div class=\'ui-block-a\'>\n  <form>\n  <h4>Dodaj kontrahenta</h4>\n  <div data-fields="name"> </div>\n  <div data-fields="surname"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  <div data-fields="client_type"> </div>\n  <div data-fields="address"> </div>\n  <div data-fields="pesel"> </div>\n  <div data-fields="id_card"> </div>\n  <div data-fields="bank_account"> </div>\n  <h4>Informacje o firmie</h4>\n  <div data-fields="company_name"> </div>\n  <div data-fields="nip"> </div>\n</div>\n  <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n  <h4>Szczegóły</h4>\n  <div data-fields="notes"> </div>\n  <div data-fields="requirements"> </div>\n  <div data-fields="budget"> </div>\n  <div data-fields="provision"> </div>\n  <div data-fields="provision_p"> </div>\n  <h4>Dodatkowe</h4>\n  <div data-fields="is_private"> </div>\n  <div data-fields="date"> </div>\n  <a href=\'/klienci/dodaj\' class="ui-btn ui-btn-inline ui-icon-recycle ui-btn-icon-right">Wyczyść</a>\n  <a id="client-add-save" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Zapisz</a>\n  </form>\n</div>\n\n</div>\n');
+      __out.push('  <form>\n  <h4>Edytuj dane biura</h4>\n  <div data-fields="name"> </div>\n  <div data-fields="website"> </div>\n  <div data-fields="province"> </div>\n  <div data-fields="town"> </div>\n  <div data-fields="street"> </div>\n  <div data-fields="postcode"> </div>\n  <div data-fields="nip"> </div>\n  <div data-fields="regon"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  <a id="bon-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Uaktualnij</a>\n  <a id="bon-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Usuń konto!</a>\n  </form>\n\n');
     
     }).call(this);
     
@@ -2398,7 +3121,7 @@ module.exports = function (__obj) {
 }
 });
 
-;require.register("views/templates/client_edit_form", function(exports, require, module) {
+;require.register("views/templates/branch_form", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
   var __out = [], __capture = function(callback) {
@@ -2439,7 +3162,182 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('  <div class=\'ui-grid-a\'>\n  <div class=\'ui-block-a\'>\n  <form>\n  <h4>Dodaj kontrahenta</h4>\n  <div data-fields="name"> </div>\n  <div data-fields="surname"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  <div data-fields="client_type"> </div>\n  <div data-fields="address"> </div>\n  <div data-fields="pesel"> </div>\n  <div data-fields="id_card"> </div>\n  <div data-fields="bank_account"> </div>\n  <h4>Informacje o firmie</h4>\n  <div data-fields="company_name"> </div>\n  <div data-fields="nip"> </div>\n</div>\n  <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n  <h4>Szczegóły</h4>\n  <div data-fields="notes"> </div>\n  <div data-fields="requirements"> </div>\n  <div data-fields="budget"> </div>\n  <div data-fields="provision"> </div>\n  <div data-fields="provision_p"> </div>\n  <h4>Dodatkowe</h4>\n  <div data-fields="is_private"> </div>\n  <div data-fields="date"> </div>\n  <a id="client-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Uaktualnij</a>\n  <a id="client-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Skasuj</a>\n  </form>\n\n</div>\n</div>\n');
+      __out.push('  <div class=\'ui-grid-a\'>\n  <div class=\'ui-block-a\'>\n  <form>\n  <h4>');
+    
+      __out.push(__sanitize(this.heading));
+    
+      __out.push('</h4>\n  <div data-fields="name"> </div>\n  <div data-fields="slug"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  <div data-fields="fax"> </div>\n  <div data-fields="nip"> </div>\n  <div data-fields="regon"> </div>\n</div>\n<div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n  <div data-fields="website"> </div>\n  <div data-fields="province"> </div>\n  <div data-fields="town"> </div>\n  <div data-fields="street"> </div>\n  <div data-fields="postcode"> </div>\n  <div data-fields="is_main"> </div>\n  ');
+    
+      if (this.is_admin) {
+        __out.push('\n    ');
+        if (this.mode === 'add') {
+          __out.push('\n    <a id="branch-add-refresh" href=\'/oddzialy/dodaj\' class="ui-btn ui-btn-inline ui-icon-recycle ui-btn-icon-right">Wyczyść</a>\n    <a id="branch-add-save" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Dodaj</a>\n    ');
+        }
+        __out.push('\n    ');
+        if (this.mode === 'edit') {
+          __out.push('\n    <a id="branch-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Uaktualnij</a>\n    <a id="branch-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Skasuj</a>\n    ');
+        }
+        __out.push('\n  ');
+      }
+    
+      __out.push('\n  </form>\n</div>\n</div>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/branch_list_view", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var item, _i, _len, _ref;
+    
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/oddzialy/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="client-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Nazwa&nbsp;&nbsp;</th>\n         <th data-priority="2">Identyfikator&nbsp;&nbsp;</th>\n         <th data-priority="2">WWW&nbsp;&nbsp;</th>\n         <th data-priority="5">Tel&nbsp;&nbsp;</th>\n         <th data-priority="4">Email&nbsp;&nbsp;</th>\n         <th data-priority="6">Miasto&nbsp;&nbsp;</th>\n         <th data-priority="6">Nip&nbsp;&nbsp;</th>\n         <th data-priority="6">Główny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+    
+      _ref = this.collection;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
+        __out.push('\n       <tr>\n         <td> <label> <input name="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" id="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" data-mini="true"  type="checkbox"> </label> </td>\n         <td>');
+        __out.push(__sanitize(item['id']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['agent']));
+        __out.push('</td>\n         <td><a href=\'/oddzialy/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['name']));
+        __out.push('</a></td>\n         <td><a href=\'/oddzialy/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['slug']));
+        __out.push('</a></td>\n         <td>');
+        __out.push(__sanitize(item['website']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['phone']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['email']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['town']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['nip']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['is_main']));
+        __out.push('</td>\n       </tr>\n      ');
+      }
+    
+      __out.push('\n     </tbody>\n   </table>\n\n\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/client_form", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+    
+      __out.push('  <div class=\'ui-grid-a\'>\n  <div class=\'ui-block-a\'>\n  <form>\n  <h4>');
+    
+      __out.push(__sanitize(this.heading));
+    
+      __out.push('</h4>\n  <div data-fields="name"> </div>\n  <div data-fields="surname"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  <div data-fields="client_type"> </div>\n  <div data-fields="address"> </div>\n  <div data-fields="pesel"> </div>\n  <div data-fields="id_card"> </div>\n  <div data-fields="bank_account"> </div>\n  <h4>Informacje o firmie</h4>\n  <div data-fields="company_name"> </div>\n  <div data-fields="nip"> </div>\n</div>\n  <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n  <h4>Szczegóły</h4>\n  <div data-fields="notes"> </div>\n  <div data-fields="requirements"> </div>\n  <div data-fields="budget"> </div>\n  <div data-fields="provision"> </div>\n  <div data-fields="provision_p"> </div>\n  <h4>Dodatkowe</h4>\n  <div data-fields="is_private"> </div>\n  <div data-fields="date"> </div>\n  ');
+    
+      if (this.is_admin) {
+        __out.push('\n    ');
+        if (this.mode === 'add') {
+          __out.push('\n        <a href=\'/klienci/dodaj\' class="ui-btn ui-btn-inline ui-icon-recycle ui-btn-icon-right">Wyczyść</a>\n        <a id="client-add-save" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Zapisz</a>\n    ');
+        }
+        __out.push('\n    ');
+        if (this.mode === 'edit') {
+          __out.push('\n        <a id="client-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Uaktualnij</a>\n        <a id="client-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Skasuj</a>\n    ');
+        }
+        __out.push('\n  ');
+      }
+    
+      __out.push('\n  </form>\n</div>\n\n</div>\n');
     
     }).call(this);
     
@@ -2886,7 +3784,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty/robocze" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/archiwalne" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>\n                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="dodaj_oferte?sch=1"    >Mieszkania Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=2"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=3"    >Domy Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=4"    >Domy Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=5"    >Grunty Dzierżawa</a></li>\n                        <li><a href="dodaj_oferte?sch=6"    >Grunty Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=7"    >Lokale Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=8"    >Lokale Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=9"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=10"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=11"   >Obiekty Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=12"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li data-icon="tag"><a href="" >Oferty robocze</a></li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li data-icon="plus"><a href="" >Dodaj Etykietę</a></li>\n                        <li data-icon="alert"><a href="" >Zmień Hasło</a></li>\n                        <li data-icon="user"><a href="" >Dane Profilu</a></li>\n                        <li data-icon="star"><a href="" >Dane Biura Nieruchomości</a></li>\n                        <li data-icon="heart"><a href="" >Logo</a></li>\n                        <li data-icon="camera"><a href="" >Watermark</a></li>\n                        <li data-icon="back"><a href="" >Importy</a></li>\n                        <li data-icon="forward"><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li data-icon="edit"><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li data-icon="phone"><a href="/klienci" >Moi</a></li>\n                        <li data-icon="lock"><a href="/klienci/wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        <li><a href="/kw" >Księgi wieczyste</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
+      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty/robocze" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/archiwalne" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>\n                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="dodaj_oferte?sch=1"    >Mieszkania Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=2"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=3"    >Domy Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=4"    >Domy Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=5"    >Grunty Dzierżawa</a></li>\n                        <li><a href="dodaj_oferte?sch=6"    >Grunty Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=7"    >Lokale Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=8"    >Lokale Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=9"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=10"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=11"   >Obiekty Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=12"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li data-icon="tag"><a href="" >Oferty robocze</a></li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li data-icon="plus"><a href="" >Dodaj Etykietę</a></li>\n                        <li data-icon="alert"><a href="" >Zmień Hasło</a></li>\n                        <li data-icon="user"><a href="" >Dane Profilu</a></li>\n                        <li data-icon="star"><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li data-icon="star"><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>\n                        <li data-icon="star"><a href="/oddzialy" >Oddziały</a></li>\n                        <li data-icon="heart"><a href="" >Logo</a></li>\n                        <li data-icon="camera"><a href="" >Watermark</a></li>\n                        <li data-icon="back"><a href="" >Importy</a></li>\n                        <li data-icon="forward"><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li data-icon="edit"><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li data-icon="phone"><a href="/klienci" >Moi</a></li>\n                        <li data-icon="lock"><a href="/klienci/wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        <li><a href="/kw" >Księgi wieczyste</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
     
     }).call(this);
     

@@ -1,7 +1,7 @@
 View = require 'views/base/view'
-template = require 'views/templates/client_form'
+template = require 'views/templates/bon_edit_form'
 mediator = require 'mediator'
-module.exports = class ClientEditView extends View
+module.exports = class BonEditView extends View
     autoRender: true
     containerMethod: "html"
     attributes: { 'data-role':'content' }
@@ -11,22 +11,17 @@ module.exports = class ClientEditView extends View
         super
         # send url data from controler
         @params = options.params
-        @publishEvent('log:info', console.log(@params))
-        @model = mediator.collections.clients.get(@params.id)
-        @model.schema = mediator.models.user.get('schemas').client
+        @model = mediator.models.bon
+        @model.schema = mediator.models.user.get('schemas').company
         @template_form = template
         # events
-        @delegate 'click', 'a#client-edit-delete', @delete_client
-        @delegate 'click', 'a#client-edit-update', @save_form
+        @delegate 'click', 'a#bon-edit-delete', @delete_bon
+        @delegate 'click', 'a#bon-edit-update', @save_form
 
         @form = new Backbone.Form {
             model: @model
             template: @template_form
-            templateData:{
-                heading: 'Edytuj kontrahenta'
-                mode: 'edit'
-                is_admin: mediator.models.user.get('is_admin')
-            }
+            templateData:{heading: 'Edytuj dane biura nieruchomości'}
         }
         @form.render()
 
@@ -36,8 +31,7 @@ module.exports = class ClientEditView extends View
         if _.isUndefined(@form.commit({validate:true}))
             @model.save({},{
                 success:(event) =>
-                    @publishEvent 'tell_user', 'Klient zaktualizowany'
-                    Chaplin.helpers.redirectTo {url: '/klienci'}
+                    @publishEvent 'tell_user', 'Dane biura zostały zaktualizowane'
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -47,17 +41,20 @@ module.exports = class ClientEditView extends View
         else
             @publishEvent 'tell_user', 'Błąd w formularzu!'
 
-    delete_client: =>
+    delete_bon: =>
         @model.destroy
             success: (event) =>
-                mediator.collections.clients.remove(@model)
-                @publishEvent 'tell_user', 'Klient został usunięty'
-                Chaplin.helpers.redirectTo {url: '/klienci'}
+                # we will never succeed....
+                @publishEvent('log:info', 'dyspozycja usunięcia konta przyjęta' )
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
                 else
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
+
+    getTemplateData: =>
+        super
+        # client: @collection.toJSON()
 
     render: =>
         super

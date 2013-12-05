@@ -1,7 +1,7 @@
 View = require 'views/base/view'
-template = require 'views/templates/client_form'
+template = require 'views/templates/branch_form'
 mediator = require 'mediator'
-module.exports = class ClientEditView extends View
+module.exports = class ClientAddView extends View
     autoRender: true
     containerMethod: "html"
     attributes: { 'data-role':'content' }
@@ -11,20 +11,18 @@ module.exports = class ClientEditView extends View
         super
         # send url data from controler
         @params = options.params
-        @publishEvent('log:info', console.log(@params))
-        @model = mediator.collections.clients.get(@params.id)
-        @model.schema = mediator.models.user.get('schemas').client
+        @model = mediator.models.branch
         @template_form = template
         # events
-        @delegate 'click', 'a#client-edit-delete', @delete_client
-        @delegate 'click', 'a#client-edit-update', @save_form
+        @delegate 'click', 'a#branch-add-refresh', @refresh_form
+        @delegate 'click', 'a#branch-add-save', @save_form
 
         @form = new Backbone.Form {
             model: @model
             template: @template_form
             templateData:{
-                heading: 'Edytuj kontrahenta'
-                mode: 'edit'
+                heading: 'Dodaj oddział'
+                mode: 'add'
                 is_admin: mediator.models.user.get('is_admin')
             }
         }
@@ -36,8 +34,11 @@ module.exports = class ClientEditView extends View
         if _.isUndefined(@form.commit({validate:true}))
             @model.save({},{
                 success:(event) =>
-                    @publishEvent 'tell_user', 'Klient zaktualizowany'
-                    Chaplin.helpers.redirectTo {url: '/klienci'}
+                    if mediator.collections.branches?
+                        # add it to collection so we don't need to use server ...
+                        mediator.collections.branches.add(@model)
+                    @publishEvent 'tell_user', 'Oddział dodany'
+                    Chaplin.helpers.redirectTo {url: '/oddzialy'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -47,29 +48,17 @@ module.exports = class ClientEditView extends View
         else
             @publishEvent 'tell_user', 'Błąd w formularzu!'
 
-    delete_client: =>
-        @model.destroy
-            success: (event) =>
-                mediator.collections.clients.remove(@model)
-                @publishEvent 'tell_user', 'Klient został usunięty'
-                Chaplin.helpers.redirectTo {url: '/klienci'}
-            error:(model, response, options) =>
-                if response.responseJSON?
-                    Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
-                else
-                    Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
+    refresh_form: =>
+        render()
 
     render: =>
         super
         #set the template context of @el to our rendered form - otherwise backbone.forms get out of context
-        @publishEvent('log:info', '5')
         @$el.append(@form.el)
-        @publishEvent('log:info', '22')
 
 
     attach: =>
         super
-        @publishEvent('log:info', '6')
         @publishEvent('log:info', 'view: clientadd afterRender()')
         @publishEvent 'jqm_refersh:render'
 

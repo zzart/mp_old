@@ -57,7 +57,9 @@
                         <li data-icon="plus"><a href="" >Dodaj Etykietę</a></li>
                         <li data-icon="alert"><a href="" >Zmień Hasło</a></li>
                         <li data-icon="user"><a href="" >Dane Profilu</a></li>
-                        <li data-icon="star"><a href="" >Dane Biura Nieruchomości</a></li>
+                        <li data-icon="star"><a id='bon-config-link' href="" >Dane Biura Nieruchomości</a></li>
+                        <li data-icon="star"><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>
+                        <li data-icon="star"><a href="/oddzialy" >Oddziały</a></li>
                         <li data-icon="heart"><a href="" >Logo</a></li>
                         <li data-icon="camera"><a href="" >Watermark</a></li>
                         <li data-icon="back"><a href="" >Importy</a></li>

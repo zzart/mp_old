@@ -1,5 +1,5 @@
 View = require 'views/base/view'
-template = require 'views/templates/client_add_form'
+template = require 'views/templates/client_form'
 mediator = require 'mediator'
 module.exports = class ClientAddView extends View
     autoRender: true
@@ -20,7 +20,11 @@ module.exports = class ClientAddView extends View
         @form = new Backbone.Form {
             model: @model
             template: @template_form
-            templateData:{heading: 'Dodaj kontrahenta'}
+            templateData:{
+                heading: 'Dodaj kontrahenta'
+                mode: 'add'
+                is_admin: mediator.models.user.get('is_admin')
+            }
         }
         @form.render()
 
@@ -56,6 +60,6 @@ module.exports = class ClientAddView extends View
     attach: =>
         super
         @publishEvent('log:info', 'view: clientadd afterRender()')
-        @publishEvent 'clientaddview:render'
+        @publishEvent 'jqm_refersh:render'
 
 
