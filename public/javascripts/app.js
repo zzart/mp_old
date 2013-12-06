@@ -264,27 +264,60 @@ module.exports = AgentController = (function(_super) {
   };
 
   AgentController.prototype.add = function(params, route, options) {
-    var schema;
+    var _this = this;
     this.publishEvent('log:info', 'in agentadd controller');
     mediator.models.agent = new Model;
-    schema = mediator.models.user.get('schemas').agent;
-    mediator.models.agent.schema = schema;
-    return this.view = new AddView({
-      params: params,
-      region: 'content'
+    return mediator.models.user.fetch({
+      beforeSend: function() {
+        _this.publishEvent('loading_start');
+        return _this.publishEvent('tell_user', 'Odświeżam formularz ...');
+      },
+      success: function() {
+        var schema;
+        _this.publishEvent('log:info', "data with " + params + " fetched ok");
+        _this.publishEvent('loading_stop');
+        schema = mediator.models.user.get('schemas').agent;
+        mediator.models.agent.schema = schema;
+        return _this.view = new AddView({
+          params: params,
+          region: 'content'
+        });
+      },
+      error: function() {
+        _this.publishEvent('loading_stop');
+        return _this.publishEvent('server_error');
+      }
     });
   };
 
   AgentController.prototype.show = function(params, route, options) {
+    var _this = this;
     this.publishEvent('log:info', 'in agent show controller');
     if (!_.isObject(mediator.collections.agents.get(params.id))) {
       this.redirectTo({
         '/agenci': '/agenci'
       });
     }
-    return this.view = new EditView({
-      params: params,
-      region: 'content'
+    return mediator.models.user.fetch({
+      beforeSend: function() {
+        _this.publishEvent('loading_start');
+        return _this.publishEvent('tell_user', 'Odświeżam formularz ...');
+      },
+      success: function() {
+        var schema;
+        _this.publishEvent('log:info', "data with " + params + " fetched ok");
+        _this.publishEvent('loading_stop');
+        schema = mediator.models.user.get('schemas').agent;
+        mediator.models.agent.schema = schema;
+        return _this.view = new EditView({
+          params: params,
+          region: 'content'
+        });
+      },
+      error: function() {
+        _this.publishEvent('loading_stop');
+        return _this.publishEvent('server_error');
+      }
     });
   };
 
@@ -458,17 +491,17 @@ module.exports = BonController = (function(_super) {
 });
 
 ;require.register("controllers/branch-controller", function(exports, require, module) {
-var BranchAddView, BranchController, BranchEditView, BranchListView, Collection, Controller, Model, mediator,
+var AddView, BranchController, Collection, Controller, EditView, ListView, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Controller = require('controllers/auth-controller');
 
-BranchListView = require('views/branch-list-view');
+ListView = require('views/branch-list-view');
 
-BranchAddView = require('views/branch-add-view');
+AddView = require('views/branch-add-view');
 
-BranchEditView = require('views/branch-edit-view');
+EditView = require('views/branch-edit-view');
 
 Collection = require('models/branch-collection');
 
@@ -488,13 +521,12 @@ module.exports = BranchController = (function(_super) {
     var _this = this;
     this.publishEvent('log:info', 'in branch list controller');
     if (_.isObject(mediator.collections.branches)) {
-      return this.view = new BranchListView({
+      return this.view = new ListView({
         params: params,
         region: 'content'
       });
     } else {
       mediator.collections.branches = new Collection;
-      console.log(mediator.collections.branches);
       return mediator.collections.branches.fetch({
         data: params,
         beforeSend: function() {
@@ -504,7 +536,7 @@ module.exports = BranchController = (function(_super) {
         success: function() {
           _this.publishEvent('log:info', "data with " + params + " fetched ok");
           _this.publishEvent('loading_stop');
-          return _this.view = new BranchListView({
+          return _this.view = new ListView({
             params: params,
             region: 'content'
           });
@@ -523,7 +555,7 @@ module.exports = BranchController = (function(_super) {
     mediator.models.branch = new Model;
     schema = mediator.models.user.get('schemas').branch;
     mediator.models.branch.schema = schema;
-    return this.view = new BranchAddView({
+    return this.view = new AddView({
       params: params,
       region: 'content'
     });
@@ -536,7 +568,7 @@ module.exports = BranchController = (function(_super) {
         '/oddzialy': '/oddzialy'
       });
     }
-    return this.view = new BranchEditView({
+    return this.view = new EditView({
       params: params,
       region: 'content'
     });
@@ -1017,25 +1049,25 @@ module.exports = Bon = (function(_super) {
 });
 
 ;require.register("models/branch-collection", function(exports, require, module) {
-var ClientList, Model,
+var BranchList, Model,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Model = require('models/branch-model');
 
-module.exports = ClientList = (function(_super) {
+module.exports = BranchList = (function(_super) {
 
-  __extends(ClientList, _super);
+  __extends(BranchList, _super);
 
-  function ClientList() {
-    return ClientList.__super__.constructor.apply(this, arguments);
+  function BranchList() {
+    return BranchList.__super__.constructor.apply(this, arguments);
   }
 
-  ClientList.prototype.model = Model;
+  BranchList.prototype.model = Model;
 
-  ClientList.prototype.url = 'http://localhost:8080/v1/oddzialy';
+  BranchList.prototype.url = 'http://localhost:8080/v1/oddzialy';
 
-  return ClientList;
+  return BranchList;
 
 })(Chaplin.Collection);
 
@@ -1521,182 +1553,6 @@ module.exports = EditView = (function(_super) {
 
 });
 
-;require.register("views/agent-list-view", function(exports, require, module) {
-var ListView, View, list_view, mediator,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/base/view');
-
-list_view = require('views/templates/agent_list_view');
-
-mediator = require('mediator');
-
-module.exports = ListView = (function(_super) {
-
-  __extends(ListView, _super);
-
-  function ListView() {
-    this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.getTemplateData = __bind(this.getTemplateData, this);
-
-    this.refresh_offers = __bind(this.refresh_offers, this);
-
-    this.change_query = __bind(this.change_query, this);
-
-    this.action = __bind(this.action, this);
-
-    this.select_all = __bind(this.select_all, this);
-    return ListView.__super__.constructor.apply(this, arguments);
-  }
-
-  ListView.prototype.autoRender = true;
-
-  ListView.prototype.containerMethod = "html";
-
-  ListView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  ListView.prototype.id = 'content';
-
-  ListView.prototype.className = 'ui-content';
-
-  ListView.prototype.initialize = function(options) {
-    ListView.__super__.initialize.apply(this, arguments);
-    this.collection = _.clone(mediator.collections.agents);
-    this.params = options.params;
-    this.template = list_view;
-    this.delegate('change', '#select-action', this.action);
-    this.delegate('change', '#select-filter', this.change_query);
-    this.delegate('change', '#all', this.select_all);
-    return this.delegate('click', '#refresh', this.refresh_offers);
-  };
-
-  ListView.prototype.select_all = function() {
-    var selected;
-    selected = $('#agent-table>thead input:checkbox ').prop('checked');
-    return $('#agent-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
-  };
-
-  ListView.prototype.action = function(event) {
-    var clean_after_action, selected,
-      _this = this;
-    selected = $('#agent-table>tbody input:checked ');
-    clean_after_action = function(selected) {
-      $('#agent-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
-      $("#select-action :selected").removeAttr('selected');
-      selected = null;
-      _this.render();
-    };
-    this.publishEvent('log:info', "performing action " + event.target.value + " for items " + selected);
-    if (selected.length > 0) {
-      if (event.target.value === 'usun') {
-        $("#confirm").popup('open');
-        return $("#confirmed").click(function() {
-          var i, model, _i, _len,
-            _this = this;
-          for (_i = 0, _len = selected.length; _i < _len; _i++) {
-            i = selected[_i];
-            model = mediator.collections.agents.get($(i).attr('id'));
-            model.destroy({
-              success: function(event) {
-                Chaplin.EventBroker.publishEvent('log:info', "Agent usunięty id" + (model.get('id')));
-                mediator.collections.agents.remove(model);
-                return Chaplin.EventBroker.publishEvent('tell_user', 'Agent został usunięty');
-              },
-              error: function(model, response, options) {
-                if (response.responseJSON != null) {
-                  return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-                } else {
-                  return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-                }
-              }
-            });
-          }
-          $(this).off('click');
-          return clean_after_action(selected);
-        });
-      }
-    } else {
-      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
-      return clean_after_action(selected);
-    }
-  };
-
-  ListView.prototype.change_query = function(event) {
-    var list_of_models;
-    this.publishEvent('log:debug', event.target.value);
-    if (_.isEmpty(event.target.value)) {
-      this.collection = _.clone(mediator.collections.agents);
-    } else {
-      list_of_models = mediator.collections.agents.where({
-        'agent_type': parseInt(event.target.value)
-      });
-      this.collection.reset(list_of_models);
-    }
-    return this.render();
-  };
-
-  ListView.prototype.refresh_offers = function(event) {
-    var _this = this;
-    event.preventDefault();
-    this.publishEvent('log:debug', 'refresh');
-    return mediator.collections.agents.fetch({
-      success: function() {
-        _this.publishEvent('tell_user', 'Odświeżam listę agentów');
-        _this.collection = _.clone(mediator.collections.agents);
-        return _this.render();
-      },
-      error: function(model, response, options) {
-        if (response.responseJSON != null) {
-          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-        } else {
-          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-        }
-      }
-    });
-  };
-
-  ListView.prototype.getTemplateData = function() {
-    return {
-      agent: this.collection.toJSON()
-    };
-  };
-
-  ListView.prototype.render = function() {
-    return ListView.__super__.render.apply(this, arguments);
-  };
-
-  ListView.prototype.attach = function() {
-    ListView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: offerlist afterRender()');
-    if (this.collection.length > 1) {
-      $("#agent-table").tablesorter({
-        sortList: [[4, 0]],
-        headers: {
-          0: {
-            'sorter': false
-          },
-          1: {
-            'sorter': false
-          }
-        }
-      });
-    }
-    return this.publishEvent('jqm_refersh:render');
-  };
-
-  return ListView;
-
-})(View);
-
-});
-
 ;require.register("views/autologin-view", function(exports, require, module) {
 var LoginView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -2055,7 +1911,6 @@ module.exports = ClientAddView = (function(_super) {
         success: function(event) {
           if (mediator.collections.branches != null) {
             mediator.collections.branches.add(_this.model);
-            mediator.models.user.fetch();
           }
           _this.publishEvent('tell_user', 'Oddział dodany');
           return Chaplin.helpers.redirectTo({
@@ -2226,167 +2081,6 @@ module.exports = BranchEditView = (function(_super) {
   };
 
   return BranchEditView;
-
-})(View);
-
-});
-
-;require.register("views/branch-list-view", function(exports, require, module) {
-var BranchListView, View, list_view, mediator,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/base/view');
-
-list_view = require('views/templates/branch_list_view');
-
-mediator = require('mediator');
-
-module.exports = BranchListView = (function(_super) {
-
-  __extends(BranchListView, _super);
-
-  function BranchListView() {
-    this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.getTemplateData = __bind(this.getTemplateData, this);
-
-    this.refresh_branches = __bind(this.refresh_branches, this);
-
-    this.action = __bind(this.action, this);
-
-    this.select_all = __bind(this.select_all, this);
-    return BranchListView.__super__.constructor.apply(this, arguments);
-  }
-
-  BranchListView.prototype.autoRender = true;
-
-  BranchListView.prototype.containerMethod = "html";
-
-  BranchListView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  BranchListView.prototype.id = 'content';
-
-  BranchListView.prototype.className = 'ui-content';
-
-  BranchListView.prototype.initialize = function(options) {
-    BranchListView.__super__.initialize.apply(this, arguments);
-    this.collection = _.clone(mediator.collections.branches);
-    this.params = options.params;
-    this.template = list_view;
-    this.last_check_view = 'list_view';
-    this.last_check_query = 'user';
-    this.delegate('change', '#select-action', this.action);
-    this.delegate('change', '#all', this.select_all);
-    return this.delegate('click', '#refresh', this.refresh_branches);
-  };
-
-  BranchListView.prototype.select_all = function() {
-    var selected;
-    selected = $('#client-table>thead input:checkbox ').prop('checked');
-    return $('#client-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
-  };
-
-  BranchListView.prototype.action = function(event) {
-    var clean_after_action, selected,
-      _this = this;
-    selected = $('#client-table>tbody input:checked ');
-    clean_after_action = function(selected) {
-      $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
-      $("#select-action :selected").removeAttr('selected');
-      selected = null;
-      _this.render();
-    };
-    this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + selected);
-    if (selected.length > 0) {
-      if (event.target.value === 'usun') {
-        $("#confirm").popup('open');
-        return $("#confirmed").click(function() {
-          var i, model, _i, _len,
-            _this = this;
-          for (_i = 0, _len = selected.length; _i < _len; _i++) {
-            i = selected[_i];
-            model = mediator.collections.branches.get($(i).attr('id'));
-            model.destroy({
-              success: function(event) {
-                Chaplin.EventBroker.publishEvent('log:info', "Oddzial usunięty id" + (model.get('id')));
-                mediator.collections.branches.remove(model);
-                return Chaplin.EventBroker.publishEvent('tell_user', 'Oddział został usunięty');
-              },
-              error: function(model, response, options) {
-                if (response.responseJSON != null) {
-                  return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-                } else {
-                  return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-                }
-              }
-            });
-          }
-          $(this).off('click');
-          return clean_after_action(selected);
-        });
-      }
-    } else {
-      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
-      return clean_after_action(selected);
-    }
-  };
-
-  BranchListView.prototype.refresh_branches = function(event) {
-    var _this = this;
-    event.preventDefault();
-    this.publishEvent('log:debug', 'refresh');
-    return mediator.collections.branches.fetch({
-      success: function() {
-        _this.publishEvent('tell_user', 'Odświeżam listę oddziałów');
-        _this.collection = _.clone(mediator.collections.branches);
-        return _this.render();
-      },
-      error: function(model, response, options) {
-        if (response.responseJSON != null) {
-          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-        } else {
-          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-        }
-      }
-    });
-  };
-
-  BranchListView.prototype.getTemplateData = function() {
-    return {
-      collection: this.collection.toJSON()
-    };
-  };
-
-  BranchListView.prototype.render = function() {
-    return BranchListView.__super__.render.apply(this, arguments);
-  };
-
-  BranchListView.prototype.attach = function() {
-    BranchListView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: offerlist afterRender()');
-    if (this.collection.length > 1) {
-      $("#client-table").tablesorter({
-        sortList: [[4, 0]],
-        headers: {
-          0: {
-            'sorter': false
-          },
-          1: {
-            'sorter': false
-          }
-        }
-      });
-    }
-    return this.publishEvent('jqm_refersh:render');
-  };
-
-  return BranchListView;
 
 })(View);
 
@@ -2711,9 +2405,10 @@ module.exports = ClientListView = (function(_super) {
   };
 
   ClientListView.prototype.action = function(event) {
-    var clean_after_action, selected,
+    var clean_after_action, selected, self,
       _this = this;
     selected = $('#client-table>tbody input:checked ');
+    self = this;
     clean_after_action = function(selected) {
       $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
       $("#select-action :selected").removeAttr('selected');
@@ -2731,9 +2426,11 @@ module.exports = ClientListView = (function(_super) {
             i = selected[_i];
             model = mediator.collections.clients.get($(i).attr('id'));
             model.destroy({
+              wait: true,
               success: function(event) {
                 Chaplin.EventBroker.publishEvent('log:info', "klient usunięty id" + (model.get('id')));
                 mediator.collections.clients.remove(model);
+                self.render();
                 return Chaplin.EventBroker.publishEvent('tell_user', 'Klient został usunięty');
               },
               error: function(model, response, options) {
@@ -3078,6 +2775,8 @@ module.exports = Layout = (function(_super) {
 
     this.tell_user = __bind(this.tell_user, this);
 
+    this.schema_change = __bind(this.schema_change, this);
+
     this.jqm_loading_stop = __bind(this.jqm_loading_stop, this);
 
     this.jqm_loading_start = __bind(this.jqm_loading_start, this);
@@ -3093,6 +2792,7 @@ module.exports = Layout = (function(_super) {
     if (jqm) {
       this.subscribeEvent('structureController:render', this.jqm_init);
       this.subscribeEvent('leftpanel:render', this.jqm_leftpanel);
+      this.subscribeEvent('schema_change', this.schema_change);
       this.subscribeEvent('jqm_refersh:render', this.jqm_refersh);
       this.subscribeEvent('loading_start', this.jqm_loading_start);
       this.subscribeEvent('loading_stop', this.jqm_loading_stop);
@@ -3111,6 +2811,11 @@ module.exports = Layout = (function(_super) {
 
   Layout.prototype.jqm_loading_stop = function() {
     return $.mobile.loading('hide');
+  };
+
+  Layout.prototype.schema_change = function() {
+    this.log.info('****************refreshing schema');
+    return mediator.models.user.fetch();
   };
 
   Layout.prototype.tell_user = function(information) {

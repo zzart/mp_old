@@ -28,6 +28,7 @@ module.exports = class ClientListView extends View
     action: (event) =>
         #get all selected offers
         selected = $('#client-table>tbody input:checked ')
+        self = @
         clean_after_action = (selected) =>
             #Once action is done clear the selection
             $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh")
@@ -43,9 +44,11 @@ module.exports = class ClientListView extends View
                     for i in selected
                         model = mediator.collections.clients.get($(i).attr('id'))
                         model.destroy
+                            wait: true # we would like confirmation from server before removing it from the collection
                             success: (event) =>
                                 Chaplin.EventBroker.publishEvent('log:info', "klient usunięty id#{model.get('id')}")
                                 mediator.collections.clients.remove(model)
+                                self.render()
                                 Chaplin.EventBroker.publishEvent 'tell_user', 'Klient został usunięty'
                             error:(model, response, options) =>
                                 if response.responseJSON?

@@ -15,6 +15,7 @@ module.exports = class Layout extends Chaplin.Layout
             #@subscribeEvent('index:render', @jqm_init)
             #@subscribeEvent('login:render', @jqm_init)
             #@subscribeEvent('addofferview:render', @jqm_refersh)
+            @subscribeEvent('schema_change', @schema_change)
             @subscribeEvent('jqm_refersh:render', @jqm_refersh)
             @subscribeEvent('loading_start', @jqm_loading_start)
             @subscribeEvent('loading_stop', @jqm_loading_stop)
@@ -31,6 +32,11 @@ module.exports = class Layout extends Chaplin.Layout
         $.mobile.loading('show')
     jqm_loading_stop: =>
         $.mobile.loading('hide')
+
+    schema_change: =>
+        #when certain models are added/updated/removed we need to refresh schema
+        @log.info('****************refreshing schema')
+        mediator.models.user.fetch()
 
     tell_user: (information) =>
         $('#info').text(information)

@@ -41,8 +41,6 @@ module.exports = class ClientAddView extends View
                     if mediator.collections.branches?
                         # add it to collection so we don't need to use server ...
                         mediator.collections.branches.add(@model)
-                        # we need to fetch new schema for user forms ...
-                        mediator.models.user.fetch()
                     @publishEvent 'tell_user', 'Oddział dodany'
                     Chaplin.helpers.redirectTo {url: '/oddzialy'}
                 error:(model, response, options) =>

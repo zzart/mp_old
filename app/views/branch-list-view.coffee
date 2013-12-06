@@ -19,6 +19,7 @@ module.exports = class BranchListView extends View
         @delegate 'change', '#select-action', @action
         @delegate 'change', '#all', @select_all
         @delegate 'click',  '#refresh', @refresh_branches
+        window.collection = @collection
 
     select_all: =>
         selected = $('#client-table>thead input:checkbox ').prop('checked')
@@ -27,12 +28,12 @@ module.exports = class BranchListView extends View
     action: (event) =>
         #get all selected offers
         selected = $('#client-table>tbody input:checked ')
+        self = @
         clean_after_action = (selected) =>
             #Once action is done clear the selection
             $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh")
             $("#select-action :selected").removeAttr('selected')
             selected = null
-            @render()
             return
         @publishEvent('log:info', "performing action #{event.target.value} for offers #{selected}")
         if selected.length > 0
@@ -43,9 +44,11 @@ module.exports = class BranchListView extends View
                         model = mediator.collections.branches.get($(i).attr('id'))
                         # TODO: przepisać oferty tego brancha do innego ?
                         model.destroy
+                            wait: true # we would like confirmation from server before removing it from the collection
                             success: (event) =>
                                 Chaplin.EventBroker.publishEvent('log:info', "Oddzial usunięty id#{model.get('id')}")
                                 mediator.collections.branches.remove(model)
+                                self.render()
                                 Chaplin.EventBroker.publishEvent 'tell_user', 'Oddział został usunięty'
                             error:(model, response, options) =>
                                 if response.responseJSON?
