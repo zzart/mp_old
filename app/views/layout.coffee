@@ -40,11 +40,11 @@ module.exports = class Layout extends Chaplin.Layout
         , 100)
         setTimeout(->
             $("#info").popup("close")
-        , 3000)
+        , 4000)
 
     server_error: =>
         @log.debug('server error')
-        $('#info').text('Ups, brak kontaktu z serwerem...')
+        $('#info').text('Upss, brak kontaktu z serwerem...')
         #set display popup with delay
         setTimeout(->
             $('#info').popup('open',{ positionTo: "#info-btn", transition:"fade" })

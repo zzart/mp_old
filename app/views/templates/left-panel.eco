@@ -5,7 +5,7 @@
 						<li data-icon="home" > <a href="/" >Początek</a> </li>
                         <li data-role='list-divider' > </li>
                     </ul>
-    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">
                     <h4>Przeglądaj oferty</h4>
                     <ul data-role="listview" >
                         <li><a href="/oferty/robocze" >Robocze<span class='ui-li-count'>34</span></a> </li>
@@ -26,7 +26,7 @@
                     </ul>
                 </div>
 
-                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">
                     <h4>Dodaj ofertę</h4>
                     <ul data-role="listview">
                         <li><a href="dodaj_oferte?sch=1"    >Mieszkania Wynajem</a></li>
@@ -44,31 +44,31 @@
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
-    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">
                     <h3>Etykiety</h3>
                     <ul data-role="listview" >
-                        <li data-icon="tag"><a href="" >Oferty robocze</a></li>
+                        <li><a href="" >Oferty robocze</a></li>
                     </ul>
                 </div>
 
-    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">
                     <h3>Ustawienia</h3>
                     <ul data-role="listview" >
-                        <li data-icon="plus"><a href="" >Dodaj Etykietę</a></li>
-                        <li data-icon="alert"><a href="" >Zmień Hasło</a></li>
-                        <li data-icon="user"><a href="" >Dane Profilu</a></li>
-                        <li data-icon="star"><a id='bon-config-link' href="" >Dane Biura Nieruchomości</a></li>
-                        <li data-icon="star"><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>
-                        <li data-icon="star"><a href="/oddzialy" >Oddziały</a></li>
-                        <li data-icon="heart"><a href="" >Logo</a></li>
-                        <li data-icon="camera"><a href="" >Watermark</a></li>
-                        <li data-icon="back"><a href="" >Importy</a></li>
-                        <li data-icon="forward"><a href="" >Eksporty</a></li>
+                        <li ><a href="" >Dodaj Etykietę</a></li>
+                        <li ><a href="" >Zmień Hasło</a></li>
+                        <li ><a href="" >Dane Profilu</a></li>
+                        <li ><a id='bon-config-link' href="" >Dane Biura Nieruchomości</a></li>
+                        <li ><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>
+                        <li ><a href="/oddzialy" >Oddziały</a></li>
+                        <li ><a href="" >Logo</a></li>
+                        <li ><a href="" >Watermark</a></li>
+                        <li ><a href="" >Importy</a></li>
+                        <li ><a href="" >Eksporty</a></li>
                         <li><a href="" >Portale zewnętrzne</a></li>
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
-    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">
                     <h3>Wyszukiwania</h3>
                     <ul data-role="listview">
                         <li><a href="" >Wyszukiwanie Zaawansowane</a></li>
@@ -80,16 +80,16 @@
                     </ul>
                 </div>
 
-    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">
                     <h3>Kontrahenci</h3>
                     <ul data-role="listview" >
-                        <li data-icon="edit"><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>
-                        <li data-icon="phone"><a href="/klienci" >Moi</a></li>
-                        <li data-icon="lock"><a href="/klienci/wspolni" >Wspólni</a></li>
+                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>
+                        <li ><a href="/klienci" >Moi</a></li>
+                        <li ><a href="/klienci/wspolni" >Wspólni</a></li>
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
-    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">
                     <h3>Narzędzia</h3>
                     <ul data-role="listview" >
                         <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>

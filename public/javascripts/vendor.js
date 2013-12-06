@@ -23521,7 +23521,7 @@ Form.editors.DateTime = Form.editors.Base.extend({
 
   Form.Field.template = _.template('\
         <div class="ui-field-contain" data-mini="true" data-editor >\
-      <label for="<%= editorId %>"><%= title %><% if (help) { %> <a href="#" class="ui-btn ui-icon-info ui-btn-icon-notext ui-corner-all"><%= help %></a> <% } %>\
+      <label for="<%= editorId %>"><%= title %><% if (help) { %> <a class="form-help ui-btn ui-icon-info ui-btn-icon-notext ui-corner-all"><%= help %></a> <% } %>\
       <br />\
         <span class="help-block" data-error></span>\
       </label>\

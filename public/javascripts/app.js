@@ -1301,6 +1301,8 @@ module.exports = BonEditView = (function(_super) {
 
     this.save_form = __bind(this.save_form, this);
 
+    this.form_help = __bind(this.form_help, this);
+
     this.initialize = __bind(this.initialize, this);
     return BonEditView.__super__.constructor.apply(this, arguments);
   }
@@ -1325,6 +1327,7 @@ module.exports = BonEditView = (function(_super) {
     this.template_form = template;
     this.delegate('click', 'a#bon-edit-delete', this.delete_bon);
     this.delegate('click', 'a#bon-edit-update', this.save_form);
+    this.delegate('click', 'a.form-help', this.form_help);
     this.form = new Backbone.Form({
       model: this.model,
       template: this.template_form,
@@ -1333,6 +1336,10 @@ module.exports = BonEditView = (function(_super) {
       }
     });
     return this.form.render();
+  };
+
+  BonEditView.prototype.form_help = function(event) {
+    return this.publishEvent('tell_user', event.target.text);
   };
 
   BonEditView.prototype.save_form = function() {
@@ -1423,6 +1430,8 @@ module.exports = ClientAddView = (function(_super) {
 
     this.save_form = __bind(this.save_form, this);
 
+    this.form_help = __bind(this.form_help, this);
+
     this.initialize = __bind(this.initialize, this);
     return ClientAddView.__super__.constructor.apply(this, arguments);
   }
@@ -1446,6 +1455,7 @@ module.exports = ClientAddView = (function(_super) {
     this.template_form = template;
     this.delegate('click', 'a#branch-add-refresh', this.refresh_form);
     this.delegate('click', 'a#branch-add-save', this.save_form);
+    this.delegate('click', 'a.form-help', this.form_help);
     this.form = new Backbone.Form({
       model: this.model,
       template: this.template_form,
@@ -1456,6 +1466,10 @@ module.exports = ClientAddView = (function(_super) {
       }
     });
     return this.form.render();
+  };
+
+  ClientAddView.prototype.form_help = function(event) {
+    return this.publishEvent('tell_user', event.target.text);
   };
 
   ClientAddView.prototype.save_form = function() {
@@ -1533,6 +1547,8 @@ module.exports = BranchEditView = (function(_super) {
 
     this.save_form = __bind(this.save_form, this);
 
+    this.form_help = __bind(this.form_help, this);
+
     this.initialize = __bind(this.initialize, this);
     return BranchEditView.__super__.constructor.apply(this, arguments);
   }
@@ -1558,6 +1574,7 @@ module.exports = BranchEditView = (function(_super) {
     this.template_form = template;
     this.delegate('click', 'a#branch-edit-delete', this["delete"]);
     this.delegate('click', 'a#branch-edit-update', this.save_form);
+    this.delegate('click', 'a.form-help', this.form_help);
     this.form = new Backbone.Form({
       model: this.model,
       template: this.template_form,
@@ -1568,6 +1585,10 @@ module.exports = BranchEditView = (function(_super) {
       }
     });
     return this.form.render();
+  };
+
+  BranchEditView.prototype.form_help = function(event) {
+    return this.publishEvent('tell_user', event.target.text);
   };
 
   BranchEditView.prototype.save_form = function() {
@@ -1822,6 +1843,8 @@ module.exports = ClientAddView = (function(_super) {
 
     this.save_form = __bind(this.save_form, this);
 
+    this.form_help = __bind(this.form_help, this);
+
     this.initialize = __bind(this.initialize, this);
     return ClientAddView.__super__.constructor.apply(this, arguments);
   }
@@ -1845,6 +1868,7 @@ module.exports = ClientAddView = (function(_super) {
     this.template_form = template;
     this.delegate('click', 'a#client-add-refresh', this.refresh_form);
     this.delegate('click', 'a#client-add-save', this.save_form);
+    this.delegate('click', 'a.form-help', this.form_help);
     this.form = new Backbone.Form({
       model: this.model,
       template: this.template_form,
@@ -1855,6 +1879,10 @@ module.exports = ClientAddView = (function(_super) {
       }
     });
     return this.form.render();
+  };
+
+  ClientAddView.prototype.form_help = function(event) {
+    return this.publishEvent('tell_user', event.target.text);
   };
 
   ClientAddView.prototype.save_form = function() {
@@ -1934,6 +1962,8 @@ module.exports = ClientEditView = (function(_super) {
 
     this.save_form = __bind(this.save_form, this);
 
+    this.form_help = __bind(this.form_help, this);
+
     this.initialize = __bind(this.initialize, this);
     return ClientEditView.__super__.constructor.apply(this, arguments);
   }
@@ -1959,6 +1989,7 @@ module.exports = ClientEditView = (function(_super) {
     this.template_form = template;
     this.delegate('click', 'a#client-edit-delete', this.delete_client);
     this.delegate('click', 'a#client-edit-update', this.save_form);
+    this.delegate('click', 'a.form-help', this.form_help);
     this.form = new Backbone.Form({
       model: this.model,
       template: this.template_form,
@@ -1969,6 +2000,10 @@ module.exports = ClientEditView = (function(_super) {
       }
     });
     return this.form.render();
+  };
+
+  ClientEditView.prototype.form_help = function(event) {
+    return this.publishEvent('tell_user', event.target.text);
   };
 
   ClientEditView.prototype.save_form = function() {
@@ -2514,12 +2549,12 @@ module.exports = Layout = (function(_super) {
     }, 100);
     return setTimeout(function() {
       return $("#info").popup("close");
-    }, 3000);
+    }, 4000);
   };
 
   Layout.prototype.server_error = function() {
     this.log.debug('server error');
-    $('#info').text('Ups, brak kontaktu z serwerem...');
+    $('#info').text('Upss, brak kontaktu z serwerem...');
     setTimeout(function() {
       return $('#info').popup('open', {
         positionTo: "#info-btn",
@@ -2596,14 +2631,21 @@ module.exports = LeftPanelView = (function(_super) {
 
   function LeftPanelView() {
     this.attach = __bind(this.attach, this);
+
+    this.panel_close = __bind(this.panel_close, this);
+
+    this.panel_beforeclose = __bind(this.panel_beforeclose, this);
+
+    this.panel_open = __bind(this.panel_open, this);
+
+    this.panel_beforeopen = __bind(this.panel_beforeopen, this);
     return LeftPanelView.__super__.constructor.apply(this, arguments);
   }
 
   LeftPanelView.prototype.attributes = {
     'data-role': 'panel',
     'data-position': 'left',
-    'data-display': 'push',
-    'data-theme': 'a'
+    'data-theme': 'b'
   };
 
   LeftPanelView.prototype.id = 'left-panel';
@@ -2613,6 +2655,37 @@ module.exports = LeftPanelView = (function(_super) {
   LeftPanelView.prototype.container = 'body';
 
   LeftPanelView.prototype.template = template;
+
+  LeftPanelView.prototype.initialize = function() {
+    this.delegate('panelbeforeopen', this.panel_beforeopen);
+    this.delegate('panelbeforeclose', this.panel_beforeclose);
+    this.delegate('panelopen', this.panel_open);
+    return this.delegate('panelclose', this.panel_close);
+  };
+
+  LeftPanelView.prototype.panel_beforeopen = function() {
+    this.publishEvent('log:info', 'before panel open');
+    $("#header").unwrap();
+    $("#content").unwrap();
+    return $("#footer").unwrap();
+  };
+
+  LeftPanelView.prototype.panel_open = function() {
+    this.publishEvent('log:info', 'panel open');
+    $("#header").wrap("<div id='header-region'></div>");
+    $("#content").wrap("<div id='content-region'></div>");
+    $("#footer").wrap("<div id='footer-region'></div>");
+    return this.publishEvent('jqm_refresh:render');
+  };
+
+  LeftPanelView.prototype.panel_beforeclose = function() {
+    return this.publishEvent('log:info', 'panel before close');
+  };
+
+  LeftPanelView.prototype.panel_close = function() {
+    this.publishEvent('log:info', 'panel close');
+    return this.publishEvent('jqm_refresh:render');
+  };
 
   LeftPanelView.prototype.attach = function() {
     LeftPanelView.__super__.attach.apply(this, arguments);
@@ -3060,7 +3133,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('        <!-- this is REGIONS ONLY -->\n        <div id=\'header-region\'>\n        </div><!-- header -->\n\n        <div id=\'content-region\'>\n        </div><!-- content -->\n\n        <div id=\'footer-region\'>\n        </div><!-- footer -->\n\n\n        <div id="info-region">\n        </div><!-- info-region -->\n        <div id="login-region">\n        </div><!-- info-region -->\n\n        <div id="confirm-region">\n        </div><!-- info-region -->\n\n');
+      __out.push('        <!-- this is REGIONS ONLY -->\n        <div id=\'header-region\' >\n        </div><!-- header -->\n\n        <div id=\'content-region\'>\n        </div><!-- content -->\n\n        <div id=\'footer-region\' >\n        </div><!-- footer -->\n\n\n        <div id="info-region">\n        </div><!-- info-region -->\n        <div id="login-region">\n        </div><!-- info-region -->\n\n        <div id="confirm-region">\n        </div><!-- info-region -->\n\n');
     
     }).call(this);
     
@@ -3784,7 +3857,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty/robocze" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/archiwalne" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>\n                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="dodaj_oferte?sch=1"    >Mieszkania Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=2"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=3"    >Domy Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=4"    >Domy Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=5"    >Grunty Dzierżawa</a></li>\n                        <li><a href="dodaj_oferte?sch=6"    >Grunty Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=7"    >Lokale Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=8"    >Lokale Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=9"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=10"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=11"   >Obiekty Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=12"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li data-icon="tag"><a href="" >Oferty robocze</a></li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li data-icon="plus"><a href="" >Dodaj Etykietę</a></li>\n                        <li data-icon="alert"><a href="" >Zmień Hasło</a></li>\n                        <li data-icon="user"><a href="" >Dane Profilu</a></li>\n                        <li data-icon="star"><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li data-icon="star"><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>\n                        <li data-icon="star"><a href="/oddzialy" >Oddziały</a></li>\n                        <li data-icon="heart"><a href="" >Logo</a></li>\n                        <li data-icon="camera"><a href="" >Watermark</a></li>\n                        <li data-icon="back"><a href="" >Importy</a></li>\n                        <li data-icon="forward"><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li data-icon="edit"><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li data-icon="phone"><a href="/klienci" >Moi</a></li>\n                        <li data-icon="lock"><a href="/klienci/wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="arrow-r" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        <li><a href="/kw" >Księgi wieczyste</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
+      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty/robocze" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/archiwalne" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>\n                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="dodaj_oferte?sch=1"    >Mieszkania Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=2"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=3"    >Domy Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=4"    >Domy Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=5"    >Grunty Dzierżawa</a></li>\n                        <li><a href="dodaj_oferte?sch=6"    >Grunty Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=7"    >Lokale Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=8"    >Lokale Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=9"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=10"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=11"   >Obiekty Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=12"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li><a href="" >Oferty robocze</a></li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li ><a href="" >Zmień Hasło</a></li>\n                        <li ><a href="" >Dane Profilu</a></li>\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="" >Logo</a></li>\n                        <li ><a href="" >Watermark</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci/wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        <li><a href="/kw" >Księgi wieczyste</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
     
     }).call(this);
     

@@ -16,6 +16,7 @@ module.exports = class ClientAddView extends View
         # events
         @delegate 'click', 'a#client-add-refresh', @refresh_form
         @delegate 'click', 'a#client-add-save', @save_form
+        @delegate 'click', 'a.form-help', @form_help
 
         @form = new Backbone.Form {
             model: @model
@@ -27,6 +28,9 @@ module.exports = class ClientAddView extends View
             }
         }
         @form.render()
+
+    form_help:(event) =>
+        @publishEvent 'tell_user' , event.target.text
 
     save_form: =>
         @publishEvent('log:info','commmit form')

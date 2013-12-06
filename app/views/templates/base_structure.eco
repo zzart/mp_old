@@ -1,11 +1,11 @@
         <!-- this is REGIONS ONLY -->
-        <div id='header-region'>
+        <div id='header-region' >
         </div><!-- header -->
 
         <div id='content-region'>
         </div><!-- content -->
 
-        <div id='footer-region'>
+        <div id='footer-region' >
         </div><!-- footer -->
 
 
