@@ -1,0 +1,67 @@
+<div class="ui-grid-a">
+	<div class="ui-block-a">
+        <form>
+            <fieldset data-role="controlgroup" data-type="horizontal">
+                <button data-icon="refresh" data-iconpos="notext" id='refresh'>Odśwież</button>
+                <a href='/agenci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>
+
+                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
+                <select name="select-action" id="select-action">
+                    <option selected disabled>Akcja</option>
+                    <option value="usun">Usuń</option>
+                </select>
+                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+                <select name="select-filter" id="select-filter">
+                    <option selected disabled>Filtr</option>
+                    <option value="">Wszyscy</option>
+                    <option value="1">Pośrednik</option>
+                    <option value="2">Administrator nieruchomości</option>
+                    <option value="3">Menadzer</option>
+                </select>
+            </fieldset>
+        </form>
+    </div>
+
+	<div class="ui-block-b">
+         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />
+	</div>
+</div><!-- /grid-b -->
+
+<table data-role="table" id="agent-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
+data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">
+     <thead>
+       <tr>
+         <th width="2%"> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>
+         <th>ID</th>
+         <th>Oddział&nbsp;&nbsp;</th>
+         <th>Imię&nbsp;&nbsp;</th>
+         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>
+         <th data-priority="2">Login&nbsp;&nbsp;</th>
+         <th data-priority="2">Email&nbsp;&nbsp;</th>
+         <th data-priority="4">Telefon&nbsp;&nbsp;</th>
+         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>
+         <th data-priority="6">Admin&nbsp;&nbsp;</th>
+         <th data-priority="6">Typ&nbsp;&nbsp;</th>
+       </tr>
+     </thead>
+     <tbody>
+      <% for item in @agent : %>
+
+       <tr>
+         <td width="2%"> <label> <input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true"  type="checkbox"> </label> </td>
+         <td><%= item['id'] %></td>
+         <td><%= item['branch'] %></td>
+         <td><a href='/agenci/<%= item['id'] %>'><%= item['first_name'] %></a></td>
+         <td><a href='/agenci/<%= item['id'] %>'><%= item['surname'] %></a></td>
+         <td><%= item['username'] %></td>
+         <td><%= item['email'] %></td>
+         <td><%= item['phone'] %></td>
+         <td><%= item['is_active'] %></td>
+         <td><%= item['is_admin'] %></td>
+         <td><%= item['agent_type'] %></td>
+       </tr>
+      <% end %>
+     </tbody>
+   </table>
+
+

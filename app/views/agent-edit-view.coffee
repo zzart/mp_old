@@ -1,7 +1,7 @@
 View = require 'views/base/view'
-template = require 'views/templates/branch_form'
+template = require 'views/templates/agent_form'
 mediator = require 'mediator'
-module.exports = class ClientAddView extends View
+module.exports = class EditView extends View
     autoRender: true
     containerMethod: "html"
     attributes: { 'data-role':'content' }
@@ -11,19 +11,21 @@ module.exports = class ClientAddView extends View
         super
         # send url data from controler
         @params = options.params
-        @model = mediator.models.branch
+        @publishEvent('log:info', console.log(@params))
+        @model = mediator.collections.agents.get(@params.id)
+        @model.schema = mediator.models.user.get('schemas').agent
         @template_form = template
         # events
-        @delegate 'click', 'a#branch-add-refresh', @refresh_form
-        @delegate 'click', 'a#branch-add-save', @save_form
+        @delegate 'click', 'a#agent-edit-delete', @delete_agent
+        @delegate 'click', 'a#agent-edit-update', @save_form
         @delegate 'click', 'a.form-help', @form_help
 
         @form = new Backbone.Form {
             model: @model
             template: @template_form
             templateData:{
-                heading: 'Dodaj oddział'
-                mode: 'add'
+                heading: 'Edytuj agenta'
+                mode: 'edit'
                 is_admin: mediator.models.user.get('is_admin')
             }
         }
@@ -38,13 +40,8 @@ module.exports = class ClientAddView extends View
         if _.isUndefined(@form.commit({validate:true}))
             @model.save({},{
                 success:(event) =>
-                    if mediator.collections.branches?
-                        # add it to collection so we don't need to use server ...
-                        mediator.collections.branches.add(@model)
-                        # we need to fetch new schema for user forms ...
-                        mediator.models.user.fetch()
-                    @publishEvent 'tell_user', 'Oddział dodany'
-                    Chaplin.helpers.redirectTo {url: '/oddzialy'}
+                    @publishEvent 'tell_user', 'Agent zaktualizowany'
+                    Chaplin.helpers.redirectTo {url: '/agenci'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -54,8 +51,18 @@ module.exports = class ClientAddView extends View
         else
             @publishEvent 'tell_user', 'Błąd w formularzu!'
 
-    refresh_form: =>
-        render()
+    delete_agent: =>
+        # TODO: przepisać oferty , kontakty etc...
+        @model.destroy
+            success: (event) =>
+                mediator.collections.agents.remove(@model)
+                @publishEvent 'tell_user', 'Agent został usunięty'
+                Chaplin.helpers.redirectTo {url: '/agenci'}
+            error:(model, response, options) =>
+                if response.responseJSON?
+                    Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                else
+                    Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
     render: =>
         super
@@ -65,7 +72,7 @@ module.exports = class ClientAddView extends View
 
     attach: =>
         super
-        @publishEvent('log:info', 'view: clientadd afterRender()')
+        @publishEvent('log:info', 'view: agentadd afterRender()')
         @publishEvent 'jqm_refersh:render'
 
 
