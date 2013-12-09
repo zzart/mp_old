@@ -1,5 +1,6 @@
 View = require 'views/base/view'
-template = require 'views/templates/client_form'
+#NOTE: admini modyfikując rekord automatycznie zmieniają jego autora ! Pozwalamy więc tylko na kasowanie!
+template = require 'views/templates/client_public_form'
 mediator = require 'mediator'
 module.exports = class ClientEditView extends View
     autoRender: true
@@ -12,7 +13,7 @@ module.exports = class ClientEditView extends View
         # send url data from controler
         @params = options.params
         @publishEvent('log:info', console.log(@params))
-        @model = mediator.collections.clients.get(@params.id)
+        @model = mediator.collections.clients_public.get(@params.id)
         @model.schema = mediator.models.user.get('schemas').client
         @template_form = template
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
@@ -45,7 +46,7 @@ module.exports = class ClientEditView extends View
             @model.save({},{
                 success:(event) =>
                     @publishEvent 'tell_user', 'Klient zaktualizowany'
-                    Chaplin.helpers.redirectTo {url: '/klienci'}
+                    Chaplin.helpers.redirectTo {url: '/klienci-wspolni'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -58,9 +59,9 @@ module.exports = class ClientEditView extends View
     delete_client: =>
         @model.destroy
             success: (event) =>
-                mediator.collections.clients.remove(@model)
+                mediator.collections.clients_public.remove(@model)
                 @publishEvent 'tell_user', 'Klient został usunięty'
-                Chaplin.helpers.redirectTo {url: '/klienci'}
+                Chaplin.helpers.redirectTo {url: '/klienci-wspolni'}
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']

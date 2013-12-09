@@ -1,5 +1,5 @@
 View = require 'views/base/view'
-list_view = require 'views/templates/client_list_view'
+list_view = require 'views/templates/client_public_list_view'
 mediator = require 'mediator'
 
 module.exports = class ClientListView extends View
@@ -11,7 +11,7 @@ module.exports = class ClientListView extends View
     initialize: (options) ->
         super
         # send url data from controler
-        @collection = _.clone(mediator.collections.clients)
+        @collection = _.clone(mediator.collections.clients_public)
         @params = options.params
         @template = list_view
         @last_check_view = 'list_view'
@@ -69,9 +69,9 @@ module.exports = class ClientListView extends View
         console.log(mediator.collections.clients)
         @publishEvent('log:debug', event.target.value)
         if _.isEmpty(event.target.value)
-            @collection = _.clone(mediator.collections.clients)
+            @collection = _.clone(mediator.collections.clients_public)
         else
-            list_of_models = mediator.collections.clients.where({'client_type': parseInt(event.target.value)})
+            list_of_models = mediator.collections.clients_public.where({'client_type': parseInt(event.target.value)})
             @collection.reset(list_of_models)
         @render()
 
@@ -82,7 +82,7 @@ module.exports = class ClientListView extends View
         mediator.collections.clients.fetch
             success: =>
                 @publishEvent 'tell_user', 'Odświeżam listę kontaktów'
-                @collection = _.clone(mediator.collections.clients)
+                @collection = _.clone(mediator.collections.clients_public)
                 @render()
             error:(model, response, options) =>
                 if response.responseJSON?

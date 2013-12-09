@@ -53,8 +53,8 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
          <td> <label> <input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true"  type="checkbox"> </label> </td>
          <td><%= item['id'] %></td>
          <td><%= item['agent'] %></td>
-         <td><a href='/klienci/<%= item['id'] %>'><%= item['first_name'] %></a></td>
-         <td><a href='/klienci/<%= item['id'] %>'><%= item['surname'] %></a></td>
+         <td><a href='/klienci-wspolni/<%= item['id'] %>'><%= item['first_name'] %></a></td>
+         <td><a href='/klienci-wspolni/<%= item['id'] %>'><%= item['surname'] %></a></td>
          <td><%= item['email'] %></td>
          <td><%= item['phone'] %></td>
          <td><%= item['company_name'] %></td>

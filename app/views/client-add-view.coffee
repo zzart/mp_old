@@ -24,7 +24,6 @@ module.exports = class ClientAddView extends View
             templateData:{
                 heading: 'Dodaj kontrahenta'
                 mode: 'add'
-                is_admin: mediator.models.user.get('is_admin')
             }
         }
         @form.render()

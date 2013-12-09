@@ -17,6 +17,7 @@ module.exports = class LoginView extends View
     open_dialog: =>
         @publishEvent('log:info', 'opening login popup')
         $ ->
+            $('#page').enhanceWithin()
             $('#login').popup('open')
             $("input#user").focus()
 
@@ -54,9 +55,8 @@ module.exports = class LoginView extends View
                 @publishEvent('log:info', 'login FAILED')
 
     attach: =>
-        super
         @publishEvent('log:info', 'view: login afterRender()')
-        #@publishEvent 'login:render'
+        super
 
 
 

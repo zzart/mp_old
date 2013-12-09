@@ -58,8 +58,6 @@ module.exports = class AgentController extends Controller
             success: =>
                 @publishEvent('log:info', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
-                schema = mediator.models.user.get('schemas').agent
-                mediator.models.agent.schema = schema
                 @view = new EditView {params, region:'content'}
             error: =>
                 @publishEvent 'loading_stop'

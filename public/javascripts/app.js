@@ -133,8 +133,17 @@ module.exports = Application = (function(_super) {
     mediator.models = {};
     mediator.collections = {};
     mediator.schemas = {};
-    mediator.app = 'mp';
-    mediator.app_key = 'test1';
+    mediator.app_key = 'mp_haslo';
+    mediator.app = 'd54ee93e-60b4-11e3-b319-00241dd943c7';
+    mediator.can_edit = function(is_admin, author_id, user_id) {
+      if (is_admin) {
+        return true;
+      }
+      if (author_id === user_id) {
+        return true;
+      }
+      return false;
+    };
     return mediator.seal();
   };
 
@@ -304,11 +313,8 @@ module.exports = AgentController = (function(_super) {
         return _this.publishEvent('tell_user', 'Odświeżam formularz ...');
       },
       success: function() {
-        var schema;
         _this.publishEvent('log:info', "data with " + params + " fetched ok");
         _this.publishEvent('loading_stop');
-        schema = mediator.models.user.get('schemas').agent;
-        mediator.models.agent.schema = schema;
         return _this.view = new EditView({
           params: params,
           region: 'content'
@@ -622,7 +628,7 @@ module.exports = ClientListController = (function(_super) {
         data: params,
         beforeSend: function() {
           _this.publishEvent('loading_start');
-          return _this.publishEvent('tell_user', 'Ładuje listę klentów ...');
+          return _this.publishEvent('tell_user', 'Ładuje listę klientów ...');
         },
         success: function() {
           _this.publishEvent('log:info', "data with " + params + " fetched ok");
@@ -666,6 +672,73 @@ module.exports = ClientListController = (function(_super) {
   };
 
   return ClientListController;
+
+})(Controller);
+
+});
+
+;require.register("controllers/client-public-controller", function(exports, require, module) {
+var ClientEditView, ClientListView, ClientPublicController, Collection, Controller, Model, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Controller = require('controllers/auth-controller');
+
+ClientListView = require('views/client-public-list-view');
+
+Collection = require('models/client-public-collection');
+
+ClientEditView = require('views/client-public-edit-view');
+
+Model = require('models/client-model');
+
+mediator = require('mediator');
+
+module.exports = ClientPublicController = (function(_super) {
+
+  __extends(ClientPublicController, _super);
+
+  function ClientPublicController() {
+    return ClientPublicController.__super__.constructor.apply(this, arguments);
+  }
+
+  ClientPublicController.prototype.list = function(params, route, options) {
+    var _this = this;
+    mediator.collections.clients_public = new Collection;
+    return mediator.collections.clients_public.fetch({
+      beforeSend: function() {
+        _this.publishEvent('loading_start');
+        return _this.publishEvent('tell_user', 'Ładuje listę klientów ...');
+      },
+      success: function() {
+        _this.publishEvent('log:info', "data with " + params + " fetched ok");
+        _this.publishEvent('loading_stop');
+        return _this.view = new ClientListView({
+          params: params,
+          region: 'content'
+        });
+      },
+      error: function() {
+        _this.publishEvent('loading_stop');
+        return _this.publishEvent('server_error');
+      }
+    });
+  };
+
+  ClientPublicController.prototype.show = function(params, route, options) {
+    this.publishEvent('log:info', 'in client show controller');
+    if (!_.isObject(mediator.collections.clients_public.get(params.id))) {
+      this.redirectTo({
+        '/klienci-wspolni': '/klienci-wspolni'
+      });
+    }
+    return this.view = new ClientEditView({
+      params: params,
+      region: 'content'
+    });
+  };
+
+  return ClientPublicController;
 
 })(Controller);
 
@@ -1152,6 +1225,31 @@ module.exports = Client = (function(_super) {
 
 });
 
+;require.register("models/client-public-collection", function(exports, require, module) {
+var ClientList, Model,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Model = require('models/client-model');
+
+module.exports = ClientList = (function(_super) {
+
+  __extends(ClientList, _super);
+
+  function ClientList() {
+    return ClientList.__super__.constructor.apply(this, arguments);
+  }
+
+  ClientList.prototype.model = Model;
+
+  ClientList.prototype.url = 'http://localhost:8080/v1/klienci-wspolni';
+
+  return ClientList;
+
+})(Chaplin.Collection);
+
+});
+
 ;require.register("models/login-model", function(exports, require, module) {
 var Login,
   __hasProp = {}.hasOwnProperty,
@@ -1245,6 +1343,8 @@ module.exports = function(match) {
   match('klienci/dodaj', 'client#add');
   match('klienci', 'client#list');
   match('klienci/:id', 'client#show');
+  match('klienci-wspolni', 'client-public#list');
+  match('klienci-wspolni/:id', 'client-public#show');
   match('login', 'login#show');
   match('biura/:id', 'bon#show');
   match('oddzialy/dodaj', 'branch#add');
@@ -1548,6 +1648,185 @@ module.exports = EditView = (function(_super) {
   };
 
   return EditView;
+
+})(View);
+
+});
+
+;require.register("views/agent-list-view", function(exports, require, module) {
+var ListView, View, list_view, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+list_view = require('views/templates/agent_list_view');
+
+mediator = require('mediator');
+
+module.exports = ListView = (function(_super) {
+
+  __extends(ListView, _super);
+
+  function ListView() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.getTemplateData = __bind(this.getTemplateData, this);
+
+    this.refresh_offers = __bind(this.refresh_offers, this);
+
+    this.change_query = __bind(this.change_query, this);
+
+    this.action = __bind(this.action, this);
+
+    this.select_all = __bind(this.select_all, this);
+    return ListView.__super__.constructor.apply(this, arguments);
+  }
+
+  ListView.prototype.autoRender = true;
+
+  ListView.prototype.containerMethod = "html";
+
+  ListView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  ListView.prototype.id = 'content';
+
+  ListView.prototype.className = 'ui-content';
+
+  ListView.prototype.initialize = function(options) {
+    ListView.__super__.initialize.apply(this, arguments);
+    this.collection = _.clone(mediator.collections.agents);
+    this.params = options.params;
+    this.template = list_view;
+    this.delegate('change', '#select-action', this.action);
+    this.delegate('change', '#select-filter', this.change_query);
+    this.delegate('change', '#all', this.select_all);
+    return this.delegate('click', '#refresh', this.refresh_offers);
+  };
+
+  ListView.prototype.select_all = function() {
+    var selected;
+    selected = $('#agent-table>thead input:checkbox ').prop('checked');
+    return $('#agent-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
+  };
+
+  ListView.prototype.action = function(event) {
+    var clean_after_action, selected, self,
+      _this = this;
+    selected = $('#agent-table>tbody input:checked ');
+    self = this;
+    clean_after_action = function(selected) {
+      $('#agent-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
+      $("#select-action :selected").removeAttr('selected');
+      selected = null;
+      _this.render();
+    };
+    this.publishEvent('log:info', "performing action " + event.target.value + " for items " + selected);
+    if (selected.length > 0) {
+      if (event.target.value === 'usun') {
+        $("#confirm").popup('open');
+        return $("#confirmed").click(function() {
+          var i, model, _i, _len,
+            _this = this;
+          for (_i = 0, _len = selected.length; _i < _len; _i++) {
+            i = selected[_i];
+            model = mediator.collections.agents.get($(i).attr('id'));
+            model.destroy({
+              wait: true,
+              success: function(event) {
+                Chaplin.EventBroker.publishEvent('log:info', "Agent usunięty id" + (model.get('id')));
+                mediator.collections.agents.remove(model);
+                self.render();
+                return Chaplin.EventBroker.publishEvent('tell_user', 'Agent został usunięty');
+              },
+              error: function(model, response, options) {
+                if (response.responseJSON != null) {
+                  return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+                } else {
+                  return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+                }
+              }
+            });
+          }
+          $(this).off('click');
+          return clean_after_action(selected);
+        });
+      }
+    } else {
+      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
+      return clean_after_action(selected);
+    }
+  };
+
+  ListView.prototype.change_query = function(event) {
+    var list_of_models;
+    this.publishEvent('log:debug', event.target.value);
+    if (_.isEmpty(event.target.value)) {
+      this.collection = _.clone(mediator.collections.agents);
+    } else {
+      list_of_models = mediator.collections.agents.where({
+        'agent_type': parseInt(event.target.value)
+      });
+      this.collection.reset(list_of_models);
+    }
+    return this.render();
+  };
+
+  ListView.prototype.refresh_offers = function(event) {
+    var _this = this;
+    event.preventDefault();
+    this.publishEvent('log:debug', 'refresh');
+    return mediator.collections.agents.fetch({
+      success: function() {
+        _this.publishEvent('tell_user', 'Odświeżam listę agentów');
+        _this.collection = _.clone(mediator.collections.agents);
+        return _this.render();
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  ListView.prototype.getTemplateData = function() {
+    return {
+      agent: this.collection.toJSON()
+    };
+  };
+
+  ListView.prototype.render = function() {
+    return ListView.__super__.render.apply(this, arguments);
+  };
+
+  ListView.prototype.attach = function() {
+    ListView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'view: offerlist afterRender()');
+    if (this.collection.length > 1) {
+      $("#agent-table").tablesorter({
+        sortList: [[4, 0]],
+        headers: {
+          0: {
+            'sorter': false
+          },
+          1: {
+            'sorter': false
+          }
+        }
+      });
+    }
+    return this.publishEvent('jqm_refersh:render');
+  };
+
+  return ListView;
 
 })(View);
 
@@ -2086,6 +2365,170 @@ module.exports = BranchEditView = (function(_super) {
 
 });
 
+;require.register("views/branch-list-view", function(exports, require, module) {
+var BranchListView, View, list_view, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+list_view = require('views/templates/branch_list_view');
+
+mediator = require('mediator');
+
+module.exports = BranchListView = (function(_super) {
+
+  __extends(BranchListView, _super);
+
+  function BranchListView() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.getTemplateData = __bind(this.getTemplateData, this);
+
+    this.refresh_branches = __bind(this.refresh_branches, this);
+
+    this.action = __bind(this.action, this);
+
+    this.select_all = __bind(this.select_all, this);
+    return BranchListView.__super__.constructor.apply(this, arguments);
+  }
+
+  BranchListView.prototype.autoRender = true;
+
+  BranchListView.prototype.containerMethod = "html";
+
+  BranchListView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  BranchListView.prototype.id = 'content';
+
+  BranchListView.prototype.className = 'ui-content';
+
+  BranchListView.prototype.initialize = function(options) {
+    BranchListView.__super__.initialize.apply(this, arguments);
+    this.collection = _.clone(mediator.collections.branches);
+    this.params = options.params;
+    this.template = list_view;
+    this.last_check_view = 'list_view';
+    this.last_check_query = 'user';
+    this.delegate('change', '#select-action', this.action);
+    this.delegate('change', '#all', this.select_all);
+    this.delegate('click', '#refresh', this.refresh_branches);
+    return window.collection = this.collection;
+  };
+
+  BranchListView.prototype.select_all = function() {
+    var selected;
+    selected = $('#client-table>thead input:checkbox ').prop('checked');
+    return $('#client-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
+  };
+
+  BranchListView.prototype.action = function(event) {
+    var clean_after_action, selected, self,
+      _this = this;
+    selected = $('#client-table>tbody input:checked ');
+    self = this;
+    clean_after_action = function(selected) {
+      $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
+      $("#select-action :selected").removeAttr('selected');
+      selected = null;
+    };
+    this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + selected);
+    if (selected.length > 0) {
+      if (event.target.value === 'usun') {
+        $("#confirm").popup('open');
+        return $("#confirmed").click(function() {
+          var i, model, _i, _len,
+            _this = this;
+          for (_i = 0, _len = selected.length; _i < _len; _i++) {
+            i = selected[_i];
+            model = mediator.collections.branches.get($(i).attr('id'));
+            model.destroy({
+              wait: true,
+              success: function(event) {
+                Chaplin.EventBroker.publishEvent('log:info', "Oddzial usunięty id" + (model.get('id')));
+                mediator.collections.branches.remove(model);
+                self.render();
+                return Chaplin.EventBroker.publishEvent('tell_user', 'Oddział został usunięty');
+              },
+              error: function(model, response, options) {
+                if (response.responseJSON != null) {
+                  return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+                } else {
+                  return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+                }
+              }
+            });
+          }
+          $(this).off('click');
+          return clean_after_action(selected);
+        });
+      }
+    } else {
+      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
+      return clean_after_action(selected);
+    }
+  };
+
+  BranchListView.prototype.refresh_branches = function(event) {
+    var _this = this;
+    event.preventDefault();
+    this.publishEvent('log:debug', 'refresh');
+    return mediator.collections.branches.fetch({
+      success: function() {
+        _this.publishEvent('tell_user', 'Odświeżam listę oddziałów');
+        _this.collection = _.clone(mediator.collections.branches);
+        return _this.render();
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  BranchListView.prototype.getTemplateData = function() {
+    return {
+      collection: this.collection.toJSON()
+    };
+  };
+
+  BranchListView.prototype.render = function() {
+    return BranchListView.__super__.render.apply(this, arguments);
+  };
+
+  BranchListView.prototype.attach = function() {
+    BranchListView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'view: offerlist afterRender()');
+    if (this.collection.length > 1) {
+      $("#client-table").tablesorter({
+        sortList: [[4, 0]],
+        headers: {
+          0: {
+            'sorter': false
+          },
+          1: {
+            'sorter': false
+          }
+        }
+      });
+    }
+    return this.publishEvent('jqm_refersh:render');
+  };
+
+  return BranchListView;
+
+})(View);
+
+});
+
 ;require.register("views/client-add-view", function(exports, require, module) {
 var ClientAddView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -2142,8 +2585,7 @@ module.exports = ClientAddView = (function(_super) {
       template: this.template_form,
       templateData: {
         heading: 'Dodaj kontrahenta',
-        mode: 'add',
-        is_admin: mediator.models.user.get('is_admin')
+        mode: 'add'
       }
     });
     return this.form.render();
@@ -2255,6 +2697,7 @@ module.exports = ClientEditView = (function(_super) {
     this.model = mediator.collections.clients.get(this.params.id);
     this.model.schema = mediator.models.user.get('schemas').client;
     this.template_form = template;
+    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
     this.delegate('click', 'a#client-edit-delete', this.delete_client);
     this.delegate('click', 'a#client-edit-update', this.save_form);
     this.delegate('click', 'a.form-help', this.form_help);
@@ -2264,7 +2707,8 @@ module.exports = ClientEditView = (function(_super) {
       templateData: {
         heading: 'Edytuj kontrahenta',
         mode: 'edit',
-        is_admin: mediator.models.user.get('is_admin')
+        can_edit: false,
+        can_edit: this.can_edit
       }
     });
     return this.form.render();
@@ -2322,16 +2766,15 @@ module.exports = ClientEditView = (function(_super) {
 
   ClientEditView.prototype.render = function() {
     ClientEditView.__super__.render.apply(this, arguments);
-    this.publishEvent('log:info', '5');
-    this.$el.append(this.form.el);
-    return this.publishEvent('log:info', '22');
+    this.publishEvent('log:info', 'view: clientedit render()');
+    return this.$el.append(this.form.el);
   };
 
   ClientEditView.prototype.attach = function() {
     ClientEditView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', '6');
-    this.publishEvent('log:info', 'view: clientadd afterRender()');
-    return this.publishEvent('jqm_refersh:render');
+    this.publishEvent('log:info', 'view: clientedit afterRender()');
+    this.publishEvent('jqm_refersh:render');
+    return this.publishEvent('disable_form', this.can_edit);
   };
 
   return ClientEditView;
@@ -2454,6 +2897,7 @@ module.exports = ClientListView = (function(_super) {
 
   ClientListView.prototype.change_query = function(event) {
     var list_of_models;
+    console.log(mediator.collections.clients);
     this.publishEvent('log:debug', event.target.value);
     if (_.isEmpty(event.target.value)) {
       this.collection = _.clone(mediator.collections.clients);
@@ -2474,6 +2918,188 @@ module.exports = ClientListView = (function(_super) {
       success: function() {
         _this.publishEvent('tell_user', 'Odświeżam listę kontaktów');
         _this.collection = _.clone(mediator.collections.clients);
+        return _this.render();
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  ClientListView.prototype.getTemplateData = function() {
+    return {
+      client: this.collection.toJSON()
+    };
+  };
+
+  ClientListView.prototype.render = function() {
+    return ClientListView.__super__.render.apply(this, arguments);
+  };
+
+  ClientListView.prototype.attach = function() {
+    ClientListView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'view: offerlist afterRender()');
+    if (this.collection.length > 1) {
+      $("#client-table").tablesorter({
+        sortList: [[4, 0]],
+        headers: {
+          0: {
+            'sorter': false
+          },
+          1: {
+            'sorter': false
+          }
+        }
+      });
+    }
+    return this.publishEvent('jqm_refersh:render');
+  };
+
+  return ClientListView;
+
+})(View);
+
+});
+
+;require.register("views/client-public-list-view", function(exports, require, module) {
+var ClientListView, View, list_view, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+list_view = require('views/templates/client_public_list_view');
+
+mediator = require('mediator');
+
+module.exports = ClientListView = (function(_super) {
+
+  __extends(ClientListView, _super);
+
+  function ClientListView() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.getTemplateData = __bind(this.getTemplateData, this);
+
+    this.refresh_offers = __bind(this.refresh_offers, this);
+
+    this.change_query = __bind(this.change_query, this);
+
+    this.action = __bind(this.action, this);
+
+    this.select_all = __bind(this.select_all, this);
+    return ClientListView.__super__.constructor.apply(this, arguments);
+  }
+
+  ClientListView.prototype.autoRender = true;
+
+  ClientListView.prototype.containerMethod = "html";
+
+  ClientListView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  ClientListView.prototype.id = 'content';
+
+  ClientListView.prototype.className = 'ui-content';
+
+  ClientListView.prototype.initialize = function(options) {
+    ClientListView.__super__.initialize.apply(this, arguments);
+    this.collection = _.clone(mediator.collections.clients_public);
+    this.params = options.params;
+    this.template = list_view;
+    this.last_check_view = 'list_view';
+    this.last_check_query = 'user';
+    this.delegate('change', '#select-action', this.action);
+    this.delegate('change', '#select-filter', this.change_query);
+    this.delegate('change', '#all', this.select_all);
+    return this.delegate('click', '#refresh', this.refresh_offers);
+  };
+
+  ClientListView.prototype.select_all = function() {
+    var selected;
+    selected = $('#client-table>thead input:checkbox ').prop('checked');
+    return $('#client-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
+  };
+
+  ClientListView.prototype.action = function(event) {
+    var clean_after_action, selected, self,
+      _this = this;
+    selected = $('#client-table>tbody input:checked ');
+    self = this;
+    clean_after_action = function(selected) {
+      $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
+      $("#select-action :selected").removeAttr('selected');
+      selected = null;
+      _this.render();
+    };
+    this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + selected);
+    if (selected.length > 0) {
+      if (event.target.value === 'usun') {
+        $("#confirm").popup('open');
+        return $("#confirmed").click(function() {
+          var i, model, _i, _len,
+            _this = this;
+          for (_i = 0, _len = selected.length; _i < _len; _i++) {
+            i = selected[_i];
+            model = mediator.collections.clients.get($(i).attr('id'));
+            model.destroy({
+              wait: true,
+              success: function(event) {
+                Chaplin.EventBroker.publishEvent('log:info', "klient usunięty id" + (model.get('id')));
+                mediator.collections.clients.remove(model);
+                self.render();
+                return Chaplin.EventBroker.publishEvent('tell_user', 'Klient został usunięty');
+              },
+              error: function(model, response, options) {
+                if (response.responseJSON != null) {
+                  return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+                } else {
+                  return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+                }
+              }
+            });
+          }
+          $(this).off('click');
+          return clean_after_action(selected);
+        });
+      }
+    } else {
+      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
+      return clean_after_action(selected);
+    }
+  };
+
+  ClientListView.prototype.change_query = function(event) {
+    var list_of_models;
+    console.log(mediator.collections.clients);
+    this.publishEvent('log:debug', event.target.value);
+    if (_.isEmpty(event.target.value)) {
+      this.collection = _.clone(mediator.collections.clients_public);
+    } else {
+      list_of_models = mediator.collections.clients_public.where({
+        'client_type': parseInt(event.target.value)
+      });
+      this.collection.reset(list_of_models);
+    }
+    return this.render();
+  };
+
+  ClientListView.prototype.refresh_offers = function(event) {
+    var _this = this;
+    event.preventDefault();
+    this.publishEvent('log:debug', 'refresh');
+    return mediator.collections.clients.fetch({
+      success: function() {
+        _this.publishEvent('tell_user', 'Odświeżam listę kontaktów');
+        _this.collection = _.clone(mediator.collections.clients_public);
         return _this.render();
       },
       error: function(model, response, options) {
@@ -2605,7 +3231,7 @@ module.exports = FooterView = (function(_super) {
 });
 
 ;require.register("views/header-view", function(exports, require, module) {
-var HeaderView, View, template,
+var HeaderView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2613,6 +3239,8 @@ var HeaderView, View, template,
 template = require('views/templates/header_base');
 
 View = require('views/base/view');
+
+mediator = require('mediator');
 
 module.exports = HeaderView = (function(_super) {
 
@@ -2631,6 +3259,19 @@ module.exports = HeaderView = (function(_super) {
 
   HeaderView.prototype.attributes = {
     'data-role': 'header'
+  };
+
+  HeaderView.prototype.initialize = function() {
+    return this.delegate('click', '#first-name-placeholder', this.login_screen);
+  };
+
+  HeaderView.prototype.login_screen = function() {
+    mediator.user = {};
+    mediator.controllers = {};
+    mediator.models = {};
+    return Chaplin.helpers.redirectTo({
+      url: '/login'
+    });
   };
 
   HeaderView.prototype.attach = function() {
@@ -2757,6 +3398,8 @@ module.exports = Layout = (function(_super) {
   function Layout() {
     this.jqm_recreate = __bind(this.jqm_recreate, this);
 
+    this.jqm_page_refersh = __bind(this.jqm_page_refersh, this);
+
     this.jqm_refersh = __bind(this.jqm_refersh, this);
 
     this.jqm_leftpanel = __bind(this.jqm_leftpanel, this);
@@ -2770,6 +3413,8 @@ module.exports = Layout = (function(_super) {
     this.log_info = __bind(this.log_info, this);
 
     this.log_debug = __bind(this.log_debug, this);
+
+    this.disable_form = __bind(this.disable_form, this);
 
     this.server_error = __bind(this.server_error, this);
 
@@ -2794,8 +3439,10 @@ module.exports = Layout = (function(_super) {
       this.subscribeEvent('leftpanel:render', this.jqm_leftpanel);
       this.subscribeEvent('schema_change', this.schema_change);
       this.subscribeEvent('jqm_refersh:render', this.jqm_refersh);
+      this.subscribeEvent('jqm_page_refersh:render', this.jqm_page_refersh);
       this.subscribeEvent('loading_start', this.jqm_loading_start);
       this.subscribeEvent('loading_stop', this.jqm_loading_stop);
+      this.subscribeEvent('disable_form', this.disable_form);
       this.subscribeEvent('server_error', this.server_error);
       this.subscribeEvent('tell_user', this.tell_user);
     }
@@ -2845,6 +3492,20 @@ module.exports = Layout = (function(_super) {
     }, 3000);
   };
 
+  Layout.prototype.disable_form = function(can_edit) {
+    this.log.info('form disable caught');
+    if (!can_edit) {
+      $("form input:radio").checkboxradio('disable');
+      $("form :input").textinput({
+        disabled: true
+      });
+      $("form [data-role='slider']").slider({
+        disabled: true
+      });
+      return $("form [data-role='controlgroup'] select").selectmenu("disable");
+    }
+  };
+
   Layout.prototype.log_debug = function(option) {
     return this.log.debug(option);
   };
@@ -2882,6 +3543,11 @@ module.exports = Layout = (function(_super) {
   Layout.prototype.jqm_refersh = function() {
     this.log.info('layout: event jqm_refresh caugth');
     return $("#content").enhanceWithin();
+  };
+
+  Layout.prototype.jqm_page_refersh = function() {
+    this.log.info('layout: event jqm_page_refresh caugth');
+    return $("#page").enhanceWithin();
   };
 
   Layout.prototype.jqm_recreate = function() {};
@@ -3029,6 +3695,7 @@ module.exports = LoginView = (function(_super) {
   LoginView.prototype.open_dialog = function() {
     this.publishEvent('log:info', 'opening login popup');
     return $(function() {
+      $('#page').enhanceWithin();
       $('#login').popup('open');
       return $("input#user").focus();
     });
@@ -3078,8 +3745,8 @@ module.exports = LoginView = (function(_super) {
   };
 
   LoginView.prototype.attach = function() {
-    LoginView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'view: login afterRender()');
+    this.publishEvent('log:info', 'view: login afterRender()');
+    return LoginView.__super__.attach.apply(this, arguments);
   };
 
   return LoginView;
@@ -3828,17 +4495,19 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('  <div class=\'ui-grid-a\'>\n  <div class=\'ui-block-a\'>\n  <form>\n  <h4>');
+      __out.push('  <form>\n  <div class=\'ui-grid-a\'>\n  <div class=\'ui-block-a\'>\n  <h4>');
     
       __out.push(__sanitize(this.heading));
     
-      __out.push('</h4>\n  <div data-fields="name"> </div>\n  <div data-fields="surname"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  <div data-fields="client_type"> </div>\n  <div data-fields="address"> </div>\n  <div data-fields="pesel"> </div>\n  <div data-fields="id_card"> </div>\n  <div data-fields="bank_account"> </div>\n  <h4>Informacje o firmie</h4>\n  <div data-fields="company_name"> </div>\n  <div data-fields="nip"> </div>\n</div>\n  <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n  <h4>Szczegóły</h4>\n  <div data-fields="notes"> </div>\n  <div data-fields="requirements"> </div>\n  <div data-fields="budget"> </div>\n  <div data-fields="provision"> </div>\n  <div data-fields="provision_p"> </div>\n  <h4>Dodatkowe</h4>\n  <div data-fields="is_private"> </div>\n  <div data-fields="date"> </div>\n  ');
+      __out.push('</h4>\n  <div data-fields="first_name"> </div>\n  <div data-fields="surname"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  <div data-fields="client_type"> </div>\n  <div data-fields="address"> </div>\n  <div data-fields="pesel"> </div>\n  <div data-fields="id_card"> </div>\n  <div data-fields="bank_account"> </div>\n  <h4>Informacje o firmie</h4>\n  <div data-fields="company_name"> </div>\n  <div data-fields="nip"> </div>\n</div>\n  <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n  <h4>Szczegóły</h4>\n  <div data-fields="notes"> </div>\n  <div data-fields="requirements"> </div>\n  <div data-fields="budget"> </div>\n  <div data-fields="provision"> </div>\n  <div data-fields="provision_p"> </div>\n  <h4>Dodatkowe</h4>\n  <div data-fields="is_private"> </div>\n  <div data-fields="date"> </div>\n    ');
     
-      if (this.is_admin) {
-        __out.push('\n    ');
-        if (this.mode === 'add') {
-          __out.push('\n        <a href=\'/klienci/dodaj\' class="ui-btn ui-btn-inline ui-icon-recycle ui-btn-icon-right">Wyczyść</a>\n        <a id="client-add-save" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Zapisz</a>\n    ');
-        }
+      if (this.mode === 'add') {
+        __out.push('\n        <a href=\'/klienci/dodaj\' class="ui-btn ui-btn-inline ui-icon-recycle ui-btn-icon-right">Wyczyść</a>\n        <a id="client-add-save" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Zapisz</a>\n    ');
+      }
+    
+      __out.push('\n  ');
+    
+      if (this.can_edit) {
         __out.push('\n    ');
         if (this.mode === 'edit') {
           __out.push('\n        <a id="client-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Uaktualnij</a>\n        <a id="client-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Skasuj</a>\n    ');
@@ -3846,7 +4515,7 @@ module.exports = function (__obj) {
         __out.push('\n  ');
       }
     
-      __out.push('\n  </form>\n</div>\n\n</div>\n');
+      __out.push('\n</div>\n</div>\n</form>\n');
     
     }).call(this);
     
@@ -3914,8 +4583,159 @@ module.exports = function (__obj) {
         __out.push('</td>\n         <td><a href=\'/klienci/');
         __out.push(__sanitize(item['id']));
         __out.push('\'>');
-        __out.push(__sanitize(item['name']));
+        __out.push(__sanitize(item['first_name']));
         __out.push('</a></td>\n         <td><a href=\'/klienci/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['surname']));
+        __out.push('</a></td>\n         <td>');
+        __out.push(__sanitize(item['email']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['phone']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['company_name']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['address']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['budget']));
+        __out.push('</td>\n       </tr>\n      ');
+      }
+    
+      __out.push('\n     </tbody>\n   </table>\n\n\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/client_public_form", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+    
+      __out.push('  <form>\n  <div class=\'ui-grid-a\'>\n  <div class=\'ui-block-a\'>\n  <h4>');
+    
+      __out.push(__sanitize(this.heading));
+    
+      __out.push('</h4>\n  <div data-fields="first_name"> </div>\n  <div data-fields="surname"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  <div data-fields="client_type"> </div>\n  <div data-fields="address"> </div>\n  <div data-fields="pesel"> </div>\n  <div data-fields="id_card"> </div>\n  <div data-fields="bank_account"> </div>\n  <h4>Informacje o firmie</h4>\n  <div data-fields="company_name"> </div>\n  <div data-fields="nip"> </div>\n</div>\n  <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n  <h4>Szczegóły</h4>\n  <div data-fields="notes"> </div>\n  <div data-fields="requirements"> </div>\n  <div data-fields="budget"> </div>\n  <div data-fields="provision"> </div>\n  <div data-fields="provision_p"> </div>\n  <h4>Dodatkowe</h4>\n  <div data-fields="is_private"> </div>\n  <div data-fields="date"> </div>\n  ');
+    
+      if (this.can_edit) {
+        __out.push('\n    ');
+        if (this.mode === 'edit') {
+          __out.push('\n        <a id="client-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Skasuj</a>\n    ');
+        }
+        __out.push('\n  ');
+      }
+    
+      __out.push('\n</div>\n</div>\n</form>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/client_public_list_view", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var item, _i, _len, _ref;
+    
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="client-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+    
+      _ref = this.client;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
+        __out.push('\n\n       <tr>\n         <td> <label> <input name="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" id="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" data-mini="true"  type="checkbox"> </label> </td>\n         <td>');
+        __out.push(__sanitize(item['id']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['agent']));
+        __out.push('</td>\n         <td><a href=\'/klienci-wspolni/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['first_name']));
+        __out.push('</a></td>\n         <td><a href=\'/klienci-wspolni/');
         __out.push(__sanitize(item['id']));
         __out.push('\'>');
         __out.push(__sanitize(item['surname']));
@@ -4136,7 +4956,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('    <a href=\'#left-panel\' data-icon=\'grid\' data-theme="b">Menu</a>\n    <h1>Mobilny Pośrednik</h1>\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <a href="#info" data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</a>\n        <a href="#" id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-user"></a>\n    </div>\n');
+      __out.push('    <a href=\'#left-panel\' data-icon=\'grid\' data-theme="b">Menu</a>\n    <h1>Mobilny Pośrednik</h1>\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <a href="#info" data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</a>\n        <button id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-user"></button>\n    </div>\n');
     
     }).call(this);
     
@@ -4293,7 +5113,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty/robocze" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/archiwalne" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>\n                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="dodaj_oferte?sch=1"    >Mieszkania Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=2"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=3"    >Domy Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=4"    >Domy Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=5"    >Grunty Dzierżawa</a></li>\n                        <li><a href="dodaj_oferte?sch=6"    >Grunty Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=7"    >Lokale Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=8"    >Lokale Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=9"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=10"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=11"   >Obiekty Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=12"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="" >Oferty robocze</a></li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a href="/agenci/dodaj" >Dodaj Agenta</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="" >Zmień Hasło</a></li>\n                        <li ><a href="" >Dane Profilu</a></li>\n                        <li ><a href="" >Logo</a></li>\n                        <li ><a href="" >Watermark</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci/wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        <li><a href="/kw" >Księgi wieczyste</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
+      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty/robocze" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/archiwalne" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>\n                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="dodaj_oferte?sch=1"    >Mieszkania Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=2"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=3"    >Domy Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=4"    >Domy Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=5"    >Grunty Dzierżawa</a></li>\n                        <li><a href="dodaj_oferte?sch=6"    >Grunty Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=7"    >Lokale Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=8"    >Lokale Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=9"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=10"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=11"   >Obiekty Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=12"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="" >Oferty robocze</a></li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a href="/agenci/dodaj" >Dodaj Agenta</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="" >Zmień Hasło</a></li>\n                        <li ><a href="" >Dane Profilu</a></li>\n                        <li ><a href="" >Logo</a></li>\n                        <li ><a href="" >Watermark</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
     
     }).call(this);
     

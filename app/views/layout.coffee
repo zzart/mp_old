@@ -17,8 +17,10 @@ module.exports = class Layout extends Chaplin.Layout
             #@subscribeEvent('addofferview:render', @jqm_refersh)
             @subscribeEvent('schema_change', @schema_change)
             @subscribeEvent('jqm_refersh:render', @jqm_refersh)
+            @subscribeEvent('jqm_page_refersh:render', @jqm_page_refersh)
             @subscribeEvent('loading_start', @jqm_loading_start)
             @subscribeEvent('loading_stop', @jqm_loading_stop)
+            @subscribeEvent('disable_form', @disable_form)
 
             @subscribeEvent('server_error', @server_error)
             @subscribeEvent('tell_user', @tell_user)
@@ -59,6 +61,14 @@ module.exports = class Layout extends Chaplin.Layout
             $("#info").popup("close")
         , 3000)
 
+    disable_form:(can_edit) =>
+        @log.info('form disable caught')
+        if not can_edit
+            $("form input:radio").checkboxradio('disable')
+            $("form :input").textinput({disabled:true} )
+            $("form [data-role='slider']").slider({ disabled: true })
+            $("form [data-role='controlgroup'] select").selectmenu( "disable" )
+
     log_debug:(option) =>
         @log.debug(option)
     log_info:(option) =>
@@ -91,6 +101,10 @@ module.exports = class Layout extends Chaplin.Layout
         #manually doing page refresh straight from DOM
         @log.info('layout: event jqm_refresh caugth')
         $("#content").enhanceWithin()
+    jqm_page_refersh: =>
+        #manually doing page refresh straight from DOM
+        @log.info('layout: event jqm_page_refresh caugth')
+        $("#page").enhanceWithin()
     jqm_recreate: =>
         #TODO: we might check in the DOM if this was rendered alreadyand only then do it or not.
 

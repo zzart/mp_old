@@ -19,7 +19,7 @@ module.exports = class ClientListController extends Controller
                 data: params
                 beforeSend: =>
                     @publishEvent 'loading_start'
-                    @publishEvent 'tell_user', 'Ładuje listę klentów ...'
+                    @publishEvent 'tell_user', 'Ładuje listę klientów ...'
                 success: =>
                     @publishEvent('log:info', "data with #{params} fetched ok" )
                     @publishEvent 'loading_stop'
