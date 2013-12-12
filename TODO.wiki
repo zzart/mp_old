@@ -1,0 +1,106 @@
+== lista do zrobienia: ==
+
+* [ ] Crud user config
+* [ ] Podopinać uprawnienia agent/admin
+* [ ] Wybór kolumn nie działa
+* [ ] Strona szukania zaawansowanego ( podlinowana ze strony z listą )
+* [ ] Strona dodawania
+    * [ ] wygenerowanie pól dla różnych typów danych
+    * [ ] json dla każdej schemy
+    * [ ] podzielić pola na logiczne sekcje
+        * [ ] akordeon
+        * [ ] podstrony
+    * [ ] submit multiform
+    * [ ] zdjęcia
+    * [ ] ustawienie kolejności -> możliwość zmiany w opcjach , pola z db przez co jest kolejność i dzięki temu może sekcje w db ustale i na której stronie co ma być!
+* [ ] Strona opcje/edycja schemy
+* [ ] Konto na phonegap:build - darmowe na jedną aplikację.
+
+
+= pytania =
+* co z paginacją ?
+* co z sortowaniem ?
+* czy footer da się wykożystać jako save/update buttons , subview ?
+* na jakiej zasadzie dodajemy kilka zdjęc do oferty ? osobny model ? Backbone.form LIST
+
+= funkcjonalności =
+
+* [ ] moduł ściągający oferty prywatne (gumtree, alegratka, otodom) typu elaborat.pl -> możliwość konfiguracji regionu
+* [ ] eksporty xml
+    * [ ] oferty.net
+    * [ ] gratka
+* [ ] na pierwszą stronę ostatnie akcje
+* [ ] na pierwszą stronę ostatnio wprowadzone oferty
+    * [ ] config - które brancze
+* [ ] na pierwszą stronę oferty o statusie robocze
+* [ ] na pierwszą stronę oferty do odświerzenia
+* [ ] wyszukiwania jak zrobić ? messege queue czy po prostu osobny model który wyszukuje jak się go uruchomi
+* [ ] oferty można tagować jak Gmail , tagi pojawiają się w menu
+
+
+= tips =
+* generowanie SQLite db które idzie do klienta na początku
+* celery write to cache
+* PostGis ? na Postgress ? zmieniam db ?
+* IFrame dla innych stron
+* ReadOnly models dla użytkowników / albo brak przycisku save ;)
+* testy
+* cennik http://mailchimp.com/pricing  , fajny pomysł żeby zdjęcia były zamiast grafik , to da się zrobić.
+* debug w configu można ustawić bezpośrednio z DB ( monitorowanie pracy użytkowników)
+
+= technologie =
+1. asp.net-  galactica, imo, komako + sliverlight plugin (brak wsparcia)
+2. agencja 3000 java
+3. locumnet online php!
+4. asari - javascript
+atom, 1,6Gz, 64bits, 2G RAM, 1 TB HD
+
+== galactica ==
+* Budowany a technologi ASP.NET
+* użytkowników w systemie rejestruje admin
+* elementy strony z listą elementów (użytkowników, nieruchomości etc.)
+    * stronicowanie
+    * sortowanie
+    * szczegóły rekordów
+    * filtrowanie/wyszukiwanie
+    * usuwanie
+    * zaznaczanie kilku pozycji naraz + akcje (przenoszenie do archiwum, odnowienie, zbiorowe usuwanie, drukowanie ....)
+* Przybornik zawierający informacje o
+    * historii pracy z programem (ostatnio odwiedzane moduły)
+    * ulubione - gdzie użytkownik może definiować swoje własne linki do modułów w programie
+    * lista otwartych okien
+* Tablica informacyjna wyświetlająca
+    * komunikaty z terminarza / kalendarza
+    * oferty ze statusem 'robocza' / niedokończone
+    * oferty wymagające odświerzenia
+    * ostatnie 'poszukiwania' -czyli dopasowywanie oferty do klienta i zaprezentowanie mu jej
+    * komunikaty między użytkownikami
+* oferta ma historię :
+    * zmany statusu
+    * modyfikacji
+    * mijające terminy aktualizacji, wyłączności
+* wyszukiwania ofert
+* klienci poszukujący / ofertujący
+    * CRUD
+    * historia/dziennik kontaktu
+    * dokumentacja - pliki dostarczone przez kontakt
+    * są do nich przypisane oferty lub wyniki wyszukiwania ofert (poszukujący)
+* oferta
+    * CRUD
+    * sprzedana, pojekt aktualna umowa przedwstępna własna zawieszona(od -do) wycofana/sprzedana archiwalna ?
+    * przypisana do klienta
+    * przypisana do agenta
+    * admin może zmieniać agenta przy ofercie
+    * adresówka
+    * admin - umowy, daty warzności umów , od kiedy aktualna, wyłączność, prowizja  etc....
+    * grupowe (zip) i pojedyńcze dodawanie zdjęć
+    *
+* ustawienia
+    * odświerzanie ofert - co jaki czas dla danych typów nieruchomości
+    * jak agent przestaje pracować to przepisuje oferty do innego agenta
+* terminarz
+* repozytorium plików
+* poczta wewnątrzsystemowa
+* poczta email
+
+andrzej samojednik sapico

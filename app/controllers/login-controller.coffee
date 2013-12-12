@@ -1,5 +1,5 @@
 StructureController = require 'controllers/structure-controller'
-#LoginView = require 'views/login-view'
+# LoginView = require 'views/login-view'
 LoginView = require 'views/autologin-view'
 Model = require 'models/login-model'
 mediator = require 'mediator'

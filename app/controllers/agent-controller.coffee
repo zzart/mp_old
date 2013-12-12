@@ -49,7 +49,21 @@ module.exports = class AgentController extends Controller
 
     show:(params, route, options) ->
         @publishEvent('log:info', 'in agent show controller')
-        @redirectTo {'/agenci'} unless _.isObject(mediator.collections.agents.get(params.id))
+        if not _.isObject(mediator.collections.agents?.get?(params.id))
+            mediator.collections.agents = new Collection
+            mediator.collections.agents.fetch
+                data: params
+                beforeSend: =>
+                    @publishEvent 'loading_start'
+                success: =>
+                    @publishEvent('log:info', "data with #{params} fetched ok" )
+                    @publishEvent 'loading_stop'
+                    if not _.isObject(mediator.collections.agents.get(params.id))
+                        @publishEvent 'tell_user', 'Agent nie został znaleziony'
+                        Chaplin.helpers.redirectTo {url: '/agenci'}
+                error: =>
+                    @publishEvent 'loading_stop'
+                    @publishEvent 'server_error'
         #in case someone added branch or user we need updated schema from server!
         mediator.models.user.fetch
             beforeSend: =>

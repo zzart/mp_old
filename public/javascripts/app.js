@@ -133,8 +133,9 @@ module.exports = Application = (function(_super) {
     mediator.models = {};
     mediator.collections = {};
     mediator.schemas = {};
-    mediator.app_key = 'mp_haslo';
-    mediator.app = 'd54ee93e-60b4-11e3-b319-00241dd943c7';
+    mediator.upload_url = 'http://localhost:8080/v1/dodaj-plik';
+    mediator.app_key = 'mp';
+    mediator.app = '10cdcef6-6251-11e3-9070-00241dd943c7';
     mediator.can_edit = function(is_admin, author_id, user_id) {
       if (is_admin) {
         return true;
@@ -300,11 +301,30 @@ module.exports = AgentController = (function(_super) {
   };
 
   AgentController.prototype.show = function(params, route, options) {
-    var _this = this;
+    var _ref,
+      _this = this;
     this.publishEvent('log:info', 'in agent show controller');
-    if (!_.isObject(mediator.collections.agents.get(params.id))) {
-      this.redirectTo({
-        '/agenci': '/agenci'
+    if (!_.isObject((_ref = mediator.collections.agents) != null ? typeof _ref.get === "function" ? _ref.get(params.id) : void 0 : void 0)) {
+      mediator.collections.agents = new Collection;
+      mediator.collections.agents.fetch({
+        data: params,
+        beforeSend: function() {
+          return _this.publishEvent('loading_start');
+        },
+        success: function() {
+          _this.publishEvent('log:info', "data with " + params + " fetched ok");
+          _this.publishEvent('loading_stop');
+          if (!_.isObject(mediator.collections.agents.get(params.id))) {
+            _this.publishEvent('tell_user', 'Agent nie został znaleziony');
+            return Chaplin.helpers.redirectTo({
+              url: '/agenci'
+            });
+          }
+        },
+        error: function() {
+          _this.publishEvent('loading_stop');
+          return _this.publishEvent('server_error');
+        }
       });
     }
     return mediator.models.user.fetch({
@@ -526,33 +546,26 @@ module.exports = BranchController = (function(_super) {
   BranchController.prototype.list = function(params, route, options) {
     var _this = this;
     this.publishEvent('log:info', 'in branch list controller');
-    if (_.isObject(mediator.collections.branches)) {
-      return this.view = new ListView({
-        params: params,
-        region: 'content'
-      });
-    } else {
-      mediator.collections.branches = new Collection;
-      return mediator.collections.branches.fetch({
-        data: params,
-        beforeSend: function() {
-          _this.publishEvent('loading_start');
-          return _this.publishEvent('tell_user', 'Ładuje listę oddziałów ...');
-        },
-        success: function() {
-          _this.publishEvent('log:info', "data with " + params + " fetched ok");
-          _this.publishEvent('loading_stop');
-          return _this.view = new ListView({
-            params: params,
-            region: 'content'
-          });
-        },
-        error: function() {
-          _this.publishEvent('loading_stop');
-          return _this.publishEvent('server_error');
-        }
-      });
-    }
+    mediator.collections.branches = new Collection;
+    return mediator.collections.branches.fetch({
+      data: params,
+      beforeSend: function() {
+        _this.publishEvent('loading_start');
+        return _this.publishEvent('tell_user', 'Ładuje listę oddziałów ...');
+      },
+      success: function() {
+        _this.publishEvent('log:info', "data with " + params + " fetched ok");
+        _this.publishEvent('loading_stop');
+        return _this.view = new ListView({
+          params: params,
+          region: 'content'
+        });
+      },
+      error: function() {
+        _this.publishEvent('loading_stop');
+        return _this.publishEvent('server_error');
+      }
+    });
   };
 
   BranchController.prototype.add = function(params, route, options) {
@@ -616,34 +629,26 @@ module.exports = ClientListController = (function(_super) {
   ClientListController.prototype.list = function(params, route, options) {
     var _this = this;
     this.publishEvent('log:info', 'in client list controller');
-    if (_.isObject(mediator.collections.clients)) {
-      return this.view = new ClientListView({
-        params: params,
-        region: 'content'
-      });
-    } else {
-      mediator.collections.clients = new Collection;
-      console.log(mediator.collections.clients);
-      return mediator.collections.clients.fetch({
-        data: params,
-        beforeSend: function() {
-          _this.publishEvent('loading_start');
-          return _this.publishEvent('tell_user', 'Ładuje listę klientów ...');
-        },
-        success: function() {
-          _this.publishEvent('log:info', "data with " + params + " fetched ok");
-          _this.publishEvent('loading_stop');
-          return _this.view = new ClientListView({
-            params: params,
-            region: 'content'
-          });
-        },
-        error: function() {
-          _this.publishEvent('loading_stop');
-          return _this.publishEvent('server_error');
-        }
-      });
-    }
+    mediator.collections.clients = new Collection;
+    return mediator.collections.clients.fetch({
+      data: params,
+      beforeSend: function() {
+        _this.publishEvent('loading_start');
+        return _this.publishEvent('tell_user', 'Ładuje listę klientów ...');
+      },
+      success: function() {
+        _this.publishEvent('log:info', "data with " + params + " fetched ok");
+        _this.publishEvent('loading_stop');
+        return _this.view = new ClientListView({
+          params: params,
+          region: 'content'
+        });
+      },
+      error: function() {
+        _this.publishEvent('loading_stop');
+        return _this.publishEvent('server_error');
+      }
+    });
   };
 
   ClientListController.prototype.add = function(params, route, options) {
@@ -773,13 +778,15 @@ module.exports = HeaderController = (function(_super) {
 });
 
 ;require.register("controllers/home-controller", function(exports, require, module) {
-var Controller, HomeController, HomePageView,
+var Controller, HomeController, HomePageView, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Controller = require('controllers/auth-controller');
 
 HomePageView = require('views/home-page-view');
+
+mediator = require('mediator');
 
 module.exports = HomeController = (function(_super) {
 
@@ -837,8 +844,8 @@ module.exports = LoginController = (function(_super) {
 
 });
 
-;require.register("controllers/offer-list-controller", function(exports, require, module) {
-var Collection, Controller, OfferListController, OfferListView, mediator,
+;require.register("controllers/property-controller", function(exports, require, module) {
+var AddView, Collection, Controller, Model, OfferListView, PropertyController, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -848,18 +855,23 @@ OfferListView = require('views/offer-list-view');
 
 Collection = require('models/offer-list-collection');
 
+Model = require('models/property-model');
+
+AddView = require('views/property-add-view');
+
 mediator = require('mediator');
 
-module.exports = OfferListController = (function(_super) {
+module.exports = PropertyController = (function(_super) {
 
-  __extends(OfferListController, _super);
+  __extends(PropertyController, _super);
 
-  function OfferListController() {
-    return OfferListController.__super__.constructor.apply(this, arguments);
+  function PropertyController() {
+    return PropertyController.__super__.constructor.apply(this, arguments);
   }
 
-  OfferListController.prototype.show = function(params, route, options) {
+  PropertyController.prototype.list = function(params, route, options) {
     var _this = this;
+    this.publishEvent('log:info', "in list property controller");
     this.collection = new Collection;
     return this.collection.fetch({
       data: params,
@@ -883,7 +895,25 @@ module.exports = OfferListController = (function(_super) {
     });
   };
 
-  return OfferListController;
+  PropertyController.prototype.add = function(params, route, options) {
+    var schema;
+    this.publishEvent('log:info', "in add property controller");
+    schema = mediator.models.user.get('schemas').mieszkania;
+    mediator.models.property = new Model;
+    mediator.models.property.schema = _.clone(schema);
+    this.publishEvent('log:info', "init view property controller");
+    this.view = new AddView({
+      params: params,
+      region: 'content'
+    });
+    return this.publishEvent('log:info', "after init view property controller");
+  };
+
+  PropertyController.prototype.show = function(params, route, options) {
+    return this.publishEvent('log:info', "in show property controller");
+  };
+
+  return PropertyController;
 
 })(Controller);
 
@@ -952,6 +982,7 @@ routes = require('routes');
 $(function() {
   return new Application({
     controllerSuffix: '-controller',
+    pushState: false,
     routes: routes
   });
 });
@@ -1336,6 +1367,29 @@ module.exports = Offer = (function(_super) {
 
 });
 
+;require.register("models/property-model", function(exports, require, module) {
+var Property,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+module.exports = Property = (function(_super) {
+
+  __extends(Property, _super);
+
+  function Property() {
+    return Property.__super__.constructor.apply(this, arguments);
+  }
+
+  Property.prototype.urlRoot = 'http://localhost:8080/v1/oferty';
+
+  Property.prototype.schema = {};
+
+  return Property;
+
+})(Chaplin.Model);
+
+});
+
 ;require.register("routes", function(exports, require, module) {
 
 module.exports = function(match) {
@@ -1352,7 +1406,10 @@ module.exports = function(match) {
   match('oddzialy/:id', 'branch#show');
   match('agenci/dodaj', 'agent#add');
   match('agenci', 'agent#list');
-  return match('agenci/:id', 'agent#show');
+  match('agenci/:id', 'agent#show');
+  match('oferty/dodaj', 'property#add');
+  match('oferty', 'property#list');
+  return match('oferty/:id', 'property#show');
 };
 
 });
@@ -1548,6 +1605,12 @@ module.exports = EditView = (function(_super) {
 
     this.form_help = __bind(this.form_help, this);
 
+    this.onComplete = __bind(this.onComplete, this);
+
+    this.onSubmit = __bind(this.onSubmit, this);
+
+    this.init_uploader = __bind(this.init_uploader, this);
+
     this.initialize = __bind(this.initialize, this);
     return EditView.__super__.constructor.apply(this, arguments);
   }
@@ -1574,16 +1637,43 @@ module.exports = EditView = (function(_super) {
     this.delegate('click', 'a#agent-edit-delete', this.delete_agent);
     this.delegate('click', 'a#agent-edit-update', this.save_form);
     this.delegate('click', 'a.form-help', this.form_help);
+    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('id'), mediator.models.user.get('id'));
     this.form = new Backbone.Form({
       model: this.model,
       template: this.template_form,
       templateData: {
         heading: 'Edytuj agenta',
         mode: 'edit',
-        is_admin: mediator.models.user.get('is_admin')
+        is_admin: mediator.models.user.get('is_admin'),
+        can_edit: this.can_edit
       }
     });
     return this.form.render();
+  };
+
+  EditView.prototype.init_uploader = function() {
+    return this.uploader = new qq.FineUploaderBasic({
+      button: $("#avatar")[0],
+      debug: true,
+      request: {
+        endpoint: 'http://localhost:8080/v1/pliki/dodaj'
+      },
+      callbacks: {
+        onSubmit: this.onSubmit,
+        onComplete: this.onComplete
+      },
+      cors: {
+        expected: true
+      }
+    });
+  };
+
+  EditView.prototype.onSubmit = function() {
+    return console.log('submit');
+  };
+
+  EditView.prototype.onComplete = function() {
+    return console.log('compliete');
   };
 
   EditView.prototype.form_help = function(event) {
@@ -1643,8 +1733,10 @@ module.exports = EditView = (function(_super) {
 
   EditView.prototype.attach = function() {
     EditView.__super__.attach.apply(this, arguments);
+    this.init_uploader();
     this.publishEvent('log:info', 'view: agentadd afterRender()');
-    return this.publishEvent('jqm_refersh:render');
+    this.publishEvent('jqm_refersh:render');
+    return this.publishEvent('disable_form', this.can_edit);
   };
 
   return EditView;
@@ -1883,8 +1975,8 @@ module.exports = LoginView = (function(_super) {
     var apphash, apphash_hexed, auth_header, header_string, userhash, userhash_hexed,
       _this = this;
     this.publishEvent('log:error', 'autologin------');
-    this.user = 'zzart';
-    this.pass = 'maddog';
+    this.user = 'test';
+    this.pass = 'test';
     apphash = CryptoJS.HmacSHA256(this.model.url, mediator.app_key);
     apphash_hexed = apphash.toString(CryptoJS.enc.Hex);
     userhash = CryptoJS.HmacSHA256(this.model.url, this.pass);
@@ -1905,8 +1997,8 @@ module.exports = LoginView = (function(_super) {
         });
         $('#first-name-placeholder').text(_this.model.get('first_name'));
         $('#bon-config-link').attr('href', "/biura/" + (_this.model.get('company_id')));
-        $('#login').popup('close');
-        return Chaplin.helpers.redirectTo({
+        $('#agent-config-link').attr('href', "/agenci/" + (_this.model.get('id')));
+        return Chaplin.utils.redirectTo({
           url: ''
         });
       },
@@ -2033,6 +2125,7 @@ module.exports = BonEditView = (function(_super) {
     this.model = mediator.models.bon;
     this.model.schema = mediator.models.user.get('schemas').company;
     this.template_form = template;
+    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
     this.delegate('click', 'a#bon-edit-delete', this.delete_bon);
     this.delegate('click', 'a#bon-edit-update', this.save_form);
     this.delegate('click', 'a.form-help', this.form_help);
@@ -2040,7 +2133,9 @@ module.exports = BonEditView = (function(_super) {
       model: this.model,
       template: this.template_form,
       templateData: {
-        heading: 'Edytuj dane biura nieruchomości'
+        heading: 'Edytuj dane biura nieruchomości',
+        mode: 'edit',
+        can_edit: this.can_edit
       }
     });
     return this.form.render();
@@ -2095,16 +2190,14 @@ module.exports = BonEditView = (function(_super) {
 
   BonEditView.prototype.render = function() {
     BonEditView.__super__.render.apply(this, arguments);
-    this.publishEvent('log:info', '5');
-    this.$el.append(this.form.el);
-    return this.publishEvent('log:info', '22');
+    return this.$el.append(this.form.el);
   };
 
   BonEditView.prototype.attach = function() {
     BonEditView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', '6');
     this.publishEvent('log:info', 'view: clientadd afterRender()');
-    return this.publishEvent('jqm_refersh:render');
+    this.publishEvent('jqm_refersh:render');
+    return this.publishEvent('disable_form', this.can_edit);
   };
 
   return BonEditView;
@@ -2607,7 +2700,7 @@ module.exports = ClientAddView = (function(_super) {
             mediator.collections.clients.add(_this.model);
           }
           _this.publishEvent('tell_user', 'Klient dodany');
-          return Chaplin.helpers.redirectTo({
+          return Chaplin.utils.redirectTo({
             url: '/klienci'
           });
         },
@@ -2625,7 +2718,7 @@ module.exports = ClientAddView = (function(_super) {
   };
 
   ClientAddView.prototype.refresh_form = function() {
-    return Chaplin.helpers.redirectTo({
+    return Chaplin.utils.redirectTo({
       url: '/klienci/dodaj'
     });
   };
@@ -2727,7 +2820,7 @@ module.exports = ClientEditView = (function(_super) {
       return this.model.save({}, {
         success: function(event) {
           _this.publishEvent('tell_user', 'Klient zaktualizowany');
-          return Chaplin.helpers.redirectTo({
+          return Chaplin.utils.redirectTo({
             url: '/klienci'
           });
         },
@@ -2750,7 +2843,7 @@ module.exports = ClientEditView = (function(_super) {
       success: function(event) {
         mediator.collections.clients.remove(_this.model);
         _this.publishEvent('tell_user', 'Klient został usunięty');
-        return Chaplin.helpers.redirectTo({
+        return Chaplin.utils.redirectTo({
           url: '/klienci'
         });
       },
@@ -2960,6 +3053,141 @@ module.exports = ClientListView = (function(_super) {
   };
 
   return ClientListView;
+
+})(View);
+
+});
+
+;require.register("views/client-public-edit-view", function(exports, require, module) {
+var ClientEditView, View, mediator, template,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+template = require('views/templates/client_public_form');
+
+mediator = require('mediator');
+
+module.exports = ClientEditView = (function(_super) {
+
+  __extends(ClientEditView, _super);
+
+  function ClientEditView() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.delete_client = __bind(this.delete_client, this);
+
+    this.save_form = __bind(this.save_form, this);
+
+    this.form_help = __bind(this.form_help, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return ClientEditView.__super__.constructor.apply(this, arguments);
+  }
+
+  ClientEditView.prototype.autoRender = true;
+
+  ClientEditView.prototype.containerMethod = "html";
+
+  ClientEditView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  ClientEditView.prototype.id = 'content';
+
+  ClientEditView.prototype.className = 'ui-content';
+
+  ClientEditView.prototype.initialize = function(options) {
+    ClientEditView.__super__.initialize.apply(this, arguments);
+    this.params = options.params;
+    this.publishEvent('log:info', console.log(this.params));
+    this.model = mediator.collections.clients_public.get(this.params.id);
+    this.model.schema = mediator.models.user.get('schemas').client;
+    this.template_form = template;
+    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
+    this.delegate('click', 'a#client-edit-delete', this.delete_client);
+    this.delegate('click', 'a#client-edit-update', this.save_form);
+    this.delegate('click', 'a.form-help', this.form_help);
+    this.form = new Backbone.Form({
+      model: this.model,
+      template: this.template_form,
+      templateData: {
+        heading: 'Edytuj kontrahenta',
+        mode: 'edit',
+        can_edit: this.can_edit
+      }
+    });
+    return this.form.render();
+  };
+
+  ClientEditView.prototype.form_help = function(event) {
+    return this.publishEvent('tell_user', event.target.text);
+  };
+
+  ClientEditView.prototype.save_form = function() {
+    var _this = this;
+    this.publishEvent('log:info', 'commmit form');
+    if (_.isUndefined(this.form.commit({
+      validate: true
+    }))) {
+      return this.model.save({}, {
+        success: function(event) {
+          _this.publishEvent('tell_user', 'Klient zaktualizowany');
+          return Chaplin.helpers.redirectTo({
+            url: '/klienci-wspolni'
+          });
+        },
+        error: function(model, response, options) {
+          if (response.responseJSON != null) {
+            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+          } else {
+            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+          }
+        }
+      });
+    } else {
+      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+    }
+  };
+
+  ClientEditView.prototype.delete_client = function() {
+    var _this = this;
+    return this.model.destroy({
+      success: function(event) {
+        mediator.collections.clients_public.remove(_this.model);
+        _this.publishEvent('tell_user', 'Klient został usunięty');
+        return Chaplin.helpers.redirectTo({
+          url: '/klienci-wspolni'
+        });
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  ClientEditView.prototype.render = function() {
+    ClientEditView.__super__.render.apply(this, arguments);
+    this.publishEvent('log:info', 'view: clientedit render()');
+    return this.$el.append(this.form.el);
+  };
+
+  ClientEditView.prototype.attach = function() {
+    ClientEditView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'view: clientedit afterRender()');
+    this.publishEvent('jqm_refersh:render');
+    return this.publishEvent('disable_form', this.can_edit);
+  };
+
+  return ClientEditView;
 
 })(View);
 
@@ -3286,7 +3514,7 @@ module.exports = HeaderView = (function(_super) {
 });
 
 ;require.register("views/home-page-view", function(exports, require, module) {
-var HomePageView, View, mediator, template,
+var HomePageView, View, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -3294,8 +3522,6 @@ var HomePageView, View, mediator, template,
 template = require('views/templates/home');
 
 View = require('views/base/view');
-
-mediator = require('mediator');
 
 module.exports = HomePageView = (function(_super) {
 
@@ -3367,7 +3593,8 @@ module.exports = InfoView = (function(_super) {
   InfoView.prototype.attributes = {
     'data-role': 'popup',
     'data-theme': 'b',
-    'data-position-to': 'window'
+    'data-position-to': 'window',
+    'data-arrow': 'true'
   };
 
   InfoView.prototype.className = 'ui-content';
@@ -3728,8 +3955,9 @@ module.exports = LoginView = (function(_super) {
         });
         $('#first-name-placeholder').text(_this.model.get('first_name'));
         $('#bon-config-link').attr('href', "/biura/" + (_this.model.get('company_id')));
+        $('#agent-config-link').attr('href', "/agenci/" + (_this.model.get('id')));
         $('#login').popup('close');
-        return Chaplin.helpers.redirectTo({
+        return Chaplin.utils.redirectTo({
           url: ''
         });
       },
@@ -3875,6 +4103,88 @@ module.exports = OfferListView = (function(_super) {
   };
 
   return OfferListView;
+
+})(View);
+
+});
+
+;require.register("views/property-add-view", function(exports, require, module) {
+var PropertyAddView, View, mediator, template,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+template = require('views/templates/property_form');
+
+mediator = require('mediator');
+
+module.exports = PropertyAddView = (function(_super) {
+
+  __extends(PropertyAddView, _super);
+
+  function PropertyAddView() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.tabs = __bind(this.tabs, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return PropertyAddView.__super__.constructor.apply(this, arguments);
+  }
+
+  PropertyAddView.prototype.autoRender = true;
+
+  PropertyAddView.prototype.containerMethod = "html";
+
+  PropertyAddView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  PropertyAddView.prototype.id = 'content';
+
+  PropertyAddView.prototype.className = 'ui-content';
+
+  PropertyAddView.prototype.initialize = function(options) {
+    PropertyAddView.__super__.initialize.apply(this, arguments);
+    this.params = options.params;
+    this.model = mediator.models.property;
+    this.template_form = template;
+    this.delegate('click', '#bone', this.tabs);
+    this.delegate('click', '#btwo', this.tabs);
+    this.delegate('click', '#bthree', this.tabs);
+    this.form = new Backbone.Form({
+      model: this.model,
+      template: this.template_form,
+      templateData: {
+        heading: 'Dodaj mieszkanie',
+        mode: 'add',
+        is_admin: mediator.models.user.get('is_admin')
+      }
+    });
+    window.form = this.form;
+    return this.form.render();
+  };
+
+  PropertyAddView.prototype.tabs = function(event) {
+    event.preventDefault();
+    return console.log('click');
+  };
+
+  PropertyAddView.prototype.render = function() {
+    PropertyAddView.__super__.render.apply(this, arguments);
+    return this.$el.append(this.form.el);
+  };
+
+  PropertyAddView.prototype.attach = function() {
+    PropertyAddView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'view: clientadd afterRender()');
+    return this.publishEvent('jqm_refersh:render');
+  };
+
+  return PropertyAddView;
 
 })(View);
 
@@ -4079,25 +4389,35 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('  <div class=\'ui-grid-a\'>\n  <div class=\'ui-block-a\'>\n  <form>\n  <h4>');
+      __out.push('  <form>\n  <div class=\'ui-grid-a\'>\n  <div class=\'ui-block-a\'>\n  <h4>');
     
       __out.push(__sanitize(this.heading));
     
-      __out.push('</h4>\n  <div data-fields="first_name"> </div>\n  <div data-fields="surname"> </div>\n  <div data-fields="username"> </div>\n  <div data-fields="password"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="licence_number"> </div>\n  <div data-fields="phone_primary"> </div>\n  <div data-fields="phone_secondary"> </div>\n  <div data-fields="gg"> </div>\n  <div data-fields="skype"> </div>\n</div>\n  <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n  <h4>Ustawienia</h4>\n  <div data-fields="branch"> </div>\n  <div data-fields="agent_type"> </div>\n  <div data-fields="agent_boss"> </div>\n  <div data-fields="is_active"> </div>\n  <div data-fields="is_admin"> </div>\n  ');
+      __out.push('</h4>\n  <div data-fields="first_name"> </div>\n  <div data-fields="surname"> </div>\n  <div data-fields="username"> </div>\n  <div data-fields="password"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="licence_number"> </div>\n  <div data-fields="phone_primary"> </div>\n  <div data-fields="phone_secondary"> </div>\n  <div data-fields="gg"> </div>\n  <div data-fields="skype"> </div>\n</div>\n  <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n  <h4>Ustawienia</h4>\n  <div data-fields="branch"> </div>\n  <div data-fields="agent_type"> </div>\n  <div data-fields="agent_boss"> </div>\n  ');
     
       if (this.is_admin) {
+        __out.push('\n  <div data-fields="is_active"> </div>\n  <div data-fields="is_admin"> </div>\n  ');
+      }
+    
+      __out.push('\n  <div id=\'avatar\'>\n  <a class="ui-btn">dodaj awatar</a>\n  </div>\n  ');
+    
+      if (this.can_edit) {
         __out.push('\n    ');
         if (this.mode === 'add') {
           __out.push('\n        <a id=\'agent-add-refresh\' class="ui-btn ui-btn-inline ui-icon-recycle ui-btn-icon-right">Wyczyść</a>\n        <a id="agent-add-save" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Zapisz</a>\n    ');
         }
         __out.push('\n    ');
         if (this.mode === 'edit') {
-          __out.push('\n        <a id="agent-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Uaktualnij</a>\n        <a id="agent-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Skasuj</a>\n    ');
+          __out.push('\n        <a id="agent-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Uaktualnij</a>\n        ');
+          if (this.is_admin) {
+            __out.push('\n            <a id="agent-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Skasuj</a>\n        ');
+          }
+          __out.push('\n    ');
         }
         __out.push('\n  ');
       }
     
-      __out.push('\n  </form>\n</div>\n\n</div>\n');
+      __out.push('\n</div>\n</div>\n  </form>\n');
     
     }).call(this);
     
@@ -4287,7 +4607,21 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('  <form>\n  <h4>Edytuj dane biura</h4>\n  <div data-fields="name"> </div>\n  <div data-fields="website"> </div>\n  <div data-fields="province"> </div>\n  <div data-fields="town"> </div>\n  <div data-fields="street"> </div>\n  <div data-fields="postcode"> </div>\n  <div data-fields="nip"> </div>\n  <div data-fields="regon"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  <a id="bon-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Uaktualnij</a>\n  <a id="bon-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Usuń konto!</a>\n  </form>\n\n');
+      __out.push('  <form>\n  <h4>');
+    
+      __out.push(__sanitize(this.heading));
+    
+      __out.push('</h4>\n  <div data-fields="name"> </div>\n  <div data-fields="website"> </div>\n  <div data-fields="province"> </div>\n  <div data-fields="town"> </div>\n  <div data-fields="street"> </div>\n  <div data-fields="postcode"> </div>\n  <div data-fields="nip"> </div>\n  <div data-fields="regon"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  ');
+    
+      if (this.can_edit) {
+        __out.push('\n    ');
+        if (this.mode === 'edit') {
+          __out.push('\n        <a id="bon-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Uaktualnij</a>\n        <a id="bon-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Usuń konto!</a>\n    ');
+        }
+        __out.push('\n  ');
+      }
+    
+      __out.push('\n  </form>\n');
     
     }).call(this);
     
@@ -5113,7 +5447,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty/robocze" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/archiwalne" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>\n                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="dodaj_oferte?sch=1"    >Mieszkania Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=2"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=3"    >Domy Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=4"    >Domy Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=5"    >Grunty Dzierżawa</a></li>\n                        <li><a href="dodaj_oferte?sch=6"    >Grunty Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=7"    >Lokale Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=8"    >Lokale Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=9"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=10"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="dodaj_oferte?sch=11"   >Obiekty Wynajem</a></li>\n                        <li><a href="dodaj_oferte?sch=12"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="" >Oferty robocze</a></li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a href="/agenci/dodaj" >Dodaj Agenta</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="" >Zmień Hasło</a></li>\n                        <li ><a href="" >Dane Profilu</a></li>\n                        <li ><a href="" >Logo</a></li>\n                        <li ><a href="" >Watermark</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
+      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty/robocze" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/archiwalne" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>\n                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="/oferty/dodaj"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty/dodaj"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty/dodaj"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/dodaj"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/dodaj"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/dodaj"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="" >Oferty robocze</a></li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a id=\'agent-config-link\' href="" >Dane Profilu</a></li>\n                        <li ><a href="/agenci/dodaj" >Dodaj Agenta</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="" >Logo</a></li>\n                        <li ><a href="" >Watermark</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
     
     }).call(this);
     
@@ -5326,6 +5660,71 @@ module.exports = function (__obj) {
       }
     
       __out.push('\n\t\t</ul>\n\n\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/property_form", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+    
+      __out.push('<form>\n   \t<div data-role="tabs">\n\t\t\t<div data-role="navbar">\n\t\t\t\t<ul>\n\t\t\t      <li><a  href="#tab1"  data-ajax="false">Oferta</a></li>\n\t\t\t      <li><a  href="#tab2"  data-ajax="false">Nieruchomość</a></li>\n\t\t\t      <li><a  href="#tab3"  data-ajax="false">Pomieszczenia</a></li>\n\t\t\t      <li><a  href="#tab4"  data-ajax="false">Adres</a></li>\n\t\t\t      <li><a  href="#tab5"  data-ajax="false">Pozostałe</a></li>\n\t\t\t      <li><a  href="#tab6"  data-ajax="false">Zdjęcia</a></li>\n\t\t\t    </ul>\n\t\t\t</div>\n\n            <div id="tab1" class="ui-content">\n                <div class=\'ui-grid-a\'>\n                    <div class=\'ui-block-a\'>\n                        <div data-fields="tytul"></div>\n                        <div data-fields="dodatkowy_id"></div>\n                        <div data-fields="powierzchnia_calkowita"></div>\n                        <div data-fields="opis"></div>\n                        <div data-fields="opis_angielski"></div>\n                        <div data-fields="opis_prywatny"></div>\n                        <div data-fields="opis_skrocony"></div>\n                        <div data-fields="prowizja"></div>\n                        <div data-fields="rynek"></div>\n                        <div data-fields="rodzaj_wlasnosci"></div>\n                    </div><!-- block-a -->\n                    <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n                        <div data-fields="termin_wydania"></div>\n                        <div data-fields="stan_mieszkania"></div>\n                        <div data-fields="czynsz"></div>\n                        <div data-fields="liczba_pokoi"></div>\n                        <div data-fields="klucze"></div>\n                        <div data-fields="cena"></div>\n                        <div data-fields="data_aktualizacji"></div>\n                        <div data-fields="data_wprowadzenia"></div>\n                        <div data-fields="typ_kaucji"></div>\n                        <div data-fields="bez_prowizji"></div>\n                        <div data-fields="rynek_pierwotny"></div>\n                        <div data-fields="inwestycja"></div>\n                        <div data-fields="wylacznosc"></div>\n                        <div data-fields="podstawa_nabycia"></div>\n                    </div><!-- block-b -->\n                    </div><!-- grid-a -->\n            </div><!-- tab -->\n\n            <div id="tab2" class="ui-content">\n                <div class=\'ui-grid-a\'>\n                    <div class=\'ui-block-a\'>\n                        <div data-fields="piwnica"></div>\n                        <div data-fields="rodzaj_budynku"></div>\n                        <div data-fields="material_budynku"></div>\n                        <div data-fields="garaz"></div>\n                        <div data-fields="udogodnienia"></div>\n                        <div data-fields="balkon"></div>\n                        <div data-fields="parking"></div>\n                        <div data-fields="wyposazenie"></div>\n                        <div data-fields="media"></div>\n                    </div><!-- block-a -->\n                    <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n                        <div data-fields="ilosc_poziomow"></div>\n                        <div data-fields="pietro"></div>\n                        <div data-fields="rok_budowy"></div>\n                        <div data-fields="liczba_pieter"></div>\n                        <div data-fields="przeznaczenie"></div>\n                        <div data-fields="okna"></div>\n                        <div data-fields="ogrzewanie"></div>\n                        <div data-fields="ogrodek"></div>\n                        <div data-fields="komorka"></div>\n                    </div><!-- block-b -->\n                    </div><!-- grid-a -->\n            </div><!-- tab -->\n\n            <div id="tab3" class="ui-content">\n                <div class=\'ui-grid-a\'>\n                    <div class=\'ui-block-a\'>\n                        <div data-fields="liczba_lazienek"></div>\n                        <div data-fields="powierzchnia_wc"></div>\n                        <div data-fields="powierzchnia_piwnicy"></div>\n                        <div data-fields="powierzchnia_balkonu"></div>\n                        <div data-fields="powierzchnia_uzytkowa"></div>\n                        <div data-fields="dwupoziomowe"></div>\n                        <div data-fields="ekspozycja_okien"></div>\n                        <div data-fields="podlogi"></div>\n                        <div data-fields="umeblowanie"></div>\n                    </div><!-- block-a -->\n                    <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n                        <div data-fields="stan_instalacji"></div>\n                        <div data-fields="sciany_lazienek"></div>\n                        <div data-fields="wyposazenie_kuchni"></div>\n                        <div data-fields="goraca_woda"></div>\n                        <div data-fields="stan_lazienek"></div>\n                        <div data-fields="lazienka"></div>\n                        <div data-fields="powierzchnia_lazienek"></div>\n                        <div data-fields="powierzchnia_kuchni"></div>\n                        <div data-fields="kuchnia"></div>\n                        <div data-fields="liczba_wc"></div>\n                    </div><!-- block-b -->\n                    </div><!-- grid-a -->\n            </div><!-- tab -->\n\n            <div id="tab4" class="ui-content">\n                <div class=\'ui-grid-a\'>\n                    <div class=\'ui-block-a\'>\n                    adres\n                    </div><!-- block-a -->\n                    <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n                    </div><!-- block-b -->\n                    </div><!-- grid-a -->\n            </div><!-- tab -->\n\n            <div id="tab5" class="ui-content">\n                <div class=\'ui-grid-a\'>\n                    <div class=\'ui-block-a\'>\n                        <div data-fields="typ_kaucji"></div>\n                        <div data-fields="komunikacja"></div>\n                        <div data-fields="video"></div>\n                        <div data-fields="odleglosc_od_jeziora"></div>\n                        <div data-fields="odleglosc_od_szkoly"></div>\n                        <div data-fields="tereny_rekreacyjne"></div>\n                        <div data-fields="odleglosc_od_centrum"></div>\n                        <div data-fields="odleglosc_od_miasta"></div>\n                        <div data-fields="odleglosc_od_stacji"></div>\n                        <div data-fields="data_podpisania_umowy"></div>\n                    </div><!-- block-a -->\n                    <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n                        <div data-fields="odleglosc_od_szosy"></div>\n                        <div data-fields="w_poblizu"></div>\n                        <div data-fields="glosnosc"></div>\n                        <div data-fields="uklad_mieszkania"></div>\n                        <div data-fields="zabezpieczenia"></div>\n                        <div data-fields="odleglosc_od_przedszkola"></div>\n                        <div data-fields="dodatkowe_oplaty"></div>\n                        <div data-fields="rodzaj_mieszkania"></div>\n                        <div data-fields="odleglosc_od_przystanku"></div>\n                        <div data-fields="powierzchnia_biurowa"></div>\n                        <div data-fields="adres_wewnetrzny"></div>\n                    </div><!-- block-b -->\n                    </div><!-- grid-a -->\n            </div><!-- tab -->\n\n            <div id="tab6" class="ui-content">\n                <div class=\'ui-grid-a\'>\n                    <div class=\'ui-block-a\'>\n                    zdjęcia\n                    </div><!-- block-a -->\n                    <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n                    </div><!-- block-b -->\n                    </div><!-- grid-a -->\n            </div><!-- tab -->\n</div>\n\n\n\n  ');
+    
+      if (this.is_admin) {
+        __out.push('\n    ');
+        if (this.mode === 'add') {
+          __out.push('\n    <a id="branch-add-refresh" href=\'/oddzialy/dodaj\' class="ui-btn ui-btn-inline ui-icon-recycle ui-btn-icon-right">Wyczyść</a>\n    <a id="branch-add-save" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Dodaj</a>\n    ');
+        }
+        __out.push('\n    ');
+        if (this.mode === 'edit') {
+          __out.push('\n    <a id="branch-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Uaktualnij</a>\n    <a id="branch-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Skasuj</a>\n    ');
+        }
+        __out.push('\n  ');
+      }
+    
+      __out.push('\n\n</form>\n\n\n\n\n\n\n\n');
     
     }).call(this);
     

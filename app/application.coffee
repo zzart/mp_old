@@ -30,7 +30,10 @@ module.exports = class Application extends Chaplin.Application
     # Chaplin enables pushState per default and Backbone uses / as
     # the root per default. You might change that in the options
     # if necessary:
-    # @initRouter routes, pushState: false, root: '/subdir/'
+    # initRouter: ->
+    #     pushState: false # , root: '/subdir/'
+    # @initRouter routes, pushState: false # , root: '/subdir/'
+    # @initRouter routes, pushState: false
     # @initRouter routes
     # @start()
 
@@ -63,8 +66,9 @@ module.exports = class Application extends Chaplin.Application
     mediator.models = {}
     mediator.collections = {}
     mediator.schemas = {}
-    mediator.app_key = 'mp_haslo'
-    mediator.app = 'd54ee93e-60b4-11e3-b319-00241dd943c7'
+    mediator.upload_url = 'http://localhost:8080/v1/dodaj-plik'
+    mediator.app_key = 'mp'
+    mediator.app = '10cdcef6-6251-11e3-9070-00241dd943c7'
     mediator.can_edit = (is_admin, author_id, user_id) ->
         if is_admin
             return true

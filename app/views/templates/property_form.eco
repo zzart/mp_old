@@ -1,0 +1,173 @@
+<form>
+   	<div data-role="tabs">
+			<div data-role="navbar">
+				<ul>
+			      <li><a  href="#tab1"  data-ajax="false">Oferta</a></li>
+			      <li><a  href="#tab2"  data-ajax="false">Nieruchomość</a></li>
+			      <li><a  href="#tab3"  data-ajax="false">Pomieszczenia</a></li>
+			      <li><a  href="#tab4"  data-ajax="false">Adres</a></li>
+			      <li><a  href="#tab5"  data-ajax="false">Pozostałe</a></li>
+			      <li><a  href="#tab6"  data-ajax="false">Zdjęcia</a></li>
+			    </ul>
+			</div>
+
+            <div id="tab1" class="ui-content">
+                <div class='ui-grid-a'>
+                    <div class='ui-block-a'>
+                        <div data-fields="tytul"></div>
+                        <div data-fields="dodatkowy_id"></div>
+                        <div data-fields="powierzchnia_calkowita"></div>
+                        <div data-fields="opis"></div>
+                        <div data-fields="opis_angielski"></div>
+                        <div data-fields="opis_prywatny"></div>
+                        <div data-fields="opis_skrocony"></div>
+                        <div data-fields="prowizja"></div>
+                        <div data-fields="rynek"></div>
+                        <div data-fields="rodzaj_wlasnosci"></div>
+                    </div><!-- block-a -->
+                    <div class='ui-block-b ui-content' style='padding-left:10px'>
+                        <div data-fields="termin_wydania"></div>
+                        <div data-fields="stan_mieszkania"></div>
+                        <div data-fields="czynsz"></div>
+                        <div data-fields="liczba_pokoi"></div>
+                        <div data-fields="klucze"></div>
+                        <div data-fields="cena"></div>
+                        <div data-fields="data_aktualizacji"></div>
+                        <div data-fields="data_wprowadzenia"></div>
+                        <div data-fields="typ_kaucji"></div>
+                        <div data-fields="bez_prowizji"></div>
+                        <div data-fields="rynek_pierwotny"></div>
+                        <div data-fields="inwestycja"></div>
+                        <div data-fields="wylacznosc"></div>
+                        <div data-fields="podstawa_nabycia"></div>
+                    </div><!-- block-b -->
+                    </div><!-- grid-a -->
+            </div><!-- tab -->
+
+            <div id="tab2" class="ui-content">
+                <div class='ui-grid-a'>
+                    <div class='ui-block-a'>
+                        <div data-fields="piwnica"></div>
+                        <div data-fields="rodzaj_budynku"></div>
+                        <div data-fields="material_budynku"></div>
+                        <div data-fields="garaz"></div>
+                        <div data-fields="udogodnienia"></div>
+                        <div data-fields="balkon"></div>
+                        <div data-fields="parking"></div>
+                        <div data-fields="wyposazenie"></div>
+                        <div data-fields="media"></div>
+                    </div><!-- block-a -->
+                    <div class='ui-block-b ui-content' style='padding-left:10px'>
+                        <div data-fields="ilosc_poziomow"></div>
+                        <div data-fields="pietro"></div>
+                        <div data-fields="rok_budowy"></div>
+                        <div data-fields="liczba_pieter"></div>
+                        <div data-fields="przeznaczenie"></div>
+                        <div data-fields="okna"></div>
+                        <div data-fields="ogrzewanie"></div>
+                        <div data-fields="ogrodek"></div>
+                        <div data-fields="komorka"></div>
+                    </div><!-- block-b -->
+                    </div><!-- grid-a -->
+            </div><!-- tab -->
+
+            <div id="tab3" class="ui-content">
+                <div class='ui-grid-a'>
+                    <div class='ui-block-a'>
+                        <div data-fields="liczba_lazienek"></div>
+                        <div data-fields="powierzchnia_wc"></div>
+                        <div data-fields="powierzchnia_piwnicy"></div>
+                        <div data-fields="powierzchnia_balkonu"></div>
+                        <div data-fields="powierzchnia_uzytkowa"></div>
+                        <div data-fields="dwupoziomowe"></div>
+                        <div data-fields="ekspozycja_okien"></div>
+                        <div data-fields="podlogi"></div>
+                        <div data-fields="umeblowanie"></div>
+                    </div><!-- block-a -->
+                    <div class='ui-block-b ui-content' style='padding-left:10px'>
+                        <div data-fields="stan_instalacji"></div>
+                        <div data-fields="sciany_lazienek"></div>
+                        <div data-fields="wyposazenie_kuchni"></div>
+                        <div data-fields="goraca_woda"></div>
+                        <div data-fields="stan_lazienek"></div>
+                        <div data-fields="lazienka"></div>
+                        <div data-fields="powierzchnia_lazienek"></div>
+                        <div data-fields="powierzchnia_kuchni"></div>
+                        <div data-fields="kuchnia"></div>
+                        <div data-fields="liczba_wc"></div>
+                    </div><!-- block-b -->
+                    </div><!-- grid-a -->
+            </div><!-- tab -->
+
+            <div id="tab4" class="ui-content">
+                <div class='ui-grid-a'>
+                    <div class='ui-block-a'>
+                    adres
+                    </div><!-- block-a -->
+                    <div class='ui-block-b ui-content' style='padding-left:10px'>
+                    </div><!-- block-b -->
+                    </div><!-- grid-a -->
+            </div><!-- tab -->
+
+            <div id="tab5" class="ui-content">
+                <div class='ui-grid-a'>
+                    <div class='ui-block-a'>
+                        <div data-fields="typ_kaucji"></div>
+                        <div data-fields="komunikacja"></div>
+                        <div data-fields="video"></div>
+                        <div data-fields="odleglosc_od_jeziora"></div>
+                        <div data-fields="odleglosc_od_szkoly"></div>
+                        <div data-fields="tereny_rekreacyjne"></div>
+                        <div data-fields="odleglosc_od_centrum"></div>
+                        <div data-fields="odleglosc_od_miasta"></div>
+                        <div data-fields="odleglosc_od_stacji"></div>
+                        <div data-fields="data_podpisania_umowy"></div>
+                    </div><!-- block-a -->
+                    <div class='ui-block-b ui-content' style='padding-left:10px'>
+                        <div data-fields="odleglosc_od_szosy"></div>
+                        <div data-fields="w_poblizu"></div>
+                        <div data-fields="glosnosc"></div>
+                        <div data-fields="uklad_mieszkania"></div>
+                        <div data-fields="zabezpieczenia"></div>
+                        <div data-fields="odleglosc_od_przedszkola"></div>
+                        <div data-fields="dodatkowe_oplaty"></div>
+                        <div data-fields="rodzaj_mieszkania"></div>
+                        <div data-fields="odleglosc_od_przystanku"></div>
+                        <div data-fields="powierzchnia_biurowa"></div>
+                        <div data-fields="adres_wewnetrzny"></div>
+                    </div><!-- block-b -->
+                    </div><!-- grid-a -->
+            </div><!-- tab -->
+
+            <div id="tab6" class="ui-content">
+                <div class='ui-grid-a'>
+                    <div class='ui-block-a'>
+                    zdjęcia
+                    </div><!-- block-a -->
+                    <div class='ui-block-b ui-content' style='padding-left:10px'>
+                    </div><!-- block-b -->
+                    </div><!-- grid-a -->
+            </div><!-- tab -->
+</div>
+
+
+
+  <% if @is_admin: %>
+    <% if @mode == 'add': %>
+    <a id="branch-add-refresh" href='/oddzialy/dodaj' class="ui-btn ui-btn-inline ui-icon-recycle ui-btn-icon-right">Wyczyść</a>
+    <a id="branch-add-save" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type='submit'>Dodaj</a>
+    <% end %>
+    <% if @mode == 'edit': %>
+    <a id="branch-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type='submit'>Uaktualnij</a>
+    <a id="branch-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Skasuj</a>
+    <% end %>
+  <% end %>
+
+</form>
+
+
+
+
+
+
+

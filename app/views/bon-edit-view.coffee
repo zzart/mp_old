@@ -14,6 +14,8 @@ module.exports = class BonEditView extends View
         @model = mediator.models.bon
         @model.schema = mediator.models.user.get('schemas').company
         @template_form = template
+        # only admin can edit this
+        @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
         # events
         @delegate 'click', 'a#bon-edit-delete', @delete_bon
         @delegate 'click', 'a#bon-edit-update', @save_form
@@ -22,7 +24,11 @@ module.exports = class BonEditView extends View
         @form = new Backbone.Form {
             model: @model
             template: @template_form
-            templateData:{heading: 'Edytuj dane biura nieruchomości'}
+            templateData:{
+                heading: 'Edytuj dane biura nieruchomości'
+                mode: 'edit'
+                can_edit: @can_edit
+            }
         }
         @form.render()
 
@@ -64,15 +70,13 @@ module.exports = class BonEditView extends View
     render: =>
         super
         #set the template context of @el to our rendered form - otherwise backbone.forms get out of context
-        @publishEvent('log:info', '5')
         @$el.append(@form.el)
-        @publishEvent('log:info', '22')
 
 
     attach: =>
         super
-        @publishEvent('log:info', '6')
         @publishEvent('log:info', 'view: clientadd afterRender()')
         @publishEvent 'jqm_refersh:render'
+        @publishEvent 'disable_form', @can_edit
 
 

@@ -1,6 +1,5 @@
 template = require 'views/templates/home'
 View = require 'views/base/view'
-mediator = require 'mediator'
 module.exports = class HomePageView extends View
     autoRender: true
     containerMethod: "html"

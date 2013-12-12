@@ -19,17 +19,37 @@ module.exports = class EditView extends View
         @delegate 'click', 'a#agent-edit-delete', @delete_agent
         @delegate 'click', 'a#agent-edit-update', @save_form
         @delegate 'click', 'a.form-help', @form_help
+        @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('id'), mediator.models.user.get('id'))
 
-        @form = new Backbone.Form {
+        @form = new Backbone.Form
             model: @model
             template: @template_form
-            templateData:{
+            templateData:
                 heading: 'Edytuj agenta'
                 mode: 'edit'
                 is_admin: mediator.models.user.get('is_admin')
-            }
-        }
+                can_edit: @can_edit
+
         @form.render()
+
+
+    init_uploader: =>
+        @uploader = new qq.FineUploaderBasic
+            button: $("#avatar")[0]
+            debug: true
+            request:
+                # endpoint: mediator.upload_url
+                endpoint: 'http://localhost:8080/v1/pliki/dodaj'
+                #params: {h: hash}
+            callbacks:
+                onSubmit : @onSubmit
+                onComplete: @onComplete
+            cors: # ALL requests are expected to be cross-domain requests
+                expected: true
+    onSubmit: =>
+        console.log('submit')
+    onComplete: =>
+        console.log('compliete')
 
     form_help:(event) =>
         @publishEvent 'tell_user' , event.target.text
@@ -72,7 +92,9 @@ module.exports = class EditView extends View
 
     attach: =>
         super
+        @init_uploader()
         @publishEvent('log:info', 'view: agentadd afterRender()')
         @publishEvent 'jqm_refersh:render'
+        @publishEvent 'disable_form', @can_edit
 
 

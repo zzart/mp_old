@@ -17,3 +17,6 @@ module.exports = (match) ->
     match 'agenci/dodaj',                'agent#add'
     match 'agenci',                      'agent#list'
     match 'agenci/:id',                  'agent#show'
+    match 'oferty/dodaj',                'property#add'
+    match 'oferty',                      'property#list'
+    match 'oferty/:id',                  'property#show'

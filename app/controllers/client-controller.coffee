@@ -9,24 +9,20 @@ mediator = require 'mediator'
 module.exports = class ClientListController extends Controller
     list:(params, route, options) ->
         @publishEvent('log:info', 'in client list controller')
-        # check if collection is already fetched from server
-        if _.isObject(mediator.collections.clients)
-            @view = new ClientListView {params , region:'content'}
-        else
-            mediator.collections.clients = new Collection
-            console.log(mediator.collections.clients)
-            mediator.collections.clients.fetch
-                data: params
-                beforeSend: =>
-                    @publishEvent 'loading_start'
-                    @publishEvent 'tell_user', 'Ładuje listę klientów ...'
-                success: =>
-                    @publishEvent('log:info', "data with #{params} fetched ok" )
-                    @publishEvent 'loading_stop'
-                    @view = new ClientListView {params , region:'content'}
-                error: =>
-                    @publishEvent 'loading_stop'
-                    @publishEvent 'server_error'
+        mediator.collections.clients = new Collection
+        # console.log(mediator.collections.clients)
+        mediator.collections.clients.fetch
+            data: params
+            beforeSend: =>
+                @publishEvent 'loading_start'
+                @publishEvent 'tell_user', 'Ładuje listę klientów ...'
+            success: =>
+                @publishEvent('log:info', "data with #{params} fetched ok" )
+                @publishEvent 'loading_stop'
+                @view = new ClientListView {params , region:'content'}
+            error: =>
+                @publishEvent 'loading_stop'
+                @publishEvent 'server_error'
 
     add:(params, route, options) ->
         @publishEvent('log:info', 'in clientadd controller')

@@ -29,18 +29,18 @@
                 <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">
                     <h4>Dodaj ofertę</h4>
                     <ul data-role="listview">
-                        <li><a href="dodaj_oferte?sch=1"    >Mieszkania Wynajem</a></li>
-                        <li><a href="dodaj_oferte?sch=2"    >Mieszkania Sprzedaż</a></li>
-                        <li><a href="dodaj_oferte?sch=3"    >Domy Wynajem</a></li>
-                        <li><a href="dodaj_oferte?sch=4"    >Domy Sprzedaż</a></li>
-                        <li><a href="dodaj_oferte?sch=5"    >Grunty Dzierżawa</a></li>
-                        <li><a href="dodaj_oferte?sch=6"    >Grunty Sprzedaż</a></li>
-                        <li><a href="dodaj_oferte?sch=7"    >Lokale Wynajem</a></li>
-                        <li><a href="dodaj_oferte?sch=8"    >Lokale Sprzedaż</a></li>
-                        <li><a href="dodaj_oferte?sch=9"    >Lokale użytkowe Wynajem</a></li>
-                        <li><a href="dodaj_oferte?sch=10"   >Lokale użytkowe Sprzedaż</a></li>
-                        <li><a href="dodaj_oferte?sch=11"   >Obiekty Wynajem</a></li>
-                        <li><a href="dodaj_oferte?sch=12"   >Obiekty Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj"    >Mieszkania Wynajem</a></li>
+                        <li><a href="/oferty/dodaj"    >Mieszkania Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj"    >Domy Wynajem</a></li>
+                        <li><a href="/oferty/dodaj"    >Domy Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj"    >Grunty Dzierżawa</a></li>
+                        <li><a href="/oferty/dodaj"    >Grunty Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj"    >Lokale Wynajem</a></li>
+                        <li><a href="/oferty/dodaj"    >Lokale Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj"    >Lokale użytkowe Wynajem</a></li>
+                        <li><a href="/oferty/dodaj"   >Lokale użytkowe Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj"   >Obiekty Wynajem</a></li>
+                        <li><a href="/oferty/dodaj"   >Obiekty Sprzedaż</a></li>
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
@@ -51,17 +51,25 @@
                         <li><a href="" >Oferty robocze</a></li>
                     </ul>
                 </div>
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">
+                    <h3>Kontrahenci</h3>
+                    <ul data-role="listview" >
+                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>
+                        <li ><a href="/klienci" >Moi</a></li>
+                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>
+                        <li data-role='list-divider' > </li>
+                    </ul>
+                </div>
 
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">
                     <h3>Ustawienia</h3>
                     <ul data-role="listview" >
                         <li ><a id='bon-config-link' href="" >Dane Biura Nieruchomości</a></li>
+                        <li ><a id='agent-config-link' href="" >Dane Profilu</a></li>
                         <li ><a href="/agenci/dodaj" >Dodaj Agenta</a></li>
                         <li ><a href="/agenci" >Agenci</a></li>
                         <li ><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>
                         <li ><a href="/oddzialy" >Oddziały</a></li>
-                        <li ><a href="" >Zmień Hasło</a></li>
-                        <li ><a href="" >Dane Profilu</a></li>
                         <li ><a href="" >Logo</a></li>
                         <li ><a href="" >Watermark</a></li>
                         <li ><a href="" >Importy</a></li>
@@ -82,15 +90,6 @@
                     </ul>
                 </div>
 
-    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">
-                    <h3>Kontrahenci</h3>
-                    <ul data-role="listview" >
-                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>
-                        <li ><a href="/klienci" >Moi</a></li>
-                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>
-                        <li data-role='list-divider' > </li>
-                    </ul>
-                </div>
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">
                     <h3>Narzędzia</h3>
                     <ul data-role="listview" >

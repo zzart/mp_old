@@ -21,13 +21,14 @@ exports.config =
           #'vendor/scripts/jquery.mobile-1.3.2.min.js',
           'vendor/scripts/underscore-1.4.3.js',
           'vendor/scripts/backbone-1.10.js',
-          'vendor/scripts/chaplin-0.11.js',
+          'vendor/scripts/chaplin-0.12.js',
           'vendor/scripts/backbone-forms.js',
           'vendor/scripts/mp-editors.js',
-          'vendor/scripts/default-forms-template.js',
+          # 'vendor/scripts/default-forms-template.js',
           'vendor/scripts/jquery.tablesorter.min.js',
           'vendor/scripts/hmac-sha256.js',
           'vendor/scripts/enc-base64-min.js'
+          'vendor/scripts/fineuploader-4.2.0-1.js'
         ]
         after: [
           'test/vendor/scripts/test-helper.js'
@@ -41,6 +42,7 @@ exports.config =
         before: [
                 #'vendor/styles/jquery.mobile-1.3.min.css'
                 'vendor/styles/jquery.mobile-1.4.0-rc.1.css',
+                'vendor/styles/fineuploader-4.2.0-1.css',
                 #'vendor/styles/jqm-icon-pack-fa.css',
                 ]
                 #after: ['vendor/styles/helpers.css']

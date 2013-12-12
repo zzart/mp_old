@@ -1,5 +1,5 @@
   <form>
-  <h4>Edytuj dane biura</h4>
+  <h4><%= @heading %></h4>
   <div data-fields="name"> </div>
   <div data-fields="website"> </div>
   <div data-fields="province"> </div>
@@ -10,7 +10,10 @@
   <div data-fields="regon"> </div>
   <div data-fields="email"> </div>
   <div data-fields="phone"> </div>
-  <a id="bon-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type='submit'>Uaktualnij</a>
-  <a id="bon-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Usuń konto!</a>
+  <% if @can_edit: %>
+    <% if @mode == 'edit': %>
+        <a id="bon-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type='submit'>Uaktualnij</a>
+        <a id="bon-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Usuń konto!</a>
+    <% end %>
+  <% end %>
   </form>
-

@@ -45,7 +45,7 @@ module.exports = class ClientEditView extends View
             @model.save({},{
                 success:(event) =>
                     @publishEvent 'tell_user', 'Klient zaktualizowany'
-                    Chaplin.helpers.redirectTo {url: '/klienci'}
+                    Chaplin.utils.redirectTo {url: '/klienci'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -60,7 +60,7 @@ module.exports = class ClientEditView extends View
             success: (event) =>
                 mediator.collections.clients.remove(@model)
                 @publishEvent 'tell_user', 'Klient został usunięty'
-                Chaplin.helpers.redirectTo {url: '/klienci'}
+                Chaplin.utils.redirectTo {url: '/klienci'}
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']

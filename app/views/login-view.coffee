@@ -45,8 +45,9 @@ module.exports = class LoginView extends View
                 @model.set({user_pass:@pass})
                 $('#first-name-placeholder').text(@model.get('first_name'))
                 $('#bon-config-link').attr('href', "/biura/#{@model.get('company_id')}")
+                $('#agent-config-link').attr('href', "/agenci/#{@model.get('id')}")
                 $('#login').popup('close')
-                Chaplin.helpers.redirectTo {url: ''}
+                Chaplin.utils.redirectTo {url: ''}
             error:(model, response, options) =>
                 if response.responseJSON?
                     $('.login-error').text(response.responseJSON['title'])

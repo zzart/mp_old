@@ -13,17 +13,22 @@
 
 
   /**
-   * Bootstrap 3 templates
+
    */
-  Form.template = _.template('\
-    <form class="form-horizontal" role="form" action="#" method="#" data-fields>\
-    <div class="ui-block-b"><button type="submit" data-theme="a" id="save_offer">Zapisz!</button></div>\
-    </form>\
-  ');
+// if no template is give bbf would go ahead and use fieldsets ... so leaving this for compatibility... as bbf need this !
+            Form.template = _.template('\
+                <form class="form-horizontal" role="form" action="#" method="#" data-fields>\
+                <div class="ui-block-b"><button type="submit" data-theme="a" id="save_offer">Zapisz!</button></div>\
+                </form>\
+            ');
 
-
-    Form.Fieldset.template = _.template('\
-    ');
+            Form.Fieldset.template = _.template('\
+                <fieldset data-fields>\
+                <% if (legend) { %>\
+                <legend><%= legend %></legend>\
+                <% } %>\
+                </fieldset>\
+            ');
 
 
 

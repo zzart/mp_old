@@ -10,22 +10,19 @@ module.exports = class BranchController extends Controller
     list:(params, route, options) ->
         @publishEvent('log:info', 'in branch list controller')
         # check if collection is already fetched from server
-        if _.isObject(mediator.collections.branches)
-            @view = new ListView {params , region:'content'}
-        else
-            mediator.collections.branches = new Collection
-            mediator.collections.branches.fetch
-                data: params
-                beforeSend: =>
-                    @publishEvent 'loading_start'
-                    @publishEvent 'tell_user', 'Ładuje listę oddziałów ...'
-                success: =>
-                    @publishEvent('log:info', "data with #{params} fetched ok" )
-                    @publishEvent 'loading_stop'
-                    @view = new ListView {params , region:'content'}
-                error: =>
-                    @publishEvent 'loading_stop'
-                    @publishEvent 'server_error'
+        mediator.collections.branches = new Collection
+        mediator.collections.branches.fetch
+            data: params
+            beforeSend: =>
+                @publishEvent 'loading_start'
+                @publishEvent 'tell_user', 'Ładuje listę oddziałów ...'
+            success: =>
+                @publishEvent('log:info', "data with #{params} fetched ok" )
+                @publishEvent 'loading_stop'
+                @view = new ListView {params , region:'content'}
+            error: =>
+                @publishEvent 'loading_stop'
+                @publishEvent 'server_error'
 
     add:(params, route, options) ->
         @publishEvent('log:info', 'in branchadd controller')

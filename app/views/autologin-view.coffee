@@ -19,8 +19,10 @@ module.exports = class LoginView extends View
         @publishEvent('log:error', 'autologin------')
         #check credentials and set up settings
         #get data from form
-        @user = 'zzart'
-        @pass = 'maddog'
+        # @user = 'zzart'
+        # @pass = 'maddog'
+        @user = 'test'
+        @pass = 'test'
         # -------------------------
         # generate app mac
         apphash = CryptoJS.HmacSHA256(@model.url, mediator.app_key)
@@ -38,8 +40,9 @@ module.exports = class LoginView extends View
                 @model.set({user_pass:@pass})
                 $('#first-name-placeholder').text(@model.get('first_name'))
                 $('#bon-config-link').attr('href', "/biura/#{@model.get('company_id')}")
-                $('#login').popup('close')
-                Chaplin.helpers.redirectTo {url: ''}
+                $('#agent-config-link').attr('href', "/agenci/#{@model.get('id')}")
+                # $('#login').popup('close')
+                Chaplin.utils.redirectTo {url: ''}
             error:(model, response, options) =>
                 if response.responseJSON?
                     $('.login-error').text(response.responseJSON['title'])

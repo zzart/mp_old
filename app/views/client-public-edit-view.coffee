@@ -30,7 +30,6 @@ module.exports = class ClientEditView extends View
             templateData:{
                 heading: 'Edytuj kontrahenta'
                 mode: 'edit'
-                can_edit: false
                 can_edit: @can_edit
             }
         }

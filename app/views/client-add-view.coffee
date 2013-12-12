@@ -41,7 +41,7 @@ module.exports = class ClientAddView extends View
                         # add it to collection so we don't need to use server ...
                         mediator.collections.clients.add(@model)
                     @publishEvent 'tell_user', 'Klient dodany'
-                    Chaplin.helpers.redirectTo {url: '/klienci'}
+                    Chaplin.utils.redirectTo {url: '/klienci'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -52,7 +52,7 @@ module.exports = class ClientAddView extends View
             @publishEvent 'tell_user', 'Błąd w formularzu!'
 
     refresh_form: =>
-        Chaplin.helpers.redirectTo {url: '/klienci/dodaj'}
+        Chaplin.utils.redirectTo {url: '/klienci/dodaj'}
 
     render: =>
         super

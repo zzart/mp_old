@@ -2,9 +2,9 @@ $(document).on("mobileinit", function () {
   $.mobile.ajaxEnabled = false;
   $.mobile.hashListeningEnabled = false;
   //$.mobile.pushStateEnabled = false;
-  
-  // delegating all the events to chaplin 
-  //$.mobile.linkBindingEnabled = false; // caused conflicts with jqm popups and other widgets relayed to #tags so OFF for now
+
+  // delegating all the events to chaplin
+  $.mobile.linkBindingEnabled = false; // caused conflicts with jqm popups and other widgets relayed to #tags so OFF for now
   $.mobile.changePage.defaults.changeHash = false;
 
   $.mobile.defaultDialogTransition = "none";
