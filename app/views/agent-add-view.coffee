@@ -44,7 +44,7 @@ module.exports = class AddView extends View
                         # add it to collection so we don't need to use server ...
                         mediator.collections.agents.add(@model)
                     @publishEvent 'tell_user', 'Agent dodany'
-                    Chaplin.helpers.redirectTo {url: '/agenci'}
+                    Chaplin.utils.redirectTo {url: '/agenci'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']

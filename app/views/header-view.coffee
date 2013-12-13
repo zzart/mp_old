@@ -14,7 +14,7 @@ module.exports = class HeaderView extends View
         mediator.user = {}
         mediator.controllers = {}
         mediator.models = {}
-        Chaplin.helpers.redirectTo {url: '/login'}
+        Chaplin.utils.redirectTo {url: '/login'}
 
     attach: =>
         super

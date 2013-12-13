@@ -1,0 +1,7 @@
+ <div data-role="navbar">
+        <ul>
+            <li><button id="delete-button" class="ui-btn ui-btn-icon-top ui-icon-delete" disabled>Usuń</button></li>
+            <li><button id="save-button" class="ui-btn ui-btn-icon-top ui-icon-check" >Zapisz</button></li>
+            <li><button id="save-and-add-button" class="ui-btn ui-btn-icon-top ui-icon-forward" disabled>Zapisz i dodaj następny</button></li>
+        </ul>
+    </div><!-- /navbar -->

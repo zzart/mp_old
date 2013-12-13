@@ -60,7 +60,7 @@ module.exports = class AgentController extends Controller
                     @publishEvent 'loading_stop'
                     if not _.isObject(mediator.collections.agents.get(params.id))
                         @publishEvent 'tell_user', 'Agent nie został znaleziony'
-                        Chaplin.helpers.redirectTo {url: '/agenci'}
+                        Chaplin.utils.redirectTo {url: '/agenci'}
                 error: =>
                     @publishEvent 'loading_stop'
                     @publishEvent 'server_error'

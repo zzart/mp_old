@@ -5,7 +5,7 @@ module.exports = class FooterView extends View
     template: template
     containerMethod : 'html'
     id: 'footer'
-    attributes: { 'data-role':'footer', 'data-position':'fixed' }
+    attributes: { 'data-role':'footer', 'data-position':'fixed' , 'data-theme':'b' }
     attach: =>
         super
-        @publishEvent('log:info', 'FooterView:attach()')
+        @publishEvent('log:info', 'FooterView:attach')

@@ -21,9 +21,10 @@ module.exports = class PropertyAddView extends View
         @delegate 'click', '#btwo', @tabs
         @delegate 'click', '#bthree', @tabs
 
+
         @form = new Backbone.Form {
             model: @model
-            template: @template_form
+            template: _.template(mediator.models.user.get('schemas').mieszkania_form)
             templateData:{
                 heading: 'Dodaj mieszkanie'
                 mode: 'add'
@@ -50,7 +51,7 @@ module.exports = class PropertyAddView extends View
         #                     # add it to collection so we don't need to use server ...
         #                     mediator.collections.property.add(@model)
         #                 @publishEvent 'tell_user', 'Oddział dodany'
-        #                 Chaplin.helpers.redirectTo {url: '/oddzialy'}
+        #                 Chaplin.utils.redirectTo {url: '/oddzialy'}
         #             error:(model, response, options) =>
         #                 if response.responseJSON?
         #                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']

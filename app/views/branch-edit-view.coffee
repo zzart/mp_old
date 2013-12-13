@@ -41,7 +41,7 @@ module.exports = class BranchEditView extends View
             @model.save({},{
                 success:(event) =>
                     @publishEvent 'tell_user', 'Oddział zaktualizowany'
-                    Chaplin.helpers.redirectTo {url: '/oddzialy'}
+                    Chaplin.utils.redirectTo {url: '/oddzialy'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -57,7 +57,7 @@ module.exports = class BranchEditView extends View
             success: (event) =>
                 mediator.collections.branches.remove(@model)
                 @publishEvent 'tell_user', 'Oddział został usunięty'
-                Chaplin.helpers.redirectTo {url: '/oddzialy'}
+                Chaplin.utils.redirectTo {url: '/oddzialy'}
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']

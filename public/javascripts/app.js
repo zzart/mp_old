@@ -316,7 +316,7 @@ module.exports = AgentController = (function(_super) {
           _this.publishEvent('loading_stop');
           if (!_.isObject(mediator.collections.agents.get(params.id))) {
             _this.publishEvent('tell_user', 'Agent nie został znaleziony');
-            return Chaplin.helpers.redirectTo({
+            return Chaplin.utils.redirectTo({
               url: '/agenci'
             });
           }
@@ -845,11 +845,11 @@ module.exports = LoginController = (function(_super) {
 });
 
 ;require.register("controllers/property-controller", function(exports, require, module) {
-var AddView, Collection, Controller, Model, OfferListView, PropertyController, mediator,
+var AddView, Collection, Controller, Model, NavFooter, OfferListView, PropertyController, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-Controller = require('controllers/structure-controller');
+Controller = require('controllers/auth-controller');
 
 OfferListView = require('views/offer-list-view');
 
@@ -858,6 +858,8 @@ Collection = require('models/offer-list-collection');
 Model = require('models/property-model');
 
 AddView = require('views/property-add-view');
+
+NavFooter = require('views/footer-nav-view');
 
 mediator = require('mediator');
 
@@ -902,6 +904,9 @@ module.exports = PropertyController = (function(_super) {
     mediator.models.property = new Model;
     mediator.models.property.schema = _.clone(schema);
     this.publishEvent('log:info', "init view property controller");
+    this.compose('footer-nav', NavFooter, {
+      region: 'footer'
+    });
     this.view = new AddView({
       params: params,
       region: 'content'
@@ -980,11 +985,19 @@ Application = require('application');
 routes = require('routes');
 
 $(function() {
-  return new Application({
+  new Application({
     controllerSuffix: '-controller',
     pushState: false,
     routes: routes
   });
+  Storage.prototype.setObject = function(key, value) {
+    return this.setItem(key, JSON.stringify(value));
+  };
+  return Storage.prototype.getObject = function(key) {
+    var value;
+    value = this.getItem(key);
+    return value && JSON.parse(value);
+  };
 });
 
 });
@@ -1540,7 +1553,7 @@ module.exports = AddView = (function(_super) {
             mediator.collections.agents.add(_this.model);
           }
           _this.publishEvent('tell_user', 'Agent dodany');
-          return Chaplin.helpers.redirectTo({
+          return Chaplin.utils.redirectTo({
             url: '/agenci'
           });
         },
@@ -1689,7 +1702,7 @@ module.exports = EditView = (function(_super) {
       return this.model.save({}, {
         success: function(event) {
           _this.publishEvent('tell_user', 'Agent zaktualizowany');
-          return Chaplin.helpers.redirectTo({
+          return Chaplin.utils.redirectTo({
             url: '/agenci'
           });
         },
@@ -1712,7 +1725,7 @@ module.exports = EditView = (function(_super) {
       success: function(event) {
         mediator.collections.agents.remove(_this.model);
         _this.publishEvent('tell_user', 'Agent został usunięty');
-        return Chaplin.helpers.redirectTo({
+        return Chaplin.utils.redirectTo({
           url: '/agenci'
         });
       },
@@ -2285,7 +2298,7 @@ module.exports = ClientAddView = (function(_super) {
             mediator.collections.branches.add(_this.model);
           }
           _this.publishEvent('tell_user', 'Oddział dodany');
-          return Chaplin.helpers.redirectTo({
+          return Chaplin.utils.redirectTo({
             url: '/oddzialy'
           });
         },
@@ -2401,7 +2414,7 @@ module.exports = BranchEditView = (function(_super) {
       return this.model.save({}, {
         success: function(event) {
           _this.publishEvent('tell_user', 'Oddział zaktualizowany');
-          return Chaplin.helpers.redirectTo({
+          return Chaplin.utils.redirectTo({
             url: '/oddzialy'
           });
         },
@@ -2424,7 +2437,7 @@ module.exports = BranchEditView = (function(_super) {
       success: function(event) {
         mediator.collections.branches.remove(_this.model);
         _this.publishEvent('tell_user', 'Oddział został usunięty');
-        return Chaplin.helpers.redirectTo({
+        return Chaplin.utils.redirectTo({
           url: '/oddzialy'
         });
       },
@@ -3137,7 +3150,7 @@ module.exports = ClientEditView = (function(_super) {
       return this.model.save({}, {
         success: function(event) {
           _this.publishEvent('tell_user', 'Klient zaktualizowany');
-          return Chaplin.helpers.redirectTo({
+          return Chaplin.utils.redirectTo({
             url: '/klienci-wspolni'
           });
         },
@@ -3160,7 +3173,7 @@ module.exports = ClientEditView = (function(_super) {
       success: function(event) {
         mediator.collections.clients_public.remove(_this.model);
         _this.publishEvent('tell_user', 'Klient został usunięty');
-        return Chaplin.helpers.redirectTo({
+        return Chaplin.utils.redirectTo({
           url: '/klienci-wspolni'
         });
       },
@@ -3417,6 +3430,49 @@ module.exports = ConfirmView = (function(_super) {
 
 });
 
+;require.register("views/footer-nav-view", function(exports, require, module) {
+var FooterView, View, template,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+template = require('views/templates/footer_navbar');
+
+View = require('views/base/view');
+
+module.exports = FooterView = (function(_super) {
+
+  __extends(FooterView, _super);
+
+  function FooterView() {
+    this.attach = __bind(this.attach, this);
+    return FooterView.__super__.constructor.apply(this, arguments);
+  }
+
+  FooterView.prototype.template = template;
+
+  FooterView.prototype.containerMethod = 'html';
+
+  FooterView.prototype.id = 'footer';
+
+  FooterView.prototype.attributes = {
+    'data-role': 'footer',
+    'data-position': 'fixed',
+    'data-theme': 'b'
+  };
+
+  FooterView.prototype.attach = function() {
+    FooterView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'FooterNav___View:attach()');
+    return this.publishEvent('jqm_page_refersh:render');
+  };
+
+  return FooterView;
+
+})(View);
+
+});
+
 ;require.register("views/footer-view", function(exports, require, module) {
 var FooterView, View, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -3444,12 +3500,13 @@ module.exports = FooterView = (function(_super) {
 
   FooterView.prototype.attributes = {
     'data-role': 'footer',
-    'data-position': 'fixed'
+    'data-position': 'fixed',
+    'data-theme': 'b'
   };
 
   FooterView.prototype.attach = function() {
     FooterView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'FooterView:attach()');
+    return this.publishEvent('log:info', 'FooterView:attach');
   };
 
   return FooterView;
@@ -3497,7 +3554,7 @@ module.exports = HeaderView = (function(_super) {
     mediator.user = {};
     mediator.controllers = {};
     mediator.models = {};
-    return Chaplin.helpers.redirectTo({
+    return Chaplin.utils.redirectTo({
       url: '/login'
     });
   };
@@ -4157,7 +4214,7 @@ module.exports = PropertyAddView = (function(_super) {
     this.delegate('click', '#bthree', this.tabs);
     this.form = new Backbone.Form({
       model: this.model,
-      template: this.template_form,
+      template: _.template(mediator.models.user.get('schemas').mieszkania_form),
       templateData: {
         heading: 'Dodaj mieszkanie',
         mode: 'add',
@@ -5249,6 +5306,57 @@ module.exports = function (__obj) {
 }
 });
 
+;require.register("views/templates/footer_navbar", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+    
+      __out.push(' <div data-role="navbar">\n        <ul>\n            <li><button id="delete-button" class="ui-btn ui-btn-icon-top ui-icon-delete" disabled>Usuń</button></li>\n            <li><button id="save-button" class="ui-btn ui-btn-icon-top ui-icon-check" >Zapisz</button></li>\n            <li><button id="save-and-add-button" class="ui-btn ui-btn-icon-top ui-icon-forward" disabled>Zapisz i dodaj następny</button></li>\n        </ul>\n    </div><!-- /navbar -->\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
 ;require.register("views/templates/header_base", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
@@ -5290,7 +5398,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('    <a href=\'#left-panel\' data-icon=\'grid\' data-theme="b">Menu</a>\n    <h1>Mobilny Pośrednik</h1>\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <a href="#info" data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</a>\n        <button id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-user"></button>\n    </div>\n');
+      __out.push('    <a href=\'#left-panel\' data-icon=\'grid\' data-theme="b">Menu</a>\n    <h1>Mobilny Pośrednik</h1>\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <a href="#info" data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</a>\n        <button id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-power"></button>\n    </div>\n');
     
     }).call(this);
     

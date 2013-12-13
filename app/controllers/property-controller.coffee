@@ -1,9 +1,10 @@
-Controller = require 'controllers/structure-controller'
-# Controller = require 'controllers/auth-controller'
+#Controller = require 'controllers/structure-controller'
+Controller = require 'controllers/auth-controller'
 OfferListView = require 'views/offer-list-view'
 Collection = require 'models/offer-list-collection'
 Model = require 'models/property-model'
 AddView = require 'views/property-add-view'
+NavFooter = require 'views/footer-nav-view'
 mediator =  require 'mediator'
 
 module.exports = class PropertyController extends Controller
@@ -23,12 +24,14 @@ module.exports = class PropertyController extends Controller
                 @publishEvent 'loading_stop'
                 @publishEvent 'server_error'
 
+
     add:(params, route, options) ->
         @publishEvent('log:info', "in add property controller" )
         schema = mediator.models.user.get('schemas').mieszkania
         mediator.models.property = new Model
         mediator.models.property.schema = _.clone(schema)
         @publishEvent('log:info', "init view property controller" )
+        @compose 'footer-nav', NavFooter, region:'footer'
         @view = new AddView {params, region:'content'}
         @publishEvent('log:info', "after init view property controller" )
 

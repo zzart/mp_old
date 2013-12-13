@@ -61,7 +61,7 @@ module.exports = class EditView extends View
             @model.save({},{
                 success:(event) =>
                     @publishEvent 'tell_user', 'Agent zaktualizowany'
-                    Chaplin.helpers.redirectTo {url: '/agenci'}
+                    Chaplin.utils.redirectTo {url: '/agenci'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -77,7 +77,7 @@ module.exports = class EditView extends View
             success: (event) =>
                 mediator.collections.agents.remove(@model)
                 @publishEvent 'tell_user', 'Agent został usunięty'
-                Chaplin.helpers.redirectTo {url: '/agenci'}
+                Chaplin.utils.redirectTo {url: '/agenci'}
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
