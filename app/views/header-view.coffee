@@ -8,6 +8,7 @@ module.exports = class HeaderView extends View
     id: 'header'
     attributes: { 'data-role':'header' }
     initialize: ->
+        super
         @delegate 'click', '#first-name-placeholder', @login_screen
 
     login_screen: ->

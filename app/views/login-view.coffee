@@ -43,6 +43,8 @@ module.exports = class LoginView extends View
                 @publishEvent('log:info', 'login SUCCESS')
                 @model.set({is_logged:true})
                 @model.set({user_pass:@pass})
+                localStorage.clear() #clear old rubbish
+                localStorage.setObject('schemas', @model.get('schemas'))
                 $('#first-name-placeholder').text(@model.get('first_name'))
                 $('#bon-config-link').attr('href', "/biura/#{@model.get('company_id')}")
                 $('#agent-config-link').attr('href', "/agenci/#{@model.get('id')}")

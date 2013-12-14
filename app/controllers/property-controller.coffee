@@ -4,7 +4,6 @@ OfferListView = require 'views/offer-list-view'
 Collection = require 'models/offer-list-collection'
 Model = require 'models/property-model'
 AddView = require 'views/property-add-view'
-NavFooter = require 'views/footer-nav-view'
 mediator =  require 'mediator'
 
 module.exports = class PropertyController extends Controller
@@ -27,12 +26,12 @@ module.exports = class PropertyController extends Controller
 
     add:(params, route, options) ->
         @publishEvent('log:info', "in add property controller" )
-        schema = mediator.models.user.get('schemas').mieszkania
+        console.log(params, route, options)
+        @schema =localStorage.getObject('schemas').mieszkania
         mediator.models.property = new Model
-        mediator.models.property.schema = _.clone(schema)
+        mediator.models.property.schema = _.clone(@schema)
         @publishEvent('log:info', "init view property controller" )
-        @compose 'footer-nav', NavFooter, region:'footer'
-        @view = new AddView {params, region:'content'}
+        @view = new AddView {form_name:'mieszkania_form', model:mediator.models.property, region:'content'}
         @publishEvent('log:info', "after init view property controller" )
 
     show:(params, route, options) ->

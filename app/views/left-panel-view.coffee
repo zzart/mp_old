@@ -17,6 +17,7 @@ module.exports = class LeftPanelView extends View
     template: template
 
     initialize: ->
+        super
         #need to wrap and unwrap div regions - required markap for panel
         @delegate 'panelbeforeopen', @panel_beforeopen
         @delegate 'panelbeforeclose', @panel_beforeclose

@@ -1,4 +1,4 @@
-template = require 'views/templates/footer_base'
+template = require 'views/templates/footer_list'
 View = require 'views/base/view'
 
 module.exports = class FooterView extends View
@@ -9,4 +9,5 @@ module.exports = class FooterView extends View
     attach: =>
         super
         @publishEvent('log:info', 'FooterView:attach')
+        #@publishEvent 'jqm_page_refersh:render'
         @publishEvent 'jqm_footer_refersh:render'

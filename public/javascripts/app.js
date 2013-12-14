@@ -844,98 +844,23 @@ module.exports = LoginController = (function(_super) {
 
 });
 
-;require.register("controllers/property-controller", function(exports, require, module) {
-var AddView, Collection, Controller, Model, NavFooter, OfferListView, PropertyController, mediator,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Controller = require('controllers/auth-controller');
-
-OfferListView = require('views/offer-list-view');
-
-Collection = require('models/offer-list-collection');
-
-Model = require('models/property-model');
-
-AddView = require('views/property-add-view');
-
-NavFooter = require('views/footer-nav-view');
-
-mediator = require('mediator');
-
-module.exports = PropertyController = (function(_super) {
-
-  __extends(PropertyController, _super);
-
-  function PropertyController() {
-    return PropertyController.__super__.constructor.apply(this, arguments);
-  }
-
-  PropertyController.prototype.list = function(params, route, options) {
-    var _this = this;
-    this.publishEvent('log:info', "in list property controller");
-    this.collection = new Collection;
-    return this.collection.fetch({
-      data: params,
-      beforeSend: function() {
-        _this.publishEvent('loading_start');
-        return _this.publishEvent('tell_user', 'Ładuje oferty...');
-      },
-      success: function() {
-        _this.publishEvent('log:info', "data with " + params + " fetched ok");
-        _this.publishEvent('loading_stop');
-        return _this.view = new OfferListView({
-          collection: _this.collection,
-          params: params,
-          region: 'content'
-        });
-      },
-      error: function() {
-        _this.publishEvent('loading_stop');
-        return _this.publishEvent('server_error');
-      }
-    });
-  };
-
-  PropertyController.prototype.add = function(params, route, options) {
-    var schema;
-    this.publishEvent('log:info', "in add property controller");
-    schema = mediator.models.user.get('schemas').mieszkania;
-    mediator.models.property = new Model;
-    mediator.models.property.schema = _.clone(schema);
-    this.publishEvent('log:info', "init view property controller");
-    this.compose('footer-nav', NavFooter, {
-      region: 'footer'
-    });
-    this.view = new AddView({
-      params: params,
-      region: 'content'
-    });
-    return this.publishEvent('log:info', "after init view property controller");
-  };
-
-  PropertyController.prototype.show = function(params, route, options) {
-    return this.publishEvent('log:info', "in show property controller");
-  };
-
-  return PropertyController;
-
-})(Controller);
-
-});
-
 ;require.register("controllers/structure-controller", function(exports, require, module) {
-var ConfirmView, Controller, Footer, Header, InfoView, LeftPanelView, StructureController, StructureView,
+var ConfirmView, Controller, Footer, Header, InfoView, LeftPanelView, ListFooter, NavFooter, StructureController, StructureView,
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 Controller = require('controllers/base/controller');
 
 StructureView = require('views/structure-view');
 
+Header = require('views/header-view');
+
 Footer = require('views/footer-view');
 
-Header = require('views/header-view');
+NavFooter = require('views/footer-edit-view');
+
+ListFooter = require('views/footer-list-view');
 
 LeftPanelView = require('views/left-panel-view');
 
@@ -951,15 +876,28 @@ module.exports = StructureController = (function(_super) {
     return StructureController.__super__.constructor.apply(this, arguments);
   }
 
-  StructureController.prototype.beforeAction = function() {
-    this.publishEvent('log:info', 'StructureController.beforeAction()');
+  StructureController.prototype.beforeAction = function(params, route) {
+    var edit_footer, list_footer, _ref, _ref1;
+    this.publishEvent('log:info', 'StructureController start ------------');
     this.compose('structure', StructureView);
     this.compose('header', Header, {
       region: 'header'
     });
-    this.compose('footer', Footer, {
-      region: 'footer'
-    });
+    edit_footer = ['property#add', 'property#show', 'client#add', 'client#show', 'branch#add', 'branch#show', 'agent#add', 'agent#show', 'bon#show'];
+    list_footer = ['property#list', 'client#list', 'branch#list', 'agent#list', 'bon#list'];
+    if (_ref = route.name, __indexOf.call(edit_footer, _ref) >= 0) {
+      this.compose('footer-nav', NavFooter, {
+        region: 'footer'
+      });
+    } else if (_ref1 = route.name, __indexOf.call(list_footer, _ref1) >= 0) {
+      this.compose('footer-list', ListFooter, {
+        region: 'footer'
+      });
+    } else {
+      this.compose('footer', Footer, {
+        region: 'footer'
+      });
+    }
     this.compose('panel-left', LeftPanelView);
     this.compose('info', InfoView, {
       region: 'info'
@@ -2008,6 +1946,8 @@ module.exports = LoginView = (function(_super) {
         _this.model.set({
           user_pass: _this.pass
         });
+        localStorage.clear();
+        localStorage.setObject('schemas', _this.model.get('schemas'));
         $('#first-name-placeholder').text(_this.model.get('first_name'));
         $('#bon-config-link').attr('href', "/biura/" + (_this.model.get('company_id')));
         $('#agent-config-link').attr('href', "/agenci/" + (_this.model.get('id')));
@@ -3430,13 +3370,185 @@ module.exports = ConfirmView = (function(_super) {
 
 });
 
-;require.register("views/footer-nav-view", function(exports, require, module) {
+;require.register("views/edit-view", function(exports, require, module) {
+var EditView, View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+mediator = require('mediator');
+
+module.exports = EditView = (function(_super) {
+
+  __extends(EditView, _super);
+
+  function EditView() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.save_action = __bind(this.save_action, this);
+
+    this.get_form = __bind(this.get_form, this);
+
+    this.save_and_add_action = __bind(this.save_and_add_action, this);
+
+    this.save_action = __bind(this.save_action, this);
+
+    this.delete_action = __bind(this.delete_action, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return EditView.__super__.constructor.apply(this, arguments);
+  }
+
+  EditView.prototype.autoRender = true;
+
+  EditView.prototype.containerMethod = "html";
+
+  EditView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  EditView.prototype.id = 'content';
+
+  EditView.prototype.className = 'ui-content';
+
+  EditView.prototype.initialize = function(params) {
+    EditView.__super__.initialize.apply(this, arguments);
+    this.params = params;
+    this.model = this.params.model;
+    this.form_name = this.params.form_name;
+    this.subscribeEvent('delete:clicked', this.delete_action);
+    this.subscribeEvent('save:clicked', this.save_action);
+    return this.subscribeEvent('save-and-add:clicked', this.save_and_add_action);
+  };
+
+  EditView.prototype.delete_action = function() {
+    return this.publishEvent('log:info', 'delete  caught');
+  };
+
+  EditView.prototype.save_action = function() {
+    return this.publishEvent('log:info', 'save_action  caught');
+  };
+
+  EditView.prototype.save_and_add_action = function() {
+    return this.publishEvent('log:info', 'save_and_add_action  caught');
+  };
+
+  EditView.prototype.get_form = function() {
+    this.publishEvent('log:info', 1);
+    this.form = new Backbone.Form({
+      model: this.model,
+      template: _.template(localStorage.getObject('schemas')[this.form_name])
+    });
+    this.publishEvent('log:info', 2);
+    window.form = this.form;
+    this.publishEvent('log:info', 3);
+    return this.form.render();
+  };
+
+  EditView.prototype.save_action = function() {
+    return console.log('save_action caught');
+  };
+
+  EditView.prototype.render = function() {
+    EditView.__super__.render.apply(this, arguments);
+    this.get_form();
+    return this.$el.append(this.form.el);
+  };
+
+  EditView.prototype.attach = function() {
+    EditView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'view: clientadd afterRender()');
+    return this.publishEvent('jqm_refersh:render');
+  };
+
+  return EditView;
+
+})(View);
+
+});
+
+;require.register("views/footer-edit-view", function(exports, require, module) {
 var FooterView, View, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-template = require('views/templates/footer_navbar');
+template = require('views/templates/footer_edit');
+
+View = require('views/base/view');
+
+module.exports = FooterView = (function(_super) {
+
+  __extends(FooterView, _super);
+
+  function FooterView() {
+    this.attach = __bind(this.attach, this);
+
+    this.save_and_add = __bind(this.save_and_add, this);
+
+    this["delete"] = __bind(this["delete"], this);
+
+    this.save = __bind(this.save, this);
+    return FooterView.__super__.constructor.apply(this, arguments);
+  }
+
+  FooterView.prototype.template = template;
+
+  FooterView.prototype.containerMethod = 'html';
+
+  FooterView.prototype.id = 'footer';
+
+  FooterView.prototype.attributes = {
+    'data-role': 'footer',
+    'data-position': 'fixed',
+    'data-theme': 'b'
+  };
+
+  FooterView.prototype.initialize = function() {
+    FooterView.__super__.initialize.apply(this, arguments);
+    this.delegate('click', '#delete-button', this["delete"]);
+    this.delegate('click', '#save-button', this.save);
+    return this.delegate('click', '#save-and-add-button', this.save_and_add);
+  };
+
+  FooterView.prototype.save = function(event) {
+    event.preventDefault();
+    return this.publishEvent('save:clicked');
+  };
+
+  FooterView.prototype["delete"] = function(event) {
+    event.preventDefault();
+    return this.publishEvent('delete:clicked');
+  };
+
+  FooterView.prototype.save_and_add = function(event) {
+    event.preventDefault();
+    return this.publishEvent('save_and_add:clicked');
+  };
+
+  FooterView.prototype.attach = function() {
+    FooterView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'FooterEditView:attach()');
+    return this.publishEvent('jqm_footer_refersh:render');
+  };
+
+  return FooterView;
+
+})(View);
+
+});
+
+;require.register("views/footer-list-view", function(exports, require, module) {
+var FooterView, View, template,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+template = require('views/templates/footer_list');
 
 View = require('views/base/view');
 
@@ -3463,8 +3575,8 @@ module.exports = FooterView = (function(_super) {
 
   FooterView.prototype.attach = function() {
     FooterView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'FooterNav___View:attach()');
-    return this.publishEvent('jqm_page_refersh:render');
+    this.publishEvent('log:info', 'FooterView:attach');
+    return this.publishEvent('jqm_footer_refersh:render');
   };
 
   return FooterView;
@@ -3506,7 +3618,8 @@ module.exports = FooterView = (function(_super) {
 
   FooterView.prototype.attach = function() {
     FooterView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'FooterView:attach');
+    this.publishEvent('log:info', 'FooterView:attach');
+    return this.publishEvent('jqm_footer_refersh:render');
   };
 
   return FooterView;
@@ -3547,6 +3660,7 @@ module.exports = HeaderView = (function(_super) {
   };
 
   HeaderView.prototype.initialize = function() {
+    HeaderView.__super__.initialize.apply(this, arguments);
     return this.delegate('click', '#first-name-placeholder', this.login_screen);
   };
 
@@ -3682,6 +3796,8 @@ module.exports = Layout = (function(_super) {
   function Layout() {
     this.jqm_recreate = __bind(this.jqm_recreate, this);
 
+    this.jqm_footer_refersh = __bind(this.jqm_footer_refersh, this);
+
     this.jqm_page_refersh = __bind(this.jqm_page_refersh, this);
 
     this.jqm_refersh = __bind(this.jqm_refersh, this);
@@ -3697,6 +3813,8 @@ module.exports = Layout = (function(_super) {
     this.log_info = __bind(this.log_info, this);
 
     this.log_debug = __bind(this.log_debug, this);
+
+    this.disable_buttons = __bind(this.disable_buttons, this);
 
     this.disable_form = __bind(this.disable_form, this);
 
@@ -3724,8 +3842,10 @@ module.exports = Layout = (function(_super) {
       this.subscribeEvent('schema_change', this.schema_change);
       this.subscribeEvent('jqm_refersh:render', this.jqm_refersh);
       this.subscribeEvent('jqm_page_refersh:render', this.jqm_page_refersh);
+      this.subscribeEvent('jqm_footer_refersh:render', this.jqm_footer_refersh);
       this.subscribeEvent('loading_start', this.jqm_loading_start);
       this.subscribeEvent('loading_stop', this.jqm_loading_stop);
+      this.subscribeEvent('disable_buttons', this.disable_buttons);
       this.subscribeEvent('disable_form', this.disable_form);
       this.subscribeEvent('server_error', this.server_error);
       this.subscribeEvent('tell_user', this.tell_user);
@@ -3790,6 +3910,18 @@ module.exports = Layout = (function(_super) {
     }
   };
 
+  Layout.prototype.disable_buttons = function(can_edit, edit_type) {
+    this.log.info('form buttons disable caught');
+    if (edit_type === 'add') {
+      $("#delete-button").attr('disabled', true);
+    }
+    if (!can_edit) {
+      $("#delete-button").attr('disabled', true);
+      $("#save-button").attr('disabled', true);
+      return $("#save-and-add-button").attr('disabled', true);
+    }
+  };
+
   Layout.prototype.log_debug = function(option) {
     return this.log.debug(option);
   };
@@ -3832,6 +3964,11 @@ module.exports = Layout = (function(_super) {
   Layout.prototype.jqm_page_refersh = function() {
     this.log.info('layout: event jqm_page_refresh caugth');
     return $("#page").enhanceWithin();
+  };
+
+  Layout.prototype.jqm_footer_refersh = function() {
+    this.log.info('layout: event jqm_footer_refresh caugth');
+    return $("#footer-region").enhanceWithin();
   };
 
   Layout.prototype.jqm_recreate = function() {};
@@ -3886,6 +4023,7 @@ module.exports = LeftPanelView = (function(_super) {
   LeftPanelView.prototype.template = template;
 
   LeftPanelView.prototype.initialize = function() {
+    LeftPanelView.__super__.initialize.apply(this, arguments);
     this.delegate('panelbeforeopen', this.panel_beforeopen);
     this.delegate('panelbeforeclose', this.panel_beforeclose);
     this.delegate('panelopen', this.panel_open);
@@ -4010,6 +4148,8 @@ module.exports = LoginView = (function(_super) {
         _this.model.set({
           user_pass: _this.pass
         });
+        localStorage.clear();
+        localStorage.setObject('schemas', _this.model.get('schemas'));
         $('#first-name-placeholder').text(_this.model.get('first_name'));
         $('#bon-config-link').attr('href', "/biura/" + (_this.model.get('company_id')));
         $('#agent-config-link').attr('href', "/agenci/" + (_this.model.get('id')));
@@ -4166,14 +4306,12 @@ module.exports = OfferListView = (function(_super) {
 });
 
 ;require.register("views/property-add-view", function(exports, require, module) {
-var PropertyAddView, View, mediator, template,
+var PropertyAddView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-View = require('views/base/view');
-
-template = require('views/templates/property_form');
+View = require('views/edit-view');
 
 mediator = require('mediator');
 
@@ -4182,63 +4320,14 @@ module.exports = PropertyAddView = (function(_super) {
   __extends(PropertyAddView, _super);
 
   function PropertyAddView() {
-    this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.tabs = __bind(this.tabs, this);
-
     this.initialize = __bind(this.initialize, this);
     return PropertyAddView.__super__.constructor.apply(this, arguments);
   }
 
-  PropertyAddView.prototype.autoRender = true;
-
-  PropertyAddView.prototype.containerMethod = "html";
-
-  PropertyAddView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  PropertyAddView.prototype.id = 'content';
-
-  PropertyAddView.prototype.className = 'ui-content';
-
   PropertyAddView.prototype.initialize = function(options) {
     PropertyAddView.__super__.initialize.apply(this, arguments);
-    this.params = options.params;
-    this.model = mediator.models.property;
-    this.template_form = template;
-    this.delegate('click', '#bone', this.tabs);
-    this.delegate('click', '#btwo', this.tabs);
-    this.delegate('click', '#bthree', this.tabs);
-    this.form = new Backbone.Form({
-      model: this.model,
-      template: _.template(mediator.models.user.get('schemas').mieszkania_form),
-      templateData: {
-        heading: 'Dodaj mieszkanie',
-        mode: 'add',
-        is_admin: mediator.models.user.get('is_admin')
-      }
-    });
-    window.form = this.form;
-    return this.form.render();
-  };
-
-  PropertyAddView.prototype.tabs = function(event) {
-    event.preventDefault();
-    return console.log('click');
-  };
-
-  PropertyAddView.prototype.render = function() {
-    PropertyAddView.__super__.render.apply(this, arguments);
-    return this.$el.append(this.form.el);
-  };
-
-  PropertyAddView.prototype.attach = function() {
-    PropertyAddView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: clientadd afterRender()');
-    return this.publishEvent('jqm_refersh:render');
+    this.params = options;
+    return console.log(this.params);
   };
 
   return PropertyAddView;
@@ -5255,6 +5344,57 @@ module.exports = function (__obj) {
 }
 });
 
+;require.register("views/templates/footer_edit", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+    
+      __out.push(' <div data-role="navbar">\n        <ul>\n            <li><button id="delete-button" class="ui-btn ui-btn-icon-top ui-icon-delete">Usuń</button></li>\n            <li><button id="save-button" class="ui-btn ui-btn-icon-top ui-icon-check" >Zapisz</button></li>\n            <li><button id="save-and-add-button" class="ui-btn ui-btn-icon-top ui-icon-forward">Zapisz i dodaj następny</button></li>\n        </ul>\n    </div><!-- /navbar -->\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
 ;require.register("views/templates/footer_empty", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
@@ -5306,7 +5446,7 @@ module.exports = function (__obj) {
 }
 });
 
-;require.register("views/templates/footer_navbar", function(exports, require, module) {
+;require.register("views/templates/footer_list", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
   var __out = [], __capture = function(callback) {
@@ -5347,7 +5487,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push(' <div data-role="navbar">\n        <ul>\n            <li><button id="delete-button" class="ui-btn ui-btn-icon-top ui-icon-delete" disabled>Usuń</button></li>\n            <li><button id="save-button" class="ui-btn ui-btn-icon-top ui-icon-check" >Zapisz</button></li>\n            <li><button id="save-and-add-button" class="ui-btn ui-btn-icon-top ui-icon-forward" disabled>Zapisz i dodaj następny</button></li>\n        </ul>\n    </div><!-- /navbar -->\n');
+    
     
     }).call(this);
     
@@ -5398,7 +5538,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('    <a href=\'#left-panel\' data-icon=\'grid\' data-theme="b">Menu</a>\n    <h1>Mobilny Pośrednik</h1>\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <a href="#info" data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</a>\n        <button id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-power"></button>\n    </div>\n');
+      __out.push('    <a href=\'#left-panel\' data-icon=\'grid\' data-theme="b">Menu</a>\n    <h1>Mobilny Pośrednik</h1>\n\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</button>\n        <button id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-power"></button>\n    </div>\n');
     
     }).call(this);
     

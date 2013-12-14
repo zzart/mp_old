@@ -1,18 +1,43 @@
 Controller = require 'controllers/base/controller'
 StructureView = require 'views/structure-view'
-Footer = require 'views/footer-view'
 Header = require 'views/header-view'
+Footer = require 'views/footer-view'
+NavFooter = require 'views/footer-edit-view'
+ListFooter = require 'views/footer-list-view'
 LeftPanelView = require 'views/left-panel-view'
 InfoView = require 'views/info-view'
 ConfirmView = require 'views/confirm-view'
 
 module.exports = class StructureController extends Controller
-    beforeAction: ->
-        @publishEvent('log:info', 'StructureController.beforeAction()')
+    beforeAction: (params, route) ->
+        @publishEvent('log:info', 'StructureController start ------------')
         #should provide regions
         @compose 'structure', StructureView
         @compose 'header', Header, region: 'header'
-        @compose 'footer', Footer, region:'footer'
+        edit_footer = [
+            'property#add',
+            'property#show',
+            'client#add',
+            'client#show',
+            'branch#add',
+            'branch#show',
+            'agent#add',
+            'agent#show',
+            'bon#show'
+            ]
+        list_footer = [
+            'property#list',
+            'client#list',
+            'branch#list',
+            'agent#list',
+            'bon#list'
+            ]
+        if route.name in edit_footer
+            @compose 'footer-nav', NavFooter, region:'footer'
+        else if route.name in list_footer
+            @compose 'footer-list', ListFooter, region:'footer'
+        else
+            @compose 'footer', Footer, region:'footer'
         @compose 'panel-left', LeftPanelView
         @compose 'info', InfoView, region:'info'
         @compose 'confirm', ConfirmView, region:'confirm'
