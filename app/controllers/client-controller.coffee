@@ -1,7 +1,6 @@
 Controller = require 'controllers/auth-controller'
 ClientListView = require 'views/client-list-view'
-ClientAddView = require 'views/client-add-view'
-ClientEditView = require 'views/client-edit-view'
+ClientView = require 'views/client-view'
 Collection = require 'models/client-collection'
 Model = require 'models/client-model'
 mediator = require 'mediator'
@@ -27,12 +26,17 @@ module.exports = class ClientListController extends Controller
     add:(params, route, options) ->
         @publishEvent('log:info', 'in clientadd controller')
         mediator.models.client = new Model
-        schema = mediator.models.user.get('schemas').client
-        mediator.models.client.schema = schema
-        @view = new ClientAddView {params, region:'content'}
+        @schema =localStorage.getObject('schemas').client
+        @model = mediator.models.client
+        @model.schema = _.clone(@schema)
+        @view = new ClientView {form_name:'client_form', model:@model, can_edit:true, edit_type:'add',  region:'content'}
 
     show:(params, route, options) ->
         @publishEvent('log:info', 'in client show controller')
         @redirectTo {'/klienci'} unless _.isObject(mediator.collections.clients.get(params.id))
-        @view = new ClientEditView {params, region:'content'}
+        @schema =localStorage.getObject('schemas').client
+        @model = mediator.collections.clients.get(params.id)
+        @model.schema = _.clone(@schema)
+        @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
+        @view = new ClientView {form_name:'client_form', model:@model, can_edit:@can_edit,  region:'content'}
 

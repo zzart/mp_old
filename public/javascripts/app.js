@@ -214,7 +214,7 @@ module.exports = AddOfferController = (function(_super) {
 });
 
 ;require.register("controllers/agent-controller", function(exports, require, module) {
-var AddView, AgentController, Collection, Controller, EditView, ListView, Model, mediator,
+var AgentController, Collection, Controller, EditView, ListView, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -222,9 +222,7 @@ Controller = require('controllers/auth-controller');
 
 ListView = require('views/agent-list-view');
 
-AddView = require('views/agent-add-view');
-
-EditView = require('views/agent-edit-view');
+EditView = require('views/agent-view');
 
 Collection = require('models/agent-collection');
 
@@ -276,20 +274,24 @@ module.exports = AgentController = (function(_super) {
   AgentController.prototype.add = function(params, route, options) {
     var _this = this;
     this.publishEvent('log:info', 'in agentadd controller');
-    mediator.models.agent = new Model;
-    return mediator.models.user.fetch({
+    mediator.models.user = new Model;
+    this.model = mediator.models.user;
+    return this.model.fetch({
       beforeSend: function() {
         _this.publishEvent('loading_start');
         return _this.publishEvent('tell_user', 'Odświeżam formularz ...');
       },
       success: function() {
-        var schema;
         _this.publishEvent('log:info', "data with " + params + " fetched ok");
         _this.publishEvent('loading_stop');
-        schema = mediator.models.user.get('schemas').agent;
-        mediator.models.agent.schema = schema;
-        return _this.view = new AddView({
-          params: params,
+        _this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
+        _this.schema = localStorage.getObject('schemas').agent;
+        _this.model.schema = _.clone(_this.schema);
+        return _this.view = new EditView({
+          form_name: 'agent_form',
+          model: _this.model,
+          can_edit: _this.can_edit,
+          edit_type: 'add',
           region: 'content'
         });
       },
@@ -327,7 +329,8 @@ module.exports = AgentController = (function(_super) {
         }
       });
     }
-    return mediator.models.user.fetch({
+    this.model = mediator.models.user;
+    return this.model.fetch({
       beforeSend: function() {
         _this.publishEvent('loading_start');
         return _this.publishEvent('tell_user', 'Odświeżam formularz ...');
@@ -335,8 +338,14 @@ module.exports = AgentController = (function(_super) {
       success: function() {
         _this.publishEvent('log:info', "data with " + params + " fetched ok");
         _this.publishEvent('loading_stop');
+        _this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
+        _this.schema = localStorage.getObject('schemas').agent;
+        _this.model.schema = _.clone(_this.schema);
         return _this.view = new EditView({
-          params: params,
+          form_name: 'agent_form',
+          model: _this.model,
+          can_edit: _this.can_edit,
+          edit_type: 'add',
           region: 'content'
         });
       },
@@ -456,13 +465,13 @@ module.exports = Controller = (function(_super) {
 });
 
 ;require.register("controllers/bon-controller", function(exports, require, module) {
-var BonController, BonEditView, Controller, Model, mediator,
+var BonController, Controller, Model, View, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Controller = require('controllers/auth-controller');
 
-BonEditView = require('views/bon-edit-view');
+View = require('views/bon-view');
 
 Model = require('models/bon-model');
 
@@ -479,16 +488,22 @@ module.exports = BonController = (function(_super) {
   BonController.prototype.show = function(params, route, options) {
     var _this = this;
     console.log(params, route, options);
+    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
+    this.schema = localStorage.getObject('schemas').company;
     this.publishEvent('log:info', 'in bon show controller');
     if (_.isObject(mediator.models.bon)) {
-      return this.view = new BonEditView({
-        params: params,
+      mediator.models.bon.schema = _.clone(this.schema);
+      return this.view = new View({
+        form_name: 'bon_form',
+        model: mediator.models.bon,
+        can_edit: this.can_edit,
         region: 'content'
       });
     } else {
       mediator.models.bon = new Model({
         id: params.id
       });
+      mediator.models.bon.schema = _.clone(this.schema);
       return mediator.models.bon.fetch({
         beforeSend: function() {
           _this.publishEvent('loading_start');
@@ -497,8 +512,10 @@ module.exports = BonController = (function(_super) {
         success: function() {
           _this.publishEvent('log:info', "data with " + params + " fetched ok");
           _this.publishEvent('loading_stop');
-          return _this.view = new BonEditView({
-            params: params,
+          return _this.view = new View({
+            form_name: 'bon_form',
+            model: mediator.models.bon,
+            can_edit: _this.can_edit,
             region: 'content'
           });
         },
@@ -600,7 +617,7 @@ module.exports = BranchController = (function(_super) {
 });
 
 ;require.register("controllers/client-controller", function(exports, require, module) {
-var ClientAddView, ClientEditView, ClientListController, ClientListView, Collection, Controller, Model, mediator,
+var ClientListController, ClientListView, ClientView, Collection, Controller, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -608,9 +625,7 @@ Controller = require('controllers/auth-controller');
 
 ClientListView = require('views/client-list-view');
 
-ClientAddView = require('views/client-add-view');
-
-ClientEditView = require('views/client-edit-view');
+ClientView = require('views/client-view');
 
 Collection = require('models/client-collection');
 
@@ -652,13 +667,16 @@ module.exports = ClientListController = (function(_super) {
   };
 
   ClientListController.prototype.add = function(params, route, options) {
-    var schema;
     this.publishEvent('log:info', 'in clientadd controller');
     mediator.models.client = new Model;
-    schema = mediator.models.user.get('schemas').client;
-    mediator.models.client.schema = schema;
-    return this.view = new ClientAddView({
-      params: params,
+    this.schema = localStorage.getObject('schemas').client;
+    this.model = mediator.models.client;
+    this.model.schema = _.clone(this.schema);
+    return this.view = new ClientView({
+      form_name: 'client_form',
+      model: this.model,
+      can_edit: true,
+      edit_type: 'add',
       region: 'content'
     });
   };
@@ -670,8 +688,14 @@ module.exports = ClientListController = (function(_super) {
         '/klienci': '/klienci'
       });
     }
-    return this.view = new ClientEditView({
-      params: params,
+    this.schema = localStorage.getObject('schemas').client;
+    this.model = mediator.collections.clients.get(params.id);
+    this.model.schema = _.clone(this.schema);
+    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
+    return this.view = new ClientView({
+      form_name: 'client_form',
+      model: this.model,
+      can_edit: this.can_edit,
       region: 'content'
     });
   };
@@ -683,7 +707,7 @@ module.exports = ClientListController = (function(_super) {
 });
 
 ;require.register("controllers/client-public-controller", function(exports, require, module) {
-var ClientEditView, ClientListView, ClientPublicController, Collection, Controller, Model, mediator,
+var ClientListView, ClientPublicController, ClientView, Collection, Controller, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -693,7 +717,7 @@ ClientListView = require('views/client-public-list-view');
 
 Collection = require('models/client-public-collection');
 
-ClientEditView = require('views/client-public-edit-view');
+ClientView = require('views/client-public-view');
 
 Model = require('models/client-model');
 
@@ -737,8 +761,15 @@ module.exports = ClientPublicController = (function(_super) {
         '/klienci-wspolni': '/klienci-wspolni'
       });
     }
-    return this.view = new ClientEditView({
-      params: params,
+    this.model = mediator.collections.clients_public.get(params.id);
+    this.schema = localStorage.getObject('schemas').client;
+    this.model.schema = _.clone(this.schema);
+    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
+    return this.view = new ClientView({
+      form_name: 'client_form',
+      model: this.model,
+      can_edit: this.can_edit,
+      delete_only: true,
       region: 'content'
     });
   };
@@ -844,6 +875,82 @@ module.exports = LoginController = (function(_super) {
 
 });
 
+;require.register("controllers/property-controller", function(exports, require, module) {
+var AddView, Collection, Controller, Model, OfferListView, PropertyController, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Controller = require('controllers/auth-controller');
+
+OfferListView = require('views/offer-list-view');
+
+Collection = require('models/offer-list-collection');
+
+Model = require('models/property-model');
+
+AddView = require('views/property-add-view');
+
+mediator = require('mediator');
+
+module.exports = PropertyController = (function(_super) {
+
+  __extends(PropertyController, _super);
+
+  function PropertyController() {
+    return PropertyController.__super__.constructor.apply(this, arguments);
+  }
+
+  PropertyController.prototype.list = function(params, route, options) {
+    var _this = this;
+    this.publishEvent('log:info', "in list property controller");
+    this.collection = new Collection;
+    return this.collection.fetch({
+      data: params,
+      beforeSend: function() {
+        _this.publishEvent('loading_start');
+        return _this.publishEvent('tell_user', 'Ładuje oferty...');
+      },
+      success: function() {
+        _this.publishEvent('log:info', "data with " + params + " fetched ok");
+        _this.publishEvent('loading_stop');
+        return _this.view = new OfferListView({
+          collection: _this.collection,
+          params: params,
+          region: 'content'
+        });
+      },
+      error: function() {
+        _this.publishEvent('loading_stop');
+        return _this.publishEvent('server_error');
+      }
+    });
+  };
+
+  PropertyController.prototype.add = function(params, route, options) {
+    this.publishEvent('log:info', "in add property controller");
+    console.log(params, route, options);
+    this.schema = localStorage.getObject('schemas').mieszkania;
+    mediator.models.property = new Model;
+    mediator.models.property.schema = _.clone(this.schema);
+    this.publishEvent('log:info', "init view property controller");
+    this.view = new AddView({
+      form_name: 'flat_form',
+      model: mediator.models.property,
+      region: 'content'
+    });
+    return this.publishEvent('log:info', "after init view property controller");
+  };
+
+  PropertyController.prototype.show = function(params, route, options) {
+    return this.publishEvent('log:info', "in show property controller");
+  };
+
+  return PropertyController;
+
+})(Controller);
+
+});
+
 ;require.register("controllers/structure-controller", function(exports, require, module) {
 var ConfirmView, Controller, Footer, Header, InfoView, LeftPanelView, ListFooter, NavFooter, StructureController, StructureView,
   __hasProp = {}.hasOwnProperty,
@@ -883,8 +990,8 @@ module.exports = StructureController = (function(_super) {
     this.compose('header', Header, {
       region: 'header'
     });
-    edit_footer = ['property#add', 'property#show', 'client#add', 'client#show', 'branch#add', 'branch#show', 'agent#add', 'agent#show', 'bon#show'];
-    list_footer = ['property#list', 'client#list', 'branch#list', 'agent#list', 'bon#list'];
+    edit_footer = ['property#add', 'property#show', 'client#add', 'client#show', 'client-public#show', 'branch#add', 'branch#show', 'agent#add', 'agent#show', 'bon#show'];
+    list_footer = ['property#list', 'client#list', 'client-public#list', 'branch#list', 'agent#list', 'bon#list'];
     if (_ref = route.name, __indexOf.call(edit_footer, _ref) >= 0) {
       this.compose('footer-nav', NavFooter, {
         region: 'footer'
@@ -1529,173 +1636,6 @@ module.exports = AddView = (function(_super) {
 
 });
 
-;require.register("views/agent-edit-view", function(exports, require, module) {
-var EditView, View, mediator, template,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/base/view');
-
-template = require('views/templates/agent_form');
-
-mediator = require('mediator');
-
-module.exports = EditView = (function(_super) {
-
-  __extends(EditView, _super);
-
-  function EditView() {
-    this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.delete_agent = __bind(this.delete_agent, this);
-
-    this.save_form = __bind(this.save_form, this);
-
-    this.form_help = __bind(this.form_help, this);
-
-    this.onComplete = __bind(this.onComplete, this);
-
-    this.onSubmit = __bind(this.onSubmit, this);
-
-    this.init_uploader = __bind(this.init_uploader, this);
-
-    this.initialize = __bind(this.initialize, this);
-    return EditView.__super__.constructor.apply(this, arguments);
-  }
-
-  EditView.prototype.autoRender = true;
-
-  EditView.prototype.containerMethod = "html";
-
-  EditView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  EditView.prototype.id = 'content';
-
-  EditView.prototype.className = 'ui-content';
-
-  EditView.prototype.initialize = function(options) {
-    EditView.__super__.initialize.apply(this, arguments);
-    this.params = options.params;
-    this.publishEvent('log:info', console.log(this.params));
-    this.model = mediator.collections.agents.get(this.params.id);
-    this.model.schema = mediator.models.user.get('schemas').agent;
-    this.template_form = template;
-    this.delegate('click', 'a#agent-edit-delete', this.delete_agent);
-    this.delegate('click', 'a#agent-edit-update', this.save_form);
-    this.delegate('click', 'a.form-help', this.form_help);
-    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('id'), mediator.models.user.get('id'));
-    this.form = new Backbone.Form({
-      model: this.model,
-      template: this.template_form,
-      templateData: {
-        heading: 'Edytuj agenta',
-        mode: 'edit',
-        is_admin: mediator.models.user.get('is_admin'),
-        can_edit: this.can_edit
-      }
-    });
-    return this.form.render();
-  };
-
-  EditView.prototype.init_uploader = function() {
-    return this.uploader = new qq.FineUploaderBasic({
-      button: $("#avatar")[0],
-      debug: true,
-      request: {
-        endpoint: 'http://localhost:8080/v1/pliki/dodaj'
-      },
-      callbacks: {
-        onSubmit: this.onSubmit,
-        onComplete: this.onComplete
-      },
-      cors: {
-        expected: true
-      }
-    });
-  };
-
-  EditView.prototype.onSubmit = function() {
-    return console.log('submit');
-  };
-
-  EditView.prototype.onComplete = function() {
-    return console.log('compliete');
-  };
-
-  EditView.prototype.form_help = function(event) {
-    return this.publishEvent('tell_user', event.target.text);
-  };
-
-  EditView.prototype.save_form = function() {
-    var _this = this;
-    this.publishEvent('log:info', 'commmit form');
-    if (_.isUndefined(this.form.commit({
-      validate: true
-    }))) {
-      return this.model.save({}, {
-        success: function(event) {
-          _this.publishEvent('tell_user', 'Agent zaktualizowany');
-          return Chaplin.utils.redirectTo({
-            url: '/agenci'
-          });
-        },
-        error: function(model, response, options) {
-          if (response.responseJSON != null) {
-            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-          } else {
-            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-          }
-        }
-      });
-    } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
-    }
-  };
-
-  EditView.prototype.delete_agent = function() {
-    var _this = this;
-    return this.model.destroy({
-      success: function(event) {
-        mediator.collections.agents.remove(_this.model);
-        _this.publishEvent('tell_user', 'Agent został usunięty');
-        return Chaplin.utils.redirectTo({
-          url: '/agenci'
-        });
-      },
-      error: function(model, response, options) {
-        if (response.responseJSON != null) {
-          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-        } else {
-          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-        }
-      }
-    });
-  };
-
-  EditView.prototype.render = function() {
-    EditView.__super__.render.apply(this, arguments);
-    return this.$el.append(this.form.el);
-  };
-
-  EditView.prototype.attach = function() {
-    EditView.__super__.attach.apply(this, arguments);
-    this.init_uploader();
-    this.publishEvent('log:info', 'view: agentadd afterRender()');
-    this.publishEvent('jqm_refersh:render');
-    return this.publishEvent('disable_form', this.can_edit);
-  };
-
-  return EditView;
-
-})(View);
-
-});
-
 ;require.register("views/agent-list-view", function(exports, require, module) {
 var ListView, View, list_view, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1875,6 +1815,118 @@ module.exports = ListView = (function(_super) {
 
 });
 
+;require.register("views/agent-view", function(exports, require, module) {
+var View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/edit-view');
+
+mediator = require('mediator');
+
+module.exports = View = (function(_super) {
+
+  __extends(View, _super);
+
+  function View() {
+    this.delete_action = __bind(this.delete_action, this);
+
+    this.save_action = __bind(this.save_action, this);
+
+    this.onComplete = __bind(this.onComplete, this);
+
+    this.onSubmit = __bind(this.onSubmit, this);
+
+    this.init_uploader = __bind(this.init_uploader, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return View.__super__.constructor.apply(this, arguments);
+  }
+
+  View.prototype.initialize = function(options) {
+    return View.__super__.initialize.apply(this, arguments);
+  };
+
+  View.prototype.init_uploader = function() {
+    return this.uploader = new qq.FineUploaderBasic({
+      button: $("#avatar")[0],
+      debug: true,
+      request: {
+        endpoint: 'http://localhost:8080/v1/pliki/dodaj'
+      },
+      callbacks: {
+        onSubmit: this.onSubmit,
+        onComplete: this.onComplete
+      },
+      cors: {
+        expected: true
+      }
+    });
+  };
+
+  View.prototype.onSubmit = function() {
+    return console.log('submit');
+  };
+
+  View.prototype.onComplete = function() {
+    return console.log('compliete');
+  };
+
+  View.prototype.save_action = function() {
+    var _this = this;
+    View.__super__.save_action.apply(this, arguments);
+    this.publishEvent('log:info', 'commmit form');
+    if (_.isUndefined(this.form.commit({
+      validate: true
+    }))) {
+      return this.model.save({}, {
+        success: function(event) {
+          _this.publishEvent('tell_user', 'Agent zaktualizowany');
+          return Chaplin.utils.redirectTo({
+            url: '/agenci'
+          });
+        },
+        error: function(model, response, options) {
+          if (response.responseJSON != null) {
+            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+          } else {
+            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+          }
+        }
+      });
+    } else {
+      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+    }
+  };
+
+  View.prototype.delete_action = function() {
+    var _this = this;
+    View.__super__.delete_action.apply(this, arguments);
+    return this.model.destroy({
+      success: function(event) {
+        mediator.collections.agents.remove(_this.model);
+        _this.publishEvent('tell_user', 'Agent został usunięty');
+        return Chaplin.utils.redirectTo({
+          url: '/agenci'
+        });
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  return View;
+
+})(View);
+
+});
+
 ;require.register("views/autologin-view", function(exports, require, module) {
 var LoginView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1926,8 +1978,8 @@ module.exports = LoginView = (function(_super) {
     var apphash, apphash_hexed, auth_header, header_string, userhash, userhash_hexed,
       _this = this;
     this.publishEvent('log:error', 'autologin------');
-    this.user = 'test';
-    this.pass = 'test';
+    this.user = 'zzart';
+    this.pass = 'maddog';
     apphash = CryptoJS.HmacSHA256(this.model.url, mediator.app_key);
     apphash_hexed = apphash.toString(CryptoJS.enc.Hex);
     userhash = CryptoJS.HmacSHA256(this.model.url, this.pass);
@@ -2027,15 +2079,13 @@ module.exports = View = (function(_super) {
 
 });
 
-;require.register("views/bon-edit-view", function(exports, require, module) {
-var BonEditView, View, mediator, template,
+;require.register("views/bon-view", function(exports, require, module) {
+var BonEditView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-View = require('views/base/view');
-
-template = require('views/templates/bon_edit_form');
+View = require('views/edit-view');
 
 mediator = require('mediator');
 
@@ -2044,62 +2094,21 @@ module.exports = BonEditView = (function(_super) {
   __extends(BonEditView, _super);
 
   function BonEditView() {
-    this.attach = __bind(this.attach, this);
+    this.delete_action = __bind(this.delete_action, this);
 
-    this.render = __bind(this.render, this);
-
-    this.getTemplateData = __bind(this.getTemplateData, this);
-
-    this.delete_bon = __bind(this.delete_bon, this);
-
-    this.save_form = __bind(this.save_form, this);
-
-    this.form_help = __bind(this.form_help, this);
+    this.save_action = __bind(this.save_action, this);
 
     this.initialize = __bind(this.initialize, this);
     return BonEditView.__super__.constructor.apply(this, arguments);
   }
 
-  BonEditView.prototype.autoRender = true;
-
-  BonEditView.prototype.containerMethod = "html";
-
-  BonEditView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  BonEditView.prototype.id = 'content';
-
-  BonEditView.prototype.className = 'ui-content';
-
   BonEditView.prototype.initialize = function(options) {
-    BonEditView.__super__.initialize.apply(this, arguments);
-    this.params = options.params;
-    this.model = mediator.models.bon;
-    this.model.schema = mediator.models.user.get('schemas').company;
-    this.template_form = template;
-    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
-    this.delegate('click', 'a#bon-edit-delete', this.delete_bon);
-    this.delegate('click', 'a#bon-edit-update', this.save_form);
-    this.delegate('click', 'a.form-help', this.form_help);
-    this.form = new Backbone.Form({
-      model: this.model,
-      template: this.template_form,
-      templateData: {
-        heading: 'Edytuj dane biura nieruchomości',
-        mode: 'edit',
-        can_edit: this.can_edit
-      }
-    });
-    return this.form.render();
+    return BonEditView.__super__.initialize.apply(this, arguments);
   };
 
-  BonEditView.prototype.form_help = function(event) {
-    return this.publishEvent('tell_user', event.target.text);
-  };
-
-  BonEditView.prototype.save_form = function() {
+  BonEditView.prototype.save_action = function() {
     var _this = this;
+    BonEditView.__super__.save_action.apply(this, arguments);
     this.publishEvent('log:info', 'commmit form');
     if (_.isUndefined(this.form.commit({
       validate: true
@@ -2121,8 +2130,9 @@ module.exports = BonEditView = (function(_super) {
     }
   };
 
-  BonEditView.prototype.delete_bon = function() {
+  BonEditView.prototype.delete_action = function() {
     var _this = this;
+    BonEditView.__super__.delete_action.apply(this, arguments);
     return this.model.destroy({
       success: function(event) {
         return _this.publishEvent('log:info', 'dyspozycja usunięcia konta przyjęta');
@@ -2135,22 +2145,6 @@ module.exports = BonEditView = (function(_super) {
         }
       }
     });
-  };
-
-  BonEditView.prototype.getTemplateData = function() {
-    return BonEditView.__super__.getTemplateData.apply(this, arguments);
-  };
-
-  BonEditView.prototype.render = function() {
-    BonEditView.__super__.render.apply(this, arguments);
-    return this.$el.append(this.form.el);
-  };
-
-  BonEditView.prototype.attach = function() {
-    BonEditView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: clientadd afterRender()');
-    this.publishEvent('jqm_refersh:render');
-    return this.publishEvent('disable_form', this.can_edit);
   };
 
   return BonEditView;
@@ -2575,260 +2569,6 @@ module.exports = BranchListView = (function(_super) {
 
 });
 
-;require.register("views/client-add-view", function(exports, require, module) {
-var ClientAddView, View, mediator, template,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/base/view');
-
-template = require('views/templates/client_form');
-
-mediator = require('mediator');
-
-module.exports = ClientAddView = (function(_super) {
-
-  __extends(ClientAddView, _super);
-
-  function ClientAddView() {
-    this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.refresh_form = __bind(this.refresh_form, this);
-
-    this.save_form = __bind(this.save_form, this);
-
-    this.form_help = __bind(this.form_help, this);
-
-    this.initialize = __bind(this.initialize, this);
-    return ClientAddView.__super__.constructor.apply(this, arguments);
-  }
-
-  ClientAddView.prototype.autoRender = true;
-
-  ClientAddView.prototype.containerMethod = "html";
-
-  ClientAddView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  ClientAddView.prototype.id = 'content';
-
-  ClientAddView.prototype.className = 'ui-content';
-
-  ClientAddView.prototype.initialize = function(options) {
-    ClientAddView.__super__.initialize.apply(this, arguments);
-    this.params = options.params;
-    this.model = mediator.models.client;
-    this.template_form = template;
-    this.delegate('click', 'a#client-add-refresh', this.refresh_form);
-    this.delegate('click', 'a#client-add-save', this.save_form);
-    this.delegate('click', 'a.form-help', this.form_help);
-    this.form = new Backbone.Form({
-      model: this.model,
-      template: this.template_form,
-      templateData: {
-        heading: 'Dodaj kontrahenta',
-        mode: 'add'
-      }
-    });
-    return this.form.render();
-  };
-
-  ClientAddView.prototype.form_help = function(event) {
-    return this.publishEvent('tell_user', event.target.text);
-  };
-
-  ClientAddView.prototype.save_form = function() {
-    var _this = this;
-    this.publishEvent('log:info', 'commmit form');
-    if (_.isUndefined(this.form.commit({
-      validate: true
-    }))) {
-      return this.model.save({}, {
-        success: function(event) {
-          if (mediator.collections.clients != null) {
-            mediator.collections.clients.add(_this.model);
-          }
-          _this.publishEvent('tell_user', 'Klient dodany');
-          return Chaplin.utils.redirectTo({
-            url: '/klienci'
-          });
-        },
-        error: function(model, response, options) {
-          if (response.responseJSON != null) {
-            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-          } else {
-            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-          }
-        }
-      });
-    } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
-    }
-  };
-
-  ClientAddView.prototype.refresh_form = function() {
-    return Chaplin.utils.redirectTo({
-      url: '/klienci/dodaj'
-    });
-  };
-
-  ClientAddView.prototype.render = function() {
-    ClientAddView.__super__.render.apply(this, arguments);
-    return this.$el.append(this.form.el);
-  };
-
-  ClientAddView.prototype.attach = function() {
-    ClientAddView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: clientadd afterRender()');
-    return this.publishEvent('jqm_refersh:render');
-  };
-
-  return ClientAddView;
-
-})(View);
-
-});
-
-;require.register("views/client-edit-view", function(exports, require, module) {
-var ClientEditView, View, mediator, template,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/base/view');
-
-template = require('views/templates/client_form');
-
-mediator = require('mediator');
-
-module.exports = ClientEditView = (function(_super) {
-
-  __extends(ClientEditView, _super);
-
-  function ClientEditView() {
-    this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.delete_client = __bind(this.delete_client, this);
-
-    this.save_form = __bind(this.save_form, this);
-
-    this.form_help = __bind(this.form_help, this);
-
-    this.initialize = __bind(this.initialize, this);
-    return ClientEditView.__super__.constructor.apply(this, arguments);
-  }
-
-  ClientEditView.prototype.autoRender = true;
-
-  ClientEditView.prototype.containerMethod = "html";
-
-  ClientEditView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  ClientEditView.prototype.id = 'content';
-
-  ClientEditView.prototype.className = 'ui-content';
-
-  ClientEditView.prototype.initialize = function(options) {
-    ClientEditView.__super__.initialize.apply(this, arguments);
-    this.params = options.params;
-    this.publishEvent('log:info', console.log(this.params));
-    this.model = mediator.collections.clients.get(this.params.id);
-    this.model.schema = mediator.models.user.get('schemas').client;
-    this.template_form = template;
-    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
-    this.delegate('click', 'a#client-edit-delete', this.delete_client);
-    this.delegate('click', 'a#client-edit-update', this.save_form);
-    this.delegate('click', 'a.form-help', this.form_help);
-    this.form = new Backbone.Form({
-      model: this.model,
-      template: this.template_form,
-      templateData: {
-        heading: 'Edytuj kontrahenta',
-        mode: 'edit',
-        can_edit: false,
-        can_edit: this.can_edit
-      }
-    });
-    return this.form.render();
-  };
-
-  ClientEditView.prototype.form_help = function(event) {
-    return this.publishEvent('tell_user', event.target.text);
-  };
-
-  ClientEditView.prototype.save_form = function() {
-    var _this = this;
-    this.publishEvent('log:info', 'commmit form');
-    if (_.isUndefined(this.form.commit({
-      validate: true
-    }))) {
-      return this.model.save({}, {
-        success: function(event) {
-          _this.publishEvent('tell_user', 'Klient zaktualizowany');
-          return Chaplin.utils.redirectTo({
-            url: '/klienci'
-          });
-        },
-        error: function(model, response, options) {
-          if (response.responseJSON != null) {
-            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-          } else {
-            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-          }
-        }
-      });
-    } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
-    }
-  };
-
-  ClientEditView.prototype.delete_client = function() {
-    var _this = this;
-    return this.model.destroy({
-      success: function(event) {
-        mediator.collections.clients.remove(_this.model);
-        _this.publishEvent('tell_user', 'Klient został usunięty');
-        return Chaplin.utils.redirectTo({
-          url: '/klienci'
-        });
-      },
-      error: function(model, response, options) {
-        if (response.responseJSON != null) {
-          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-        } else {
-          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-        }
-      }
-    });
-  };
-
-  ClientEditView.prototype.render = function() {
-    ClientEditView.__super__.render.apply(this, arguments);
-    this.publishEvent('log:info', 'view: clientedit render()');
-    return this.$el.append(this.form.el);
-  };
-
-  ClientEditView.prototype.attach = function() {
-    ClientEditView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: clientedit afterRender()');
-    this.publishEvent('jqm_refersh:render');
-    return this.publishEvent('disable_form', this.can_edit);
-  };
-
-  return ClientEditView;
-
-})(View);
-
-});
-
 ;require.register("views/client-list-view", function(exports, require, module) {
 var ClientListView, View, list_view, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -3006,141 +2746,6 @@ module.exports = ClientListView = (function(_super) {
   };
 
   return ClientListView;
-
-})(View);
-
-});
-
-;require.register("views/client-public-edit-view", function(exports, require, module) {
-var ClientEditView, View, mediator, template,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/base/view');
-
-template = require('views/templates/client_public_form');
-
-mediator = require('mediator');
-
-module.exports = ClientEditView = (function(_super) {
-
-  __extends(ClientEditView, _super);
-
-  function ClientEditView() {
-    this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.delete_client = __bind(this.delete_client, this);
-
-    this.save_form = __bind(this.save_form, this);
-
-    this.form_help = __bind(this.form_help, this);
-
-    this.initialize = __bind(this.initialize, this);
-    return ClientEditView.__super__.constructor.apply(this, arguments);
-  }
-
-  ClientEditView.prototype.autoRender = true;
-
-  ClientEditView.prototype.containerMethod = "html";
-
-  ClientEditView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  ClientEditView.prototype.id = 'content';
-
-  ClientEditView.prototype.className = 'ui-content';
-
-  ClientEditView.prototype.initialize = function(options) {
-    ClientEditView.__super__.initialize.apply(this, arguments);
-    this.params = options.params;
-    this.publishEvent('log:info', console.log(this.params));
-    this.model = mediator.collections.clients_public.get(this.params.id);
-    this.model.schema = mediator.models.user.get('schemas').client;
-    this.template_form = template;
-    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
-    this.delegate('click', 'a#client-edit-delete', this.delete_client);
-    this.delegate('click', 'a#client-edit-update', this.save_form);
-    this.delegate('click', 'a.form-help', this.form_help);
-    this.form = new Backbone.Form({
-      model: this.model,
-      template: this.template_form,
-      templateData: {
-        heading: 'Edytuj kontrahenta',
-        mode: 'edit',
-        can_edit: this.can_edit
-      }
-    });
-    return this.form.render();
-  };
-
-  ClientEditView.prototype.form_help = function(event) {
-    return this.publishEvent('tell_user', event.target.text);
-  };
-
-  ClientEditView.prototype.save_form = function() {
-    var _this = this;
-    this.publishEvent('log:info', 'commmit form');
-    if (_.isUndefined(this.form.commit({
-      validate: true
-    }))) {
-      return this.model.save({}, {
-        success: function(event) {
-          _this.publishEvent('tell_user', 'Klient zaktualizowany');
-          return Chaplin.utils.redirectTo({
-            url: '/klienci-wspolni'
-          });
-        },
-        error: function(model, response, options) {
-          if (response.responseJSON != null) {
-            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-          } else {
-            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-          }
-        }
-      });
-    } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
-    }
-  };
-
-  ClientEditView.prototype.delete_client = function() {
-    var _this = this;
-    return this.model.destroy({
-      success: function(event) {
-        mediator.collections.clients_public.remove(_this.model);
-        _this.publishEvent('tell_user', 'Klient został usunięty');
-        return Chaplin.utils.redirectTo({
-          url: '/klienci-wspolni'
-        });
-      },
-      error: function(model, response, options) {
-        if (response.responseJSON != null) {
-          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-        } else {
-          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-        }
-      }
-    });
-  };
-
-  ClientEditView.prototype.render = function() {
-    ClientEditView.__super__.render.apply(this, arguments);
-    this.publishEvent('log:info', 'view: clientedit render()');
-    return this.$el.append(this.form.el);
-  };
-
-  ClientEditView.prototype.attach = function() {
-    ClientEditView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: clientedit afterRender()');
-    this.publishEvent('jqm_refersh:render');
-    return this.publishEvent('disable_form', this.can_edit);
-  };
-
-  return ClientEditView;
 
 })(View);
 
@@ -3328,6 +2933,165 @@ module.exports = ClientListView = (function(_super) {
 
 });
 
+;require.register("views/client-public-view", function(exports, require, module) {
+var ClientView, View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/edit-view');
+
+mediator = require('mediator');
+
+module.exports = ClientView = (function(_super) {
+
+  __extends(ClientView, _super);
+
+  function ClientView() {
+    this.delete_action = __bind(this.delete_action, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return ClientView.__super__.constructor.apply(this, arguments);
+  }
+
+  ClientView.prototype.initialize = function(options) {
+    return ClientView.__super__.initialize.apply(this, arguments);
+  };
+
+  ClientView.prototype.delete_action = function() {
+    var _this = this;
+    ClientView.__super__.delete_action.apply(this, arguments);
+    return this.model.destroy({
+      success: function(event) {
+        mediator.collections.clients_public.remove(_this.model);
+        _this.publishEvent('tell_user', 'Klient został usunięty');
+        return Chaplin.utils.redirectTo({
+          url: '/klienci-wspolni'
+        });
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  return ClientView;
+
+})(View);
+
+});
+
+;require.register("views/client-view", function(exports, require, module) {
+var ClientAddView, View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/edit-view');
+
+mediator = require('mediator');
+
+module.exports = ClientAddView = (function(_super) {
+
+  __extends(ClientAddView, _super);
+
+  function ClientAddView() {
+    this.attach = __bind(this.attach, this);
+
+    this.delete_action = __bind(this.delete_action, this);
+
+    this.refresh_form = __bind(this.refresh_form, this);
+
+    this.save_action = __bind(this.save_action, this);
+
+    this.save_and_add_action = __bind(this.save_and_add_action, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return ClientAddView.__super__.constructor.apply(this, arguments);
+  }
+
+  ClientAddView.prototype.initialize = function(options) {
+    return ClientAddView.__super__.initialize.apply(this, arguments);
+  };
+
+  ClientAddView.prototype.save_and_add_action = function() {
+    ClientAddView.__super__.save_and_add_action.apply(this, arguments);
+    return this.save_action('/klienci/dodaj');
+  };
+
+  ClientAddView.prototype.save_action = function(url) {
+    var _this = this;
+    ClientAddView.__super__.save_action.apply(this, arguments);
+    this.publishEvent('log:info', 'commmit form');
+    if (_.isUndefined(this.form.commit({
+      validate: true
+    }))) {
+      return this.model.save({}, {
+        success: function(event) {
+          if (mediator.collections.clients != null) {
+            mediator.collections.clients.add(_this.model);
+          }
+          _this.publishEvent('tell_user', 'Klient dodany');
+          console.log(url);
+          return Chaplin.utils.redirectTo({
+            url: url != null ? url : '/klienci'
+          });
+        },
+        error: function(model, response, options) {
+          if (response.responseJSON != null) {
+            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+          } else {
+            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+          }
+        }
+      });
+    } else {
+      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+    }
+  };
+
+  ClientAddView.prototype.refresh_form = function() {
+    return Chaplin.utils.redirectTo({
+      url: '/klienci/dodaj'
+    });
+  };
+
+  ClientAddView.prototype.delete_action = function() {
+    var _this = this;
+    ClientAddView.__super__.delete_action.apply(this, arguments);
+    return this.model.destroy({
+      success: function(event) {
+        mediator.collections.clients.remove(_this.model);
+        _this.publishEvent('tell_user', 'Klient został usunięty');
+        return Chaplin.utils.redirectTo({
+          url: '/klienci'
+        });
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  ClientAddView.prototype.attach = function() {
+    ClientAddView.__super__.attach.apply(this, arguments);
+    return this.publishEvent('log:info', 'view: clientadd afterRender()');
+  };
+
+  return ClientAddView;
+
+})(View);
+
+});
+
 ;require.register("views/confirm-view", function(exports, require, module) {
 var ConfirmView, View, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -3399,6 +3163,8 @@ module.exports = EditView = (function(_super) {
 
     this.delete_action = __bind(this.delete_action, this);
 
+    this.form_help = __bind(this.form_help, this);
+
     this.initialize = __bind(this.initialize, this);
     return EditView.__super__.constructor.apply(this, arguments);
   }
@@ -3416,20 +3182,29 @@ module.exports = EditView = (function(_super) {
   EditView.prototype.className = 'ui-content';
 
   EditView.prototype.initialize = function(params) {
+    var _ref;
     EditView.__super__.initialize.apply(this, arguments);
     this.params = params;
     this.model = this.params.model;
     this.form_name = this.params.form_name;
+    this.can_edit = this.params.can_edit;
+    this.edit_type = this.params.edit_type;
+    this.delete_only = (_ref = this.params.delete_only) != null ? _ref : false;
     this.subscribeEvent('delete:clicked', this.delete_action);
     this.subscribeEvent('save:clicked', this.save_action);
-    return this.subscribeEvent('save-and-add:clicked', this.save_and_add_action);
+    this.subscribeEvent('save_and_add:clicked', this.save_and_add_action);
+    return this.delegate('click', 'a.form-help', this.form_help);
+  };
+
+  EditView.prototype.form_help = function(event) {
+    return this.publishEvent('tell_user', event.target.text);
   };
 
   EditView.prototype.delete_action = function() {
     return this.publishEvent('log:info', 'delete  caught');
   };
 
-  EditView.prototype.save_action = function() {
+  EditView.prototype.save_action = function(url) {
     return this.publishEvent('log:info', 'save_action  caught');
   };
 
@@ -3439,6 +3214,8 @@ module.exports = EditView = (function(_super) {
 
   EditView.prototype.get_form = function() {
     this.publishEvent('log:info', 1);
+    this.publishEvent('log:info', this.form_name);
+    window.model = this.model;
     this.form = new Backbone.Form({
       model: this.model,
       template: _.template(localStorage.getObject('schemas')[this.form_name])
@@ -3460,9 +3237,11 @@ module.exports = EditView = (function(_super) {
   };
 
   EditView.prototype.attach = function() {
+    var _ref;
     EditView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: clientadd afterRender()');
-    return this.publishEvent('jqm_refersh:render');
+    this.publishEvent('log:info', 'view: edit-view afterRender()');
+    this.publishEvent('jqm_refersh:render');
+    return this.publishEvent('disable_buttons', (_ref = this.can_edit) != null ? _ref : False, this.edit_type, this.delete_only);
   };
 
   return EditView;
@@ -3910,13 +3689,17 @@ module.exports = Layout = (function(_super) {
     }
   };
 
-  Layout.prototype.disable_buttons = function(can_edit, edit_type) {
+  Layout.prototype.disable_buttons = function(can_edit, edit_type, delete_only) {
     this.log.info('form buttons disable caught');
     if (edit_type === 'add') {
       $("#delete-button").attr('disabled', true);
     }
     if (!can_edit) {
       $("#delete-button").attr('disabled', true);
+      $("#save-button").attr('disabled', true);
+      $("#save-and-add-button").attr('disabled', true);
+    }
+    if (delete_only) {
       $("#save-button").attr('disabled', true);
       return $("#save-and-add-button").attr('disabled', true);
     }
@@ -4934,77 +4717,6 @@ module.exports = function (__obj) {
 }
 });
 
-;require.register("views/templates/client_form", function(exports, require, module) {
-module.exports = function (__obj) {
-  if (!__obj) __obj = {};
-  var __out = [], __capture = function(callback) {
-    var out = __out, result;
-    __out = [];
-    callback.call(this);
-    result = __out.join('');
-    __out = out;
-    return __safe(result);
-  }, __sanitize = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else if (typeof value !== 'undefined' && value != null) {
-      return __escape(value);
-    } else {
-      return '';
-    }
-  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
-  __safe = __obj.safe = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else {
-      if (!(typeof value !== 'undefined' && value != null)) value = '';
-      var result = new String(value);
-      result.ecoSafe = true;
-      return result;
-    }
-  };
-  if (!__escape) {
-    __escape = __obj.escape = function(value) {
-      return ('' + value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    };
-  }
-  (function() {
-    (function() {
-    
-      __out.push('  <form>\n  <div class=\'ui-grid-a\'>\n  <div class=\'ui-block-a\'>\n  <h4>');
-    
-      __out.push(__sanitize(this.heading));
-    
-      __out.push('</h4>\n  <div data-fields="first_name"> </div>\n  <div data-fields="surname"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  <div data-fields="client_type"> </div>\n  <div data-fields="address"> </div>\n  <div data-fields="pesel"> </div>\n  <div data-fields="id_card"> </div>\n  <div data-fields="bank_account"> </div>\n  <h4>Informacje o firmie</h4>\n  <div data-fields="company_name"> </div>\n  <div data-fields="nip"> </div>\n</div>\n  <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n  <h4>Szczegóły</h4>\n  <div data-fields="notes"> </div>\n  <div data-fields="requirements"> </div>\n  <div data-fields="budget"> </div>\n  <div data-fields="provision"> </div>\n  <div data-fields="provision_p"> </div>\n  <h4>Dodatkowe</h4>\n  <div data-fields="is_private"> </div>\n  <div data-fields="date"> </div>\n    ');
-    
-      if (this.mode === 'add') {
-        __out.push('\n        <a href=\'/klienci/dodaj\' class="ui-btn ui-btn-inline ui-icon-recycle ui-btn-icon-right">Wyczyść</a>\n        <a id="client-add-save" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Zapisz</a>\n    ');
-      }
-    
-      __out.push('\n  ');
-    
-      if (this.can_edit) {
-        __out.push('\n    ');
-        if (this.mode === 'edit') {
-          __out.push('\n        <a id="client-edit-update" class="ui-btn ui-btn-inline ui-icon-check ui-btn-b ui-btn-icon-right" type=\'submit\'>Uaktualnij</a>\n        <a id="client-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Skasuj</a>\n    ');
-        }
-        __out.push('\n  ');
-      }
-    
-      __out.push('\n</div>\n</div>\n</form>\n');
-    
-    }).call(this);
-    
-  }).call(__obj);
-  __obj.safe = __objSafe, __obj.escape = __escape;
-  return __out.join('');
-}
-});
-
 ;require.register("views/templates/client_list_view", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
@@ -5082,71 +4794,6 @@ module.exports = function (__obj) {
       }
     
       __out.push('\n     </tbody>\n   </table>\n\n\n');
-    
-    }).call(this);
-    
-  }).call(__obj);
-  __obj.safe = __objSafe, __obj.escape = __escape;
-  return __out.join('');
-}
-});
-
-;require.register("views/templates/client_public_form", function(exports, require, module) {
-module.exports = function (__obj) {
-  if (!__obj) __obj = {};
-  var __out = [], __capture = function(callback) {
-    var out = __out, result;
-    __out = [];
-    callback.call(this);
-    result = __out.join('');
-    __out = out;
-    return __safe(result);
-  }, __sanitize = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else if (typeof value !== 'undefined' && value != null) {
-      return __escape(value);
-    } else {
-      return '';
-    }
-  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
-  __safe = __obj.safe = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else {
-      if (!(typeof value !== 'undefined' && value != null)) value = '';
-      var result = new String(value);
-      result.ecoSafe = true;
-      return result;
-    }
-  };
-  if (!__escape) {
-    __escape = __obj.escape = function(value) {
-      return ('' + value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    };
-  }
-  (function() {
-    (function() {
-    
-      __out.push('  <form>\n  <div class=\'ui-grid-a\'>\n  <div class=\'ui-block-a\'>\n  <h4>');
-    
-      __out.push(__sanitize(this.heading));
-    
-      __out.push('</h4>\n  <div data-fields="first_name"> </div>\n  <div data-fields="surname"> </div>\n  <div data-fields="email"> </div>\n  <div data-fields="phone"> </div>\n  <div data-fields="client_type"> </div>\n  <div data-fields="address"> </div>\n  <div data-fields="pesel"> </div>\n  <div data-fields="id_card"> </div>\n  <div data-fields="bank_account"> </div>\n  <h4>Informacje o firmie</h4>\n  <div data-fields="company_name"> </div>\n  <div data-fields="nip"> </div>\n</div>\n  <div class=\'ui-block-b ui-content\' style=\'padding-left:10px\'>\n  <h4>Szczegóły</h4>\n  <div data-fields="notes"> </div>\n  <div data-fields="requirements"> </div>\n  <div data-fields="budget"> </div>\n  <div data-fields="provision"> </div>\n  <div data-fields="provision_p"> </div>\n  <h4>Dodatkowe</h4>\n  <div data-fields="is_private"> </div>\n  <div data-fields="date"> </div>\n  ');
-    
-      if (this.can_edit) {
-        __out.push('\n    ');
-        if (this.mode === 'edit') {
-          __out.push('\n        <a id="client-edit-delete" class="ui-btn ui-btn-inline ui-icon-delete ui-btn-icon-right">Skasuj</a>\n    ');
-        }
-        __out.push('\n  ');
-      }
-    
-      __out.push('\n</div>\n</div>\n</form>\n');
     
     }).call(this);
     

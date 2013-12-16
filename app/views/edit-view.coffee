@@ -11,26 +11,34 @@ module.exports = class EditView extends View
         @params = params
         @model = @params.model
         @form_name = @params.form_name
+        @can_edit = @params.can_edit
+        @edit_type = @params.edit_type
+        @delete_only = @params.delete_only ? false
         # events
         @subscribeEvent('delete:clicked', @delete_action)
         @subscribeEvent('save:clicked', @save_action)
-        @subscribeEvent('save-and-add:clicked', @save_and_add_action)
+        @subscribeEvent('save_and_add:clicked', @save_and_add_action)
+        @delegate 'click', 'a.form-help', @form_help
+
+    form_help:(event) =>
+        @publishEvent 'tell_user' , event.target.text
 
     delete_action: =>
         @publishEvent('log:info', 'delete  caught')
-    save_action: =>
+    save_action: (url) =>
         @publishEvent('log:info', 'save_action  caught')
     save_and_add_action: =>
         @publishEvent('log:info', 'save_and_add_action  caught')
 
     get_form: =>
         @publishEvent('log:info', 1)
-        @form = new Backbone.Form {
-
+        @publishEvent('log:info', @form_name)
+        window.model = @model
+        @form = new Backbone.Form
             model: @model
             template: _.template(localStorage.getObject('schemas')[@form_name])
             #templateData:{ }
-        }
+
         @publishEvent('log:info', 2)
         window.form = @form
         @publishEvent('log:info', 3)
@@ -50,7 +58,8 @@ module.exports = class EditView extends View
 
     attach: =>
         super
-        @publishEvent('log:info', 'view: clientadd afterRender()')
+        @publishEvent('log:info', 'view: edit-view afterRender()')
         @publishEvent 'jqm_refersh:render'
+        @publishEvent 'disable_buttons', @can_edit ? False , @edit_type, @delete_only
 
 

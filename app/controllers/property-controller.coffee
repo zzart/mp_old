@@ -31,7 +31,7 @@ module.exports = class PropertyController extends Controller
         mediator.models.property = new Model
         mediator.models.property.schema = _.clone(@schema)
         @publishEvent('log:info', "init view property controller" )
-        @view = new AddView {form_name:'mieszkania_form', model:mediator.models.property, region:'content'}
+        @view = new AddView {form_name:'flat_form', model:mediator.models.property, region:'content'}
         @publishEvent('log:info', "after init view property controller" )
 
     show:(params, route, options) ->

@@ -1,7 +1,7 @@
 Controller = require 'controllers/auth-controller'
 ClientListView = require 'views/client-public-list-view'
 Collection = require 'models/client-public-collection'
-ClientEditView = require 'views/client-public-edit-view'
+ClientView = require 'views/client-public-view'
 Model = require 'models/client-model'
 mediator = require 'mediator'
 
@@ -24,4 +24,10 @@ module.exports = class ClientPublicController extends Controller
     show:(params, route, options) ->
         @publishEvent('log:info', 'in client show controller')
         @redirectTo {'/klienci-wspolni'} unless _.isObject(mediator.collections.clients_public.get(params.id))
-        @view = new ClientEditView {params, region:'content'}
+        @model = mediator.collections.clients_public.get(params.id)
+        @schema =localStorage.getObject('schemas').client
+        @model.schema = _.clone(@schema)
+        @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
+        @view = new ClientView {form_name:'client_form', model:@model, can_edit:@can_edit, delete_only:true, region:'content'}
+
+

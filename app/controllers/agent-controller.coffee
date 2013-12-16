@@ -1,7 +1,6 @@
 Controller = require 'controllers/auth-controller'
 ListView = require   'views/agent-list-view'
-AddView = require    'views/agent-add-view'
-EditView = require   'views/agent-edit-view'
+EditView = require    'views/agent-view'
 Collection = require 'models/agent-collection'
 Model = require 'models/agent-model'
 mediator = require 'mediator'
@@ -31,17 +30,19 @@ module.exports = class AgentController extends Controller
     add:(params, route, options) ->
         #in case someone added branch or user we need updated schema from server!
         @publishEvent('log:info', 'in agentadd controller')
-        mediator.models.agent = new Model
-        mediator.models.user.fetch
+        mediator.models.user = new Model
+        @model = mediator.models.user
+        @model.fetch
             beforeSend: =>
                 @publishEvent 'loading_start'
                 @publishEvent 'tell_user', 'Odświeżam formularz ...'
             success: =>
                 @publishEvent('log:info', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
-                schema = mediator.models.user.get('schemas').agent
-                mediator.models.agent.schema = schema
-                @view = new AddView {params, region:'content'}
+                @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
+                @schema =localStorage.getObject('schemas').agent
+                @model.schema = _.clone(@schema)
+                @view = new EditView {form_name:'agent_form', model:@model, can_edit:@can_edit, edit_type:'add', region:'content'}
             error: =>
                 @publishEvent 'loading_stop'
                 @publishEvent 'server_error'
@@ -65,14 +66,18 @@ module.exports = class AgentController extends Controller
                     @publishEvent 'loading_stop'
                     @publishEvent 'server_error'
         #in case someone added branch or user we need updated schema from server!
-        mediator.models.user.fetch
+        @model = mediator.models.user
+        @model.fetch
             beforeSend: =>
                 @publishEvent 'loading_start'
                 @publishEvent 'tell_user', 'Odświeżam formularz ...'
             success: =>
                 @publishEvent('log:info', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
-                @view = new EditView {params, region:'content'}
+                @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
+                @schema =localStorage.getObject('schemas').agent
+                @model.schema = _.clone(@schema)
+                @view = new EditView {form_name:'agent_form', model:@model, can_edit:@can_edit, edit_type:'add', region:'content'}
             error: =>
                 @publishEvent 'loading_stop'
                 @publishEvent 'server_error'

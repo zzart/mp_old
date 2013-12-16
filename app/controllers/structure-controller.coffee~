@@ -19,7 +19,7 @@ module.exports = class StructureController extends Controller
             'property#show',
             'client#add',
             'client#show',
-            'client-public#show',
+            'client-public#schow',
             'branch#add',
             'branch#show',
             'agent#add',
