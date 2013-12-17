@@ -56,8 +56,8 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
          <td><%= item['username'] %></td>
          <td><%= item['email'] %></td>
          <td><%= item['phone'] %></td>
-         <td><%= item['is_active'] %></td>
-         <td><%= item['is_admin'] %></td>
+         <td><%= item['is_active_bool'] %></td>
+         <td><%= item['is_admin_bool'] %></td>
          <td><%= item['agent_type'] %></td>
        </tr>
       <% end %>

@@ -1,7 +1,6 @@
 Controller = require 'controllers/auth-controller'
 ListView = require 'views/branch-list-view'
-AddView = require 'views/branch-add-view'
-EditView = require 'views/branch-edit-view'
+View = require 'views/branch-view'
 Collection = require 'models/branch-collection'
 Model = require 'models/branch-model'
 mediator = require 'mediator'
@@ -27,12 +26,18 @@ module.exports = class BranchController extends Controller
     add:(params, route, options) ->
         @publishEvent('log:info', 'in branchadd controller')
         mediator.models.branch = new Model
-        schema = mediator.models.user.get('schemas').branch
-        mediator.models.branch.schema = schema
-        @view = new AddView {params, region:'content'}
+        @model = mediator.models.branch
+        @schema =localStorage.getObject('schemas').branch
+        @model.schema = _.clone(@schema)
+        @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
+        @view = new View {form_name:'branch_form', model:@model, can_edit:@can_edit, region:'content'}
 
     show:(params, route, options) ->
         @publishEvent('log:info', 'in branch show controller')
         @redirectTo {'/oddzialy'} unless _.isObject(mediator.collections.branches.get(params.id))
-        @view = new EditView {params, region:'content'}
+        @model = mediator.collections.branches.get(params.id)
+        @schema =localStorage.getObject('schemas').branch
+        @model.schema = _.clone(@schema)
+        @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
+        @view = new View {form_name:'branch_form', model:@model, can_edit:@can_edit, region:'content'}
 

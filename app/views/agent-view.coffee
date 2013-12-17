@@ -3,6 +3,7 @@ mediator = require 'mediator'
 module.exports = class View extends View
     initialize: (options) =>
         super
+        @publishEvent('log:info', 'edit vewq' )
         # send url data from controler
 
     init_uploader: =>
@@ -31,7 +32,7 @@ module.exports = class View extends View
         if _.isUndefined(@form.commit({validate:true}))
             @model.save({},{
                 success:(event) =>
-                    @publishEvent 'tell_user', 'Agent zaktualizowany'
+                    @publishEvent 'tell_user', 'Agent zapisany'
                     Chaplin.utils.redirectTo {url: '/agenci'}
                 error:(model, response, options) =>
                     if response.responseJSON?

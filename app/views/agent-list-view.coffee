@@ -88,6 +88,7 @@ module.exports = class ListView extends View
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
     getTemplateData: =>
+        window.col = @collection
         agent: @collection.toJSON()
 
     render: =>

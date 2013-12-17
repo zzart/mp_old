@@ -27,12 +27,12 @@ gen_token = ( model, url, password) =>
 
 _sync = Backbone.sync
 Backbone.sync = (method, model, options) ->
-    console.log('mediator: ',  Chaplin.mediator )
-    console.log('model: ',  model)
-    console.log('method: ',  method)
-    console.log('options: ',  options )
-    console.log('options data: ',  options.data )
-    console.log('is new?:',  model.isNew?())
+    # console.log('mediator: ',  Chaplin.mediator )
+    # console.log('model: ',  model)
+    # console.log('method: ',  method)
+    # console.log('options: ',  options )
+    # console.log('options data: ',  options.data )
+    # console.log('is new?:',  model.isNew?())
     # lets do this once logged in
     if Chaplin.mediator.models.user?.get('is_logged')
         # check if we have a collection wirh url or model with urlRoot

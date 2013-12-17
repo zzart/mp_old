@@ -19,7 +19,7 @@ module.exports = class ClientAddView extends View
                     if mediator.collections.clients?
                         # add it to collection so we don't need to use server ...
                         mediator.collections.clients.add(@model)
-                    @publishEvent 'tell_user', 'Klient dodany'
+                    @publishEvent 'tell_user', 'Klient zapisany'
                     console.log(url)
                     Chaplin.utils.redirectTo {url: url ? '/klienci'}
                 error:(model, response, options) =>

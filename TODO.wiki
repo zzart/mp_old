@@ -42,6 +42,8 @@
 * generowanie SQLite db które idzie do klienta na początku
 * celery write to cache
 * PostGis ? na Postgress ? zmieniam db ?
+* PostGres - oddzielne db dla każdego biura
+    * muszę się pytać o biuro przy logowaniu ...
 * IFrame dla innych stron
 * ReadOnly models dla użytkowników / albo brak przycisku save ;)
 * testy

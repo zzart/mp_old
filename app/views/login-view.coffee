@@ -41,10 +41,8 @@ module.exports = class LoginView extends View
             headers: {'X-Auth-Token' : auth_header}
             success: =>
                 @publishEvent('log:info', 'login SUCCESS')
-                @model.set({is_logged:true})
-                @model.set({user_pass:@pass})
-                localStorage.clear() #clear old rubbish
-                localStorage.setObject('schemas', @model.get('schemas'))
+                @model.set({'user_pass':@pass}) # set this manually so we don't send password back and forth
+                @model.update_db()
                 $('#first-name-placeholder').text(@model.get('first_name'))
                 $('#bon-config-link').attr('href', "/biura/#{@model.get('company_id')}")
                 $('#agent-config-link').attr('href', "/agenci/#{@model.get('id')}")

@@ -1,6 +1,6 @@
 View = require 'views/edit-view'
 mediator = require 'mediator'
-module.exports = class BonEditView extends View
+module.exports = class BranchView extends View
     initialize: (options) =>
         super
 
@@ -11,7 +11,11 @@ module.exports = class BonEditView extends View
         if _.isUndefined(@form.commit({validate:true}))
             @model.save({},{
                 success:(event) =>
-                    @publishEvent 'tell_user', 'Dane biura zostały zapisane'
+                    if mediator.collections.branches?
+                        # add it to collection so we don't need to use server ...
+                        mediator.collections.branches.add(@model)
+                    @publishEvent 'tell_user', 'Oddział zapisany'
+                    Chaplin.utils.redirectTo {url: '/oddzialy'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -23,13 +27,14 @@ module.exports = class BonEditView extends View
 
     delete_action: =>
         super
+        # TODO: oferty tego oddzaiłu do innego
         @model.destroy
             success: (event) =>
-                # we will never succeed....
-                @publishEvent('log:info', 'dyspozycja usunięcia konta przyjęta' )
+                mediator.collections.branches.remove(@model)
+                @publishEvent 'tell_user', 'Oddział został usunięty'
+                Chaplin.utils.redirectTo {url: '/oddzialy'}
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
                 else
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
-

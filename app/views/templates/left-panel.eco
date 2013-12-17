@@ -66,9 +66,7 @@
                     <ul data-role="listview" >
                         <li ><a id='bon-config-link' href="" >Dane Biura Nieruchomości</a></li>
                         <li ><a id='agent-config-link' href="" >Dane Profilu</a></li>
-                        <li ><a href="/agenci/dodaj" >Dodaj Agenta</a></li>
                         <li ><a href="/agenci" >Agenci</a></li>
-                        <li ><a href="/oddzialy/dodaj" >Dodaj Oddział</a></li>
                         <li ><a href="/oddzialy" >Oddziały</a></li>
                         <li ><a href="" >Logo</a></li>
                         <li ><a href="" >Watermark</a></li>
