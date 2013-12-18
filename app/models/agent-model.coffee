@@ -7,10 +7,16 @@ module.exports = class Agent extends Chaplin.Model
         (if _.isFunction(value) then value.call(this) else value)
     defaults:
         is_active: '1' # for booleans
-        is_active_bool: ->
+        is_active_func: ->
             if @get('is_active') then 'tak' else 'nie'
-        is_admin_bool: ->
+        is_admin_func: ->
             if @get('is_admin') then 'tak' else 'nie'
+        agent_type_func: ->
+            switch @get('agent_type')
+                 when 0 then 'pośrednik'
+                 when 1 then 'admin'
+                 when 2 then 'menadzer'
+                 when 3 then 'IT'
 
     toJSON: ->
         data = {}

@@ -23,6 +23,7 @@ module.exports = class Layout extends Chaplin.Layout
             @subscribeEvent('loading_stop', @jqm_loading_stop)
             @subscribeEvent('disable_buttons', @disable_buttons)
             @subscribeEvent('disable_form', @disable_form)
+            @subscribeEvent('table_refresh', @jqm_table_refresh)
 
             @subscribeEvent('server_error', @server_error)
             @subscribeEvent('tell_user', @tell_user)
@@ -126,6 +127,9 @@ module.exports = class Layout extends Chaplin.Layout
     jqm_recreate: =>
         #TODO: we might check in the DOM if this was rendered alreadyand only then do it or not.
 
+    jqm_table_refresh: =>
+        @log.info('layout: jqm_table_refresh ')
+        $("#list-table").table("refresh")
 
 
 

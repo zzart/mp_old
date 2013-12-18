@@ -30,7 +30,7 @@
 	</div>
 </div><!-- /grid-b -->
 
-<table data-role="table" id="client-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
+<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
 data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">
      <thead>
        <tr>
@@ -47,7 +47,7 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
        </tr>
      </thead>
      <tbody>
-      <% for item in @client : %>
+      <% for item in @collection : %>
 
        <tr>
          <td> <label> <input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true"  type="checkbox"> </label> </td>

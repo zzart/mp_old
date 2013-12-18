@@ -13,7 +13,6 @@ module.exports = class AgentController extends Controller
         #    @view = new ListView {params , region:'content'}
         #else
         mediator.collections.agents = new Collection
-        console.log(mediator.collections.agents)
         mediator.collections.agents.fetch
             data: params
             beforeSend: =>
@@ -22,7 +21,7 @@ module.exports = class AgentController extends Controller
             success: =>
                 @publishEvent('log:info', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
-                @view = new ListView {params , region:'content'}
+                @view = new ListView {collection:mediator.collections.agents, template:'agents_list_view' ,filter:'agent_type', region:'content'}
             error: =>
                 @publishEvent 'loading_stop'
                 @publishEvent 'server_error'

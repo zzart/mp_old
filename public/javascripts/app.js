@@ -242,7 +242,6 @@ module.exports = AgentController = (function(_super) {
     var _this = this;
     this.publishEvent('log:info', 'in agent list controller');
     mediator.collections.agents = new Collection;
-    console.log(mediator.collections.agents);
     return mediator.collections.agents.fetch({
       data: params,
       beforeSend: function() {
@@ -253,7 +252,9 @@ module.exports = AgentController = (function(_super) {
         _this.publishEvent('log:info', "data with " + params + " fetched ok");
         _this.publishEvent('loading_stop');
         return _this.view = new ListView({
-          params: params,
+          collection: mediator.collections.agents,
+          template: 'agents_list_view',
+          filter: 'agent_type',
           region: 'content'
         });
       },
@@ -578,7 +579,8 @@ module.exports = BranchController = (function(_super) {
         _this.publishEvent('log:info', "data with " + params + " fetched ok");
         _this.publishEvent('loading_stop');
         return _this.view = new ListView({
-          params: params,
+          collection: mediator.collections.branches,
+          template: 'branch_list_view',
           region: 'content'
         });
       },
@@ -630,13 +632,13 @@ module.exports = BranchController = (function(_super) {
 });
 
 ;require.register("controllers/client-controller", function(exports, require, module) {
-var ClientListController, ClientListView, ClientView, Collection, Controller, Model, mediator,
+var ClientListController, ClientView, Collection, Controller, ListView, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Controller = require('controllers/auth-controller');
 
-ClientListView = require('views/client-list-view');
+ListView = require('views/client-list-view');
 
 ClientView = require('views/client-view');
 
@@ -667,8 +669,10 @@ module.exports = ClientListController = (function(_super) {
       success: function() {
         _this.publishEvent('log:info', "data with " + params + " fetched ok");
         _this.publishEvent('loading_stop');
-        return _this.view = new ClientListView({
-          params: params,
+        return _this.view = new ListView({
+          collection: mediator.collections.clients,
+          template: 'client_list_view',
+          filter: 'client_type',
           region: 'content'
         });
       },
@@ -720,13 +724,13 @@ module.exports = ClientListController = (function(_super) {
 });
 
 ;require.register("controllers/client-public-controller", function(exports, require, module) {
-var ClientListView, ClientPublicController, ClientView, Collection, Controller, Model, mediator,
+var ClientPublicController, ClientView, Collection, Controller, ListView, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Controller = require('controllers/auth-controller');
 
-ClientListView = require('views/client-public-list-view');
+ListView = require('views/client-public-list-view');
 
 Collection = require('models/client-public-collection');
 
@@ -755,8 +759,9 @@ module.exports = ClientPublicController = (function(_super) {
       success: function() {
         _this.publishEvent('log:info', "data with " + params + " fetched ok");
         _this.publishEvent('loading_stop');
-        return _this.view = new ClientListView({
-          params: params,
+        return _this.view = new ListView({
+          collection: mediator.collections.clients_public,
+          template: 'client_public_list_view',
           region: 'content'
         });
       },
@@ -1154,18 +1159,30 @@ module.exports = Agent = (function(_super) {
 
   Agent.prototype.defaults = {
     is_active: '1',
-    is_active_bool: function() {
+    is_active_func: function() {
       if (this.get('is_active')) {
         return 'tak';
       } else {
         return 'nie';
       }
     },
-    is_admin_bool: function() {
+    is_admin_func: function() {
       if (this.get('is_admin')) {
         return 'tak';
       } else {
         return 'nie';
+      }
+    },
+    agent_type_func: function() {
+      switch (this.get('agent_type')) {
+        case 0:
+          return 'pośrednik';
+        case 1:
+          return 'admin';
+        case 2:
+          return 'menadzer';
+        case 3:
+          return 'IT';
       }
     }
   };
@@ -1301,6 +1318,36 @@ module.exports = Branch = (function(_super) {
 
   Branch.prototype.schema = {};
 
+  Branch.prototype.get = function(attr) {
+    var value;
+    value = Backbone.Model.prototype.get.call(this, attr);
+    if (_.isFunction(value)) {
+      return value.call(this);
+    } else {
+      return value;
+    }
+  };
+
+  Branch.prototype.defaults = {
+    is_main_func: function() {
+      if (this.get('is_main')) {
+        return 'tak';
+      } else {
+        return 'nie';
+      }
+    }
+  };
+
+  Branch.prototype.toJSON = function() {
+    var data, json;
+    data = {};
+    json = Backbone.Model.prototype.toJSON.call(this);
+    _.each(json, function(value, key) {
+      return data[key] = this.get(key);
+    }, this);
+    return data;
+  };
+
   return Branch;
 
 })(Chaplin.Model);
@@ -1351,8 +1398,40 @@ module.exports = Client = (function(_super) {
 
   Client.prototype.schema = {};
 
+  Client.prototype.get = function(attr) {
+    var value;
+    value = Backbone.Model.prototype.get.call(this, attr);
+    if (_.isFunction(value)) {
+      return value.call(this);
+    } else {
+      return value;
+    }
+  };
+
   Client.prototype.defaults = {
-    is_private: ''
+    is_private: '',
+    client_type_func: function() {
+      switch (this.get('client_type')) {
+        case 1:
+          return 'kupujący';
+        case 2:
+          return 'sprzedający';
+        case 3:
+          return 'wynajmujący';
+        case 4:
+          return 'najemca';
+      }
+    }
+  };
+
+  Client.prototype.toJSON = function() {
+    var data, json;
+    data = {};
+    json = Backbone.Model.prototype.toJSON.call(this);
+    _.each(json, function(value, key) {
+      return data[key] = this.get(key);
+    }, this);
+    return data;
   };
 
   return Client;
@@ -1529,170 +1608,6 @@ module.exports = function(match) {
 
 });
 
-;require.register("views/add-offer-view", function(exports, require, module) {
-var OfferListView, View,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/base/view');
-
-module.exports = OfferListView = (function(_super) {
-
-  __extends(OfferListView, _super);
-
-  function OfferListView() {
-    return OfferListView.__super__.constructor.apply(this, arguments);
-  }
-
-  OfferListView.prototype.autoRender = true;
-
-  OfferListView.prototype.container = "[data-role='content']";
-
-  OfferListView.prototype.containerMethod = 'html';
-
-  OfferListView.prototype.initialize = function(options) {
-    return OfferListView.__super__.initialize.apply(this, arguments);
-  };
-
-  OfferListView.prototype.getTemplateFunction = function() {
-    var template,
-      _this = this;
-    template = function() {
-      return _this.options.form.el;
-    };
-    return this.template = template;
-  };
-
-  OfferListView.prototype.render = function() {
-    console.log(this.el);
-    OfferListView.__super__.render.apply(this, arguments);
-    console.log('view: offerlist afterRender()');
-    return this.publishEvent('addofferview:render');
-  };
-
-  return OfferListView;
-
-})(View);
-
-});
-
-;require.register("views/agent-add-view", function(exports, require, module) {
-var AddView, View, mediator, template,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/base/view');
-
-template = require('views/templates/agent_form');
-
-mediator = require('mediator');
-
-module.exports = AddView = (function(_super) {
-
-  __extends(AddView, _super);
-
-  function AddView() {
-    this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.refresh_form = __bind(this.refresh_form, this);
-
-    this.save_form = __bind(this.save_form, this);
-
-    this.form_help = __bind(this.form_help, this);
-
-    this.initialize = __bind(this.initialize, this);
-    return AddView.__super__.constructor.apply(this, arguments);
-  }
-
-  AddView.prototype.autoRender = true;
-
-  AddView.prototype.containerMethod = "html";
-
-  AddView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  AddView.prototype.id = 'content';
-
-  AddView.prototype.className = 'ui-content';
-
-  AddView.prototype.initialize = function(options) {
-    AddView.__super__.initialize.apply(this, arguments);
-    this.params = options.params;
-    this.model = mediator.models.agent;
-    this.template_form = template;
-    this.delegate('click', 'a#agent-add-refresh', this.refresh_form);
-    this.delegate('click', 'a#agent-add-save', this.save_form);
-    this.delegate('click', 'a.form-help', this.form_help);
-    this.form = new Backbone.Form({
-      model: this.model,
-      template: this.template_form,
-      templateData: {
-        heading: 'Dodaj agent',
-        mode: 'add',
-        is_admin: mediator.models.user.get('is_admin')
-      }
-    });
-    return this.form.render();
-  };
-
-  AddView.prototype.form_help = function(event) {
-    return this.publishEvent('tell_user', event.target.text);
-  };
-
-  AddView.prototype.save_form = function() {
-    var _this = this;
-    this.publishEvent('log:info', 'commmit form');
-    if (_.isUndefined(this.form.commit({
-      validate: true
-    }))) {
-      return this.model.save({}, {
-        success: function(event) {
-          if (mediator.collections.agents != null) {
-            mediator.collections.agents.add(_this.model);
-          }
-          _this.publishEvent('tell_user', 'Agent dodany');
-          return Chaplin.utils.redirectTo({
-            url: '/agenci'
-          });
-        },
-        error: function(model, response, options) {
-          if (response.responseJSON != null) {
-            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-          } else {
-            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-          }
-        }
-      });
-    } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
-    }
-  };
-
-  AddView.prototype.refresh_form = function() {
-    return render();
-  };
-
-  AddView.prototype.render = function() {
-    AddView.__super__.render.apply(this, arguments);
-    return this.$el.append(this.form.el);
-  };
-
-  AddView.prototype.attach = function() {
-    AddView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: agentadd afterRender()');
-    return this.publishEvent('jqm_refersh:render');
-  };
-
-  return AddView;
-
-})(View);
-
-});
-
 ;require.register("views/agent-list-view", function(exports, require, module) {
 var ListView, View, list_view, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1838,7 +1753,6 @@ module.exports = ListView = (function(_super) {
   };
 
   ListView.prototype.getTemplateData = function() {
-    window.col = this.collection;
     return {
       agent: this.collection.toJSON()
     };
@@ -2208,150 +2122,13 @@ module.exports = BonEditView = (function(_super) {
 
 });
 
-;require.register("views/branch-edit-view", function(exports, require, module) {
-var BranchEditView, View, mediator, template,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/base/view');
-
-template = require('views/templates/branch_form');
-
-mediator = require('mediator');
-
-module.exports = BranchEditView = (function(_super) {
-
-  __extends(BranchEditView, _super);
-
-  function BranchEditView() {
-    this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this["delete"] = __bind(this["delete"], this);
-
-    this.save_form = __bind(this.save_form, this);
-
-    this.form_help = __bind(this.form_help, this);
-
-    this.initialize = __bind(this.initialize, this);
-    return BranchEditView.__super__.constructor.apply(this, arguments);
-  }
-
-  BranchEditView.prototype.autoRender = true;
-
-  BranchEditView.prototype.containerMethod = "html";
-
-  BranchEditView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  BranchEditView.prototype.id = 'content';
-
-  BranchEditView.prototype.className = 'ui-content';
-
-  BranchEditView.prototype.initialize = function(options) {
-    BranchEditView.__super__.initialize.apply(this, arguments);
-    this.params = options.params;
-    this.publishEvent('log:info', console.log(this.params));
-    this.model = mediator.collections.branches.get(this.params.id);
-    this.model.schema = mediator.models.user.get('schemas').branch;
-    this.template_form = template;
-    this.delegate('click', 'a#branch-edit-delete', this["delete"]);
-    this.delegate('click', 'a#branch-edit-update', this.save_form);
-    this.delegate('click', 'a.form-help', this.form_help);
-    this.form = new Backbone.Form({
-      model: this.model,
-      template: this.template_form,
-      templateData: {
-        heading: 'Edytuj oddział',
-        mode: 'edit',
-        is_admin: mediator.models.user.get('is_admin')
-      }
-    });
-    return this.form.render();
-  };
-
-  BranchEditView.prototype.form_help = function(event) {
-    return this.publishEvent('tell_user', event.target.text);
-  };
-
-  BranchEditView.prototype.save_form = function() {
-    var _this = this;
-    this.publishEvent('log:info', 'commmit form');
-    if (_.isUndefined(this.form.commit({
-      validate: true
-    }))) {
-      return this.model.save({}, {
-        success: function(event) {
-          _this.publishEvent('tell_user', 'Oddział zaktualizowany');
-          return Chaplin.utils.redirectTo({
-            url: '/oddzialy'
-          });
-        },
-        error: function(model, response, options) {
-          if (response.responseJSON != null) {
-            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-          } else {
-            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-          }
-        }
-      });
-    } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
-    }
-  };
-
-  BranchEditView.prototype["delete"] = function() {
-    var _this = this;
-    return this.model.destroy({
-      success: function(event) {
-        mediator.collections.branches.remove(_this.model);
-        _this.publishEvent('tell_user', 'Oddział został usunięty');
-        return Chaplin.utils.redirectTo({
-          url: '/oddzialy'
-        });
-      },
-      error: function(model, response, options) {
-        if (response.responseJSON != null) {
-          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-        } else {
-          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-        }
-      }
-    });
-  };
-
-  BranchEditView.prototype.render = function() {
-    BranchEditView.__super__.render.apply(this, arguments);
-    this.publishEvent('log:info', '5');
-    this.$el.append(this.form.el);
-    return this.publishEvent('log:info', '22');
-  };
-
-  BranchEditView.prototype.attach = function() {
-    BranchEditView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', '6');
-    this.publishEvent('log:info', 'view: clientadd afterRender()');
-    return this.publishEvent('jqm_refersh:render');
-  };
-
-  return BranchEditView;
-
-})(View);
-
-});
-
 ;require.register("views/branch-list-view", function(exports, require, module) {
-var BranchListView, View, list_view, mediator,
+var BranchListView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-View = require('views/base/view');
-
-list_view = require('views/templates/branch_list_view');
+View = require('views/list-view');
 
 mediator = require('mediator');
 
@@ -2361,144 +2138,16 @@ module.exports = BranchListView = (function(_super) {
 
   function BranchListView() {
     this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.getTemplateData = __bind(this.getTemplateData, this);
-
-    this.refresh_branches = __bind(this.refresh_branches, this);
-
-    this.action = __bind(this.action, this);
-
-    this.select_all = __bind(this.select_all, this);
     return BranchListView.__super__.constructor.apply(this, arguments);
   }
 
-  BranchListView.prototype.autoRender = true;
-
-  BranchListView.prototype.containerMethod = "html";
-
-  BranchListView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  BranchListView.prototype.id = 'content';
-
-  BranchListView.prototype.className = 'ui-content';
-
   BranchListView.prototype.initialize = function(options) {
-    BranchListView.__super__.initialize.apply(this, arguments);
-    this.collection = _.clone(mediator.collections.branches);
-    this.params = options.params;
-    this.template = list_view;
-    this.last_check_view = 'list_view';
-    this.last_check_query = 'user';
-    this.delegate('change', '#select-action', this.action);
-    this.delegate('change', '#all', this.select_all);
-    this.delegate('click', '#refresh', this.refresh_branches);
-    return window.collection = this.collection;
-  };
-
-  BranchListView.prototype.select_all = function() {
-    var selected;
-    selected = $('#client-table>thead input:checkbox ').prop('checked');
-    return $('#client-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
-  };
-
-  BranchListView.prototype.action = function(event) {
-    var clean_after_action, selected, self,
-      _this = this;
-    selected = $('#client-table>tbody input:checked ');
-    self = this;
-    clean_after_action = function(selected) {
-      $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
-      $("#select-action :selected").removeAttr('selected');
-      selected = null;
-    };
-    this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + selected);
-    if (selected.length > 0) {
-      if (event.target.value === 'usun') {
-        $("#confirm").popup('open');
-        return $("#confirmed").click(function() {
-          var i, model, _i, _len,
-            _this = this;
-          for (_i = 0, _len = selected.length; _i < _len; _i++) {
-            i = selected[_i];
-            model = mediator.collections.branches.get($(i).attr('id'));
-            model.destroy({
-              wait: true,
-              success: function(event) {
-                Chaplin.EventBroker.publishEvent('log:info', "Oddzial usunięty id" + (model.get('id')));
-                mediator.collections.branches.remove(model);
-                self.render();
-                return Chaplin.EventBroker.publishEvent('tell_user', 'Oddział został usunięty');
-              },
-              error: function(model, response, options) {
-                if (response.responseJSON != null) {
-                  return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-                } else {
-                  return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-                }
-              }
-            });
-          }
-          $(this).off('click');
-          return clean_after_action(selected);
-        });
-      }
-    } else {
-      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
-      return clean_after_action(selected);
-    }
-  };
-
-  BranchListView.prototype.refresh_branches = function(event) {
-    var _this = this;
-    event.preventDefault();
-    this.publishEvent('log:debug', 'refresh');
-    return mediator.collections.branches.fetch({
-      success: function() {
-        _this.publishEvent('tell_user', 'Odświeżam listę oddziałów');
-        _this.collection = _.clone(mediator.collections.branches);
-        return _this.render();
-      },
-      error: function(model, response, options) {
-        if (response.responseJSON != null) {
-          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-        } else {
-          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-        }
-      }
-    });
-  };
-
-  BranchListView.prototype.getTemplateData = function() {
-    return {
-      collection: this.collection.toJSON()
-    };
-  };
-
-  BranchListView.prototype.render = function() {
-    return BranchListView.__super__.render.apply(this, arguments);
+    return BranchListView.__super__.initialize.apply(this, arguments);
   };
 
   BranchListView.prototype.attach = function() {
     BranchListView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: offerlist afterRender()');
-    if (this.collection.length > 1) {
-      $("#client-table").tablesorter({
-        sortList: [[4, 0]],
-        headers: {
-          0: {
-            'sorter': false
-          },
-          1: {
-            'sorter': false
-          }
-        }
-      });
-    }
-    return this.publishEvent('jqm_refersh:render');
+    return this.publishEvent('log:info', 'view: branch-list afterRender()');
   };
 
   return BranchListView;
@@ -2592,14 +2241,12 @@ module.exports = BranchView = (function(_super) {
 });
 
 ;require.register("views/client-list-view", function(exports, require, module) {
-var ClientListView, View, list_view, mediator,
+var ClientListView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-View = require('views/base/view');
-
-list_view = require('views/templates/client_list_view');
+View = require('views/list-view');
 
 mediator = require('mediator');
 
@@ -2609,162 +2256,16 @@ module.exports = ClientListView = (function(_super) {
 
   function ClientListView() {
     this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.getTemplateData = __bind(this.getTemplateData, this);
-
-    this.refresh_offers = __bind(this.refresh_offers, this);
-
-    this.change_query = __bind(this.change_query, this);
-
-    this.action = __bind(this.action, this);
-
-    this.select_all = __bind(this.select_all, this);
     return ClientListView.__super__.constructor.apply(this, arguments);
   }
 
-  ClientListView.prototype.autoRender = true;
-
-  ClientListView.prototype.containerMethod = "html";
-
-  ClientListView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  ClientListView.prototype.id = 'content';
-
-  ClientListView.prototype.className = 'ui-content';
-
-  ClientListView.prototype.initialize = function(options) {
-    ClientListView.__super__.initialize.apply(this, arguments);
-    this.collection = _.clone(mediator.collections.clients);
-    this.params = options.params;
-    this.template = list_view;
-    this.last_check_view = 'list_view';
-    this.last_check_query = 'user';
-    this.delegate('change', '#select-action', this.action);
-    this.delegate('change', '#select-filter', this.change_query);
-    this.delegate('change', '#all', this.select_all);
-    return this.delegate('click', '#refresh', this.refresh_offers);
-  };
-
-  ClientListView.prototype.select_all = function() {
-    var selected;
-    selected = $('#client-table>thead input:checkbox ').prop('checked');
-    return $('#client-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
-  };
-
-  ClientListView.prototype.action = function(event) {
-    var clean_after_action, selected, self,
-      _this = this;
-    selected = $('#client-table>tbody input:checked ');
-    self = this;
-    clean_after_action = function(selected) {
-      $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
-      $("#select-action :selected").removeAttr('selected');
-      selected = null;
-      _this.render();
-    };
-    this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + selected);
-    if (selected.length > 0) {
-      if (event.target.value === 'usun') {
-        $("#confirm").popup('open');
-        return $("#confirmed").click(function() {
-          var i, model, _i, _len,
-            _this = this;
-          for (_i = 0, _len = selected.length; _i < _len; _i++) {
-            i = selected[_i];
-            model = mediator.collections.clients.get($(i).attr('id'));
-            model.destroy({
-              wait: true,
-              success: function(event) {
-                Chaplin.EventBroker.publishEvent('log:info', "klient usunięty id" + (model.get('id')));
-                mediator.collections.clients.remove(model);
-                self.render();
-                return Chaplin.EventBroker.publishEvent('tell_user', 'Klient został usunięty');
-              },
-              error: function(model, response, options) {
-                if (response.responseJSON != null) {
-                  return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-                } else {
-                  return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-                }
-              }
-            });
-          }
-          $(this).off('click');
-          return clean_after_action(selected);
-        });
-      }
-    } else {
-      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
-      return clean_after_action(selected);
-    }
-  };
-
-  ClientListView.prototype.change_query = function(event) {
-    var list_of_models;
-    console.log(mediator.collections.clients);
-    this.publishEvent('log:debug', event.target.value);
-    if (_.isEmpty(event.target.value)) {
-      this.collection = _.clone(mediator.collections.clients);
-    } else {
-      list_of_models = mediator.collections.clients.where({
-        'client_type': parseInt(event.target.value)
-      });
-      this.collection.reset(list_of_models);
-    }
-    return this.render();
-  };
-
-  ClientListView.prototype.refresh_offers = function(event) {
-    var _this = this;
-    event.preventDefault();
-    this.publishEvent('log:debug', 'refresh');
-    return mediator.collections.clients.fetch({
-      success: function() {
-        _this.publishEvent('tell_user', 'Odświeżam listę kontaktów');
-        _this.collection = _.clone(mediator.collections.clients);
-        return _this.render();
-      },
-      error: function(model, response, options) {
-        if (response.responseJSON != null) {
-          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-        } else {
-          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-        }
-      }
-    });
-  };
-
-  ClientListView.prototype.getTemplateData = function() {
-    return {
-      client: this.collection.toJSON()
-    };
-  };
-
-  ClientListView.prototype.render = function() {
-    return ClientListView.__super__.render.apply(this, arguments);
+  ClientListView.prototype.initialize = function(params) {
+    return ClientListView.__super__.initialize.apply(this, arguments);
   };
 
   ClientListView.prototype.attach = function() {
     ClientListView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: offerlist afterRender()');
-    if (this.collection.length > 1) {
-      $("#client-table").tablesorter({
-        sortList: [[4, 0]],
-        headers: {
-          0: {
-            'sorter': false
-          },
-          1: {
-            'sorter': false
-          }
-        }
-      });
-    }
-    return this.publishEvent('jqm_refersh:render');
+    return this.publishEvent('log:info', 'view: client list view afterRender()');
   };
 
   return ClientListView;
@@ -2774,14 +2275,12 @@ module.exports = ClientListView = (function(_super) {
 });
 
 ;require.register("views/client-public-list-view", function(exports, require, module) {
-var ClientListView, View, list_view, mediator,
+var ClientListView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-View = require('views/base/view');
-
-list_view = require('views/templates/client_public_list_view');
+View = require('views/list-view');
 
 mediator = require('mediator');
 
@@ -2791,162 +2290,16 @@ module.exports = ClientListView = (function(_super) {
 
   function ClientListView() {
     this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.getTemplateData = __bind(this.getTemplateData, this);
-
-    this.refresh_offers = __bind(this.refresh_offers, this);
-
-    this.change_query = __bind(this.change_query, this);
-
-    this.action = __bind(this.action, this);
-
-    this.select_all = __bind(this.select_all, this);
     return ClientListView.__super__.constructor.apply(this, arguments);
   }
 
-  ClientListView.prototype.autoRender = true;
-
-  ClientListView.prototype.containerMethod = "html";
-
-  ClientListView.prototype.attributes = {
-    'data-role': 'content'
-  };
-
-  ClientListView.prototype.id = 'content';
-
-  ClientListView.prototype.className = 'ui-content';
-
   ClientListView.prototype.initialize = function(options) {
-    ClientListView.__super__.initialize.apply(this, arguments);
-    this.collection = _.clone(mediator.collections.clients_public);
-    this.params = options.params;
-    this.template = list_view;
-    this.last_check_view = 'list_view';
-    this.last_check_query = 'user';
-    this.delegate('change', '#select-action', this.action);
-    this.delegate('change', '#select-filter', this.change_query);
-    this.delegate('change', '#all', this.select_all);
-    return this.delegate('click', '#refresh', this.refresh_offers);
-  };
-
-  ClientListView.prototype.select_all = function() {
-    var selected;
-    selected = $('#client-table>thead input:checkbox ').prop('checked');
-    return $('#client-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
-  };
-
-  ClientListView.prototype.action = function(event) {
-    var clean_after_action, selected, self,
-      _this = this;
-    selected = $('#client-table>tbody input:checked ');
-    self = this;
-    clean_after_action = function(selected) {
-      $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
-      $("#select-action :selected").removeAttr('selected');
-      selected = null;
-      _this.render();
-    };
-    this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + selected);
-    if (selected.length > 0) {
-      if (event.target.value === 'usun') {
-        $("#confirm").popup('open');
-        return $("#confirmed").click(function() {
-          var i, model, _i, _len,
-            _this = this;
-          for (_i = 0, _len = selected.length; _i < _len; _i++) {
-            i = selected[_i];
-            model = mediator.collections.clients.get($(i).attr('id'));
-            model.destroy({
-              wait: true,
-              success: function(event) {
-                Chaplin.EventBroker.publishEvent('log:info', "klient usunięty id" + (model.get('id')));
-                mediator.collections.clients.remove(model);
-                self.render();
-                return Chaplin.EventBroker.publishEvent('tell_user', 'Klient został usunięty');
-              },
-              error: function(model, response, options) {
-                if (response.responseJSON != null) {
-                  return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-                } else {
-                  return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-                }
-              }
-            });
-          }
-          $(this).off('click');
-          return clean_after_action(selected);
-        });
-      }
-    } else {
-      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
-      return clean_after_action(selected);
-    }
-  };
-
-  ClientListView.prototype.change_query = function(event) {
-    var list_of_models;
-    console.log(mediator.collections.clients);
-    this.publishEvent('log:debug', event.target.value);
-    if (_.isEmpty(event.target.value)) {
-      this.collection = _.clone(mediator.collections.clients_public);
-    } else {
-      list_of_models = mediator.collections.clients_public.where({
-        'client_type': parseInt(event.target.value)
-      });
-      this.collection.reset(list_of_models);
-    }
-    return this.render();
-  };
-
-  ClientListView.prototype.refresh_offers = function(event) {
-    var _this = this;
-    event.preventDefault();
-    this.publishEvent('log:debug', 'refresh');
-    return mediator.collections.clients.fetch({
-      success: function() {
-        _this.publishEvent('tell_user', 'Odświeżam listę kontaktów');
-        _this.collection = _.clone(mediator.collections.clients_public);
-        return _this.render();
-      },
-      error: function(model, response, options) {
-        if (response.responseJSON != null) {
-          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
-        } else {
-          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
-        }
-      }
-    });
-  };
-
-  ClientListView.prototype.getTemplateData = function() {
-    return {
-      client: this.collection.toJSON()
-    };
-  };
-
-  ClientListView.prototype.render = function() {
-    return ClientListView.__super__.render.apply(this, arguments);
+    return ClientListView.__super__.initialize.apply(this, arguments);
   };
 
   ClientListView.prototype.attach = function() {
     ClientListView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: offerlist afterRender()');
-    if (this.collection.length > 1) {
-      $("#client-table").tablesorter({
-        sortList: [[4, 0]],
-        headers: {
-          0: {
-            'sorter': false
-          },
-          1: {
-            'sorter': false
-          }
-        }
-      });
-    }
-    return this.publishEvent('jqm_refersh:render');
+    return this.publishEvent('log:info', 'view: client public list afterRender()');
   };
 
   return ClientListView;
@@ -3595,6 +2948,8 @@ module.exports = Layout = (function(_super) {
   __extends(Layout, _super);
 
   function Layout() {
+    this.jqm_table_refresh = __bind(this.jqm_table_refresh, this);
+
     this.jqm_recreate = __bind(this.jqm_recreate, this);
 
     this.jqm_footer_refersh = __bind(this.jqm_footer_refersh, this);
@@ -3648,6 +3003,7 @@ module.exports = Layout = (function(_super) {
       this.subscribeEvent('loading_stop', this.jqm_loading_stop);
       this.subscribeEvent('disable_buttons', this.disable_buttons);
       this.subscribeEvent('disable_form', this.disable_form);
+      this.subscribeEvent('table_refresh', this.jqm_table_refresh);
       this.subscribeEvent('server_error', this.server_error);
       this.subscribeEvent('tell_user', this.tell_user);
     }
@@ -3777,6 +3133,11 @@ module.exports = Layout = (function(_super) {
   };
 
   Layout.prototype.jqm_recreate = function() {};
+
+  Layout.prototype.jqm_table_refresh = function() {
+    this.log.info('layout: jqm_table_refresh ');
+    return $("#list-table").table("refresh");
+  };
 
   return Layout;
 
@@ -3976,131 +3337,6 @@ module.exports = LoginView = (function(_super) {
   };
 
   return LoginView;
-
-})(View);
-
-});
-
-;require.register("views/offer-list-view", function(exports, require, module) {
-var OfferListView, View, list_view,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/base/view');
-
-list_view = require('views/templates/list_view');
-
-module.exports = OfferListView = (function(_super) {
-
-  __extends(OfferListView, _super);
-
-  function OfferListView() {
-    this.attach = __bind(this.attach, this);
-
-    this.getTemplateData = __bind(this.getTemplateData, this);
-
-    this.refresh_offers = __bind(this.refresh_offers, this);
-
-    this.change_query = __bind(this.change_query, this);
-
-    this.action = __bind(this.action, this);
-
-    this.select_all = __bind(this.select_all, this);
-    return OfferListView.__super__.constructor.apply(this, arguments);
-  }
-
-  OfferListView.prototype.autoRender = true;
-
-  OfferListView.prototype.container = "[data-role='content']";
-
-  OfferListView.prototype.containerMethod = 'html';
-
-  OfferListView.prototype.initialize = function(options) {
-    OfferListView.__super__.initialize.apply(this, arguments);
-    this.params = options.params;
-    this.template = list_view;
-    this.last_check_view = 'list_view';
-    this.last_check_query = 'user';
-    this.delegate('change', '#select-action', this.action);
-    this.delegate('change', '#select-filter', this.change_query);
-    this.delegate('change', '#all', this.select_all);
-    return this.delegate('click', '#refresh', this.refresh_offers);
-  };
-
-  OfferListView.prototype.select_all = function() {
-    var selected;
-    selected = $('#table-list>thead input:checkbox ').prop('checked');
-    return $('#table-list>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
-  };
-
-  OfferListView.prototype.action = function(event) {
-    var selected;
-    selected = $('#table-list>tbody input:checked ');
-    this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + selected);
-    return $('#table-list>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
-  };
-
-  OfferListView.prototype.change_query = function(event) {
-    var _this = this;
-    this.publishEvent('log:debug', event);
-    this.params['filter'] = event.target.value;
-    return this.collection.fetch({
-      data: this.params,
-      success: function() {
-        _this.publishEvent('log:debug', _this.params);
-        _this.publishEvent('loading_stop');
-        _this.render();
-        _this.last_check_query = event.target.id;
-        return _this.refresh_radios();
-      },
-      beforeSend: function() {
-        return _this.publishEvent('loading_start');
-      }
-    });
-  };
-
-  OfferListView.prototype.refresh_offers = function(event) {
-    var _this = this;
-    event.preventDefault();
-    this.publishEvent('log:debug', this.params);
-    return this.collection.fetch({
-      data: this.params,
-      success: function() {
-        _this.publishEvent('loading_stop');
-        _this.render();
-        return _this.last_check_query = event.target.id;
-      },
-      beforeSend: function() {
-        return _this.publishEvent('loading_start');
-      }
-    });
-  };
-
-  OfferListView.prototype.getTemplateData = function() {
-    return {
-      oferta: this.collection.toJSON()
-    };
-  };
-
-  OfferListView.prototype.attach = function() {
-    OfferListView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'view: offerlist afterRender()');
-    $("#table-list").tablesorter({
-      sortList: [[11, 0]],
-      headers: {
-        0: {
-          'sorter': false
-        },
-        1: {
-          'sorter': false
-        }
-      }
-    });
-    return this.publishEvent('offerlistview:render');
-  };
-
-  return OfferListView;
 
 })(View);
 
@@ -4444,11 +3680,11 @@ module.exports = function (__obj) {
         __out.push('</td>\n         <td>');
         __out.push(__sanitize(item['phone']));
         __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['is_active_bool']));
+        __out.push(__sanitize(item['is_active_func']));
         __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['is_admin_bool']));
+        __out.push(__sanitize(item['is_admin_func']));
         __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['agent_type']));
+        __out.push(__sanitize(item['agent_type_func']));
         __out.push('</td>\n       </tr>\n      ');
       }
     
@@ -4689,7 +3925,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/oddzialy/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="client-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Nazwa&nbsp;&nbsp;</th>\n         <th data-priority="2">Identyfikator&nbsp;&nbsp;</th>\n         <th data-priority="2">WWW&nbsp;&nbsp;</th>\n         <th data-priority="5">Tel&nbsp;&nbsp;</th>\n         <th data-priority="4">Email&nbsp;&nbsp;</th>\n         <th data-priority="6">Miasto&nbsp;&nbsp;</th>\n         <th data-priority="6">Nip&nbsp;&nbsp;</th>\n         <th data-priority="6">Główny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/oddzialy/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj  ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th data-priority="2">Agent&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwa&nbsp;&nbsp;</th>\n         <th data-priority="2">Identyfikator&nbsp;&nbsp;</th>\n         <th data-priority="2">WWW&nbsp;&nbsp;</th>\n         <th data-priority="5">Tel&nbsp;&nbsp;</th>\n         <th data-priority="4">Email&nbsp;&nbsp;</th>\n         <th data-priority="6">Miasto&nbsp;&nbsp;</th>\n         <th data-priority="6">Nip&nbsp;&nbsp;</th>\n         <th data-priority="6">Główny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -4721,7 +3957,7 @@ module.exports = function (__obj) {
         __out.push('</td>\n         <td>');
         __out.push(__sanitize(item['nip']));
         __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['is_main']));
+        __out.push(__sanitize(item['is_main_func']));
         __out.push('</td>\n       </tr>\n      ');
       }
     
@@ -4777,9 +4013,9 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="client-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
-      _ref = this.client;
+      _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
         __out.push('\n\n       <tr>\n         <td> <label> <input name="');
@@ -4863,9 +4099,9 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="client-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
-      _ref = this.client;
+      _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
         __out.push('\n\n       <tr>\n         <td> <label> <input name="');

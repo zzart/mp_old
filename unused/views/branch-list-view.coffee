@@ -1,8 +1,8 @@
 View = require 'views/base/view'
-list_view = require 'views/templates/agent_list_view'
+list_view = require 'views/templates/branch_list_view'
 mediator = require 'mediator'
 
-module.exports = class ListView extends View
+module.exports = class BranchListView extends View
     autoRender: true
     containerMethod: "html"
     attributes: { 'data-role':'content' }
@@ -11,43 +11,45 @@ module.exports = class ListView extends View
     initialize: (options) ->
         super
         # send url data from controler
-        @collection = _.clone(mediator.collections.agents)
+        @collection = _.clone(mediator.collections.branches)
         @params = options.params
         @template = list_view
+        @last_check_view = 'list_view'
+        @last_check_query = 'user'
         @delegate 'change', '#select-action', @action
-        @delegate 'change', '#select-filter', @change_query
         @delegate 'change', '#all', @select_all
-        @delegate 'click',  '#refresh', @refresh_offers
+        @delegate 'click',  '#refresh', @refresh_branches
+        window.collection = @collection
 
     select_all: =>
-        selected = $('#agent-table>thead input:checkbox ').prop('checked')
-        $('#agent-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh")
+        selected = $('#client-table>thead input:checkbox ').prop('checked')
+        $('#client-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh")
 
     action: (event) =>
         #get all selected offers
-        selected = $('#agent-table>tbody input:checked ')
+        selected = $('#client-table>tbody input:checked ')
         self = @
         clean_after_action = (selected) =>
             #Once action is done clear the selection
-            $('#agent-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh")
+            $('#client-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh")
             $("#select-action :selected").removeAttr('selected')
             selected = null
-            @render()
             return
-        @publishEvent('log:info', "performing action #{event.target.value} for items #{selected}")
+        @publishEvent('log:info', "performing action #{event.target.value} for offers #{selected}")
         if selected.length > 0
             if event.target.value == 'usun'
                 $("#confirm").popup('open')
                 $("#confirmed").click ->
                     for i in selected
-                        model = mediator.collections.agents.get($(i).attr('id'))
+                        model = mediator.collections.branches.get($(i).attr('id'))
+                        # TODO: przepisać oferty tego brancha do innego ?
                         model.destroy
                             wait: true # we would like confirmation from server before removing it from the collection
                             success: (event) =>
-                                Chaplin.EventBroker.publishEvent('log:info', "Agent usunięty id#{model.get('id')}")
-                                mediator.collections.agents.remove(model)
+                                Chaplin.EventBroker.publishEvent('log:info', "Oddzial usunięty id#{model.get('id')}")
+                                mediator.collections.branches.remove(model)
                                 self.render()
-                                Chaplin.EventBroker.publishEvent 'tell_user', 'Agent został usunięty'
+                                Chaplin.EventBroker.publishEvent 'tell_user', 'Oddział został usunięty'
                             error:(model, response, options) =>
                                 if response.responseJSON?
                                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -63,23 +65,13 @@ module.exports = class ListView extends View
 
 
 
-    change_query: (event) =>
-        @publishEvent('log:debug', event.target.value)
-        if _.isEmpty(event.target.value)
-            @collection = _.clone(mediator.collections.agents)
-        else
-            list_of_models = mediator.collections.agents.where({'agent_type': parseInt(event.target.value)})
-            @collection.reset(list_of_models)
-        @render()
-
-
-    refresh_offers: (event) =>
+    refresh_branches: (event) =>
         event.preventDefault()
         @publishEvent('log:debug', 'refresh')
-        mediator.collections.agents.fetch
+        mediator.collections.branches.fetch
             success: =>
-                @publishEvent 'tell_user', 'Odświeżam listę agentów'
-                @collection = _.clone(mediator.collections.agents)
+                @publishEvent 'tell_user', 'Odświeżam listę oddziałów'
+                @collection = _.clone(mediator.collections.branches)
                 @render()
             error:(model, response, options) =>
                 if response.responseJSON?
@@ -88,7 +80,7 @@ module.exports = class ListView extends View
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
     getTemplateData: =>
-        agent: @collection.toJSON()
+        collection: @collection.toJSON()
 
     render: =>
         super
@@ -100,7 +92,7 @@ module.exports = class ListView extends View
         #initialize sorting tables  http://tablesorter.com/docs/
         #można sortować wielokolumnowo przytrzymując shift ;)
         if @collection.length > 1
-            $("#agent-table").tablesorter({sortList:[[4,0]], headers:{0:{'sorter':false}, 1:{'sorter':false}}})
+            $("#client-table").tablesorter({sortList:[[4,0]], headers:{0:{'sorter':false}, 1:{'sorter':false}}})
         @publishEvent 'jqm_refersh:render'
 
 

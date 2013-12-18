@@ -1,5 +1,5 @@
 Controller = require 'controllers/auth-controller'
-ClientListView = require 'views/client-public-list-view'
+ListView = require 'views/client-public-list-view'
 Collection = require 'models/client-public-collection'
 ClientView = require 'views/client-public-view'
 Model = require 'models/client-model'
@@ -16,7 +16,7 @@ module.exports = class ClientPublicController extends Controller
             success: =>
                 @publishEvent('log:info', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
-                @view = new ClientListView {params , region:'content'}
+                @view = new ListView {collection:mediator.collections.clients_public, template:'client_public_list_view' , region:'content'}
             error: =>
                 @publishEvent 'loading_stop'
                 @publishEvent 'server_error'
