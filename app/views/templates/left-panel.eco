@@ -29,18 +29,18 @@
                 <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">
                     <h4>Dodaj ofertę</h4>
                     <ul data-role="listview">
-                        <li><a href="/oferty/dodaj"    >Mieszkania Wynajem</a></li>
-                        <li><a href="/oferty/dodaj"    >Mieszkania Sprzedaż</a></li>
-                        <li><a href="/oferty/dodaj"    >Domy Wynajem</a></li>
-                        <li><a href="/oferty/dodaj"    >Domy Sprzedaż</a></li>
-                        <li><a href="/oferty/dodaj"    >Grunty Dzierżawa</a></li>
-                        <li><a href="/oferty/dodaj"    >Grunty Sprzedaż</a></li>
-                        <li><a href="/oferty/dodaj"    >Lokale Wynajem</a></li>
-                        <li><a href="/oferty/dodaj"    >Lokale Sprzedaż</a></li>
-                        <li><a href="/oferty/dodaj"    >Lokale użytkowe Wynajem</a></li>
-                        <li><a href="/oferty/dodaj"   >Lokale użytkowe Sprzedaż</a></li>
-                        <li><a href="/oferty/dodaj"   >Obiekty Wynajem</a></li>
-                        <li><a href="/oferty/dodaj"   >Obiekty Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>
+                        <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj?type=hose_rent"    >Domy Wynajem</a></li>
+                        <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>
+                        <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>
+                        <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj?type=warehose_rent"    >Lokale użytkowe Wynajem</a></li>
+                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>
+                        <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
