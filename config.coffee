@@ -17,7 +17,8 @@ exports.config =
           'vendor/scripts/log4javascript.js',
           'vendor/scripts/jquery-1.10.2.min.js',
           'vendor/scripts/jquery.mobile.setup.js',#!!!
-          'vendor/scripts/jquery.mobile-1.4.0-rc.1.js',
+          'vendor/scripts/jquery.mobile-1.4.0.js',
+          #'vendor/scripts/jquery.mobile-1.4.0-rc.1.js',
           #'vendor/scripts/jquery.mobile-1.3.2.min.js',
           'vendor/scripts/underscore-1.4.3.js',
           'vendor/scripts/backbone-1.10.js',
@@ -41,7 +42,8 @@ exports.config =
       order:
         before: [
                 #'vendor/styles/jquery.mobile-1.3.min.css'
-                'vendor/styles/jquery.mobile-1.4.0-rc.1.css',
+                'vendor/styles/jquery.mobile-1.4.0.css',
+                #'vendor/styles/jquery.mobile-1.4.0-rc.1.css',
                 'vendor/styles/fineuploader-4.2.0-1.css',
                 #'vendor/styles/jqm-icon-pack-fa.css',
                 ]

@@ -858,6 +858,60 @@ module.exports = HomeController = (function(_super) {
 
 });
 
+;require.register("controllers/listing-controller", function(exports, require, module) {
+var AddView, Collection, Controller, ListingController, Model, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Controller = require('controllers/auth-controller');
+
+Collection = require('models/offer-list-collection');
+
+Model = require('models/property-model');
+
+AddView = require('views/listing-add-view');
+
+mediator = require('mediator');
+
+module.exports = ListingController = (function(_super) {
+
+  __extends(ListingController, _super);
+
+  function ListingController() {
+    return ListingController.__super__.constructor.apply(this, arguments);
+  }
+
+  ListingController.prototype.add = function(params, route, options) {
+    var form, type;
+    this.publishEvent('log:info', "in add property controller");
+    console.log(params, route, options);
+    type = options.query.type;
+    form = "" + type + "_form";
+    this.schema = localStorage.getObject('schemas')[type];
+    mediator.models.property = new Model;
+    mediator.models.property.schema = _.clone(this.schema);
+    this.publishEvent('log:info', "init view property controller");
+    this.view = new AddView({
+      form_name: form,
+      model: mediator.models.property,
+      listing_type: type,
+      can_edit: true,
+      edit_type: 'add',
+      region: 'content'
+    });
+    return this.publishEvent('log:info', "after init view property controller");
+  };
+
+  ListingController.prototype.show = function(params, route, options) {
+    return this.publishEvent('log:info', "in show property controller");
+  };
+
+  return ListingController;
+
+})(Controller);
+
+});
+
 ;require.register("controllers/login-controller", function(exports, require, module) {
 var LoginController, LoginView, Model, StructureController, mediator,
   __hasProp = {}.hasOwnProperty,
@@ -890,57 +944,6 @@ module.exports = LoginController = (function(_super) {
   return LoginController;
 
 })(StructureController);
-
-});
-
-;require.register("controllers/property-controller", function(exports, require, module) {
-var AddView, Collection, Controller, Model, PropertyController, mediator,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Controller = require('controllers/auth-controller');
-
-Collection = require('models/offer-list-collection');
-
-Model = require('models/property-model');
-
-AddView = require('views/property-add-view');
-
-mediator = require('mediator');
-
-module.exports = PropertyController = (function(_super) {
-
-  __extends(PropertyController, _super);
-
-  function PropertyController() {
-    return PropertyController.__super__.constructor.apply(this, arguments);
-  }
-
-  PropertyController.prototype.add = function(params, route, options) {
-    var form, type;
-    this.publishEvent('log:info', "in add property controller");
-    console.log(params, route, options);
-    type = options.query.type;
-    form = "" + type + "_form";
-    this.schema = localStorage.getObject('schemas')[type];
-    mediator.models.property = new Model;
-    mediator.models.property.schema = _.clone(this.schema);
-    this.publishEvent('log:info', "init view property controller");
-    this.view = new AddView({
-      form_name: form,
-      model: mediator.models.property,
-      region: 'content'
-    });
-    return this.publishEvent('log:info', "after init view property controller");
-  };
-
-  PropertyController.prototype.show = function(params, route, options) {
-    return this.publishEvent('log:info', "in show property controller");
-  };
-
-  return PropertyController;
-
-})(Controller);
 
 });
 
@@ -983,8 +986,8 @@ module.exports = StructureController = (function(_super) {
     this.compose('header', Header, {
       region: 'header'
     });
-    edit_footer = ['property#add', 'property#show', 'client#add', 'client#show', 'client-public#show', 'branch#add', 'branch#show', 'agent#add', 'agent#show', 'bon#show'];
-    list_footer = ['property#list', 'client#list', 'client-public#list', 'branch#list', 'agent#list', 'bon#list'];
+    edit_footer = ['listing#add', 'listing#show', 'client#add', 'client#show', 'client-public#show', 'branch#add', 'branch#show', 'agent#add', 'agent#show', 'bon#show'];
+    list_footer = ['listing#list', 'client#list', 'client-public#list', 'branch#list', 'agent#list', 'bon#list'];
     if (_ref = route.name, __indexOf.call(edit_footer, _ref) >= 0) {
       this.compose('footer-nav', NavFooter, {
         region: 'footer'
@@ -1576,9 +1579,9 @@ module.exports = function(match) {
   match('agenci/dodaj', 'agent#add');
   match('agenci', 'agent#list');
   match('agenci/:id', 'agent#show');
-  match('oferty/dodaj', 'property#add');
-  match('oferty', 'property#list');
-  return match('oferty/:id', 'property#show');
+  match('oferty/dodaj', 'listing#add');
+  match('oferty', 'listing#list');
+  return match('oferty/:id', 'listing#show');
 };
 
 });
@@ -2387,14 +2390,15 @@ module.exports = EditView = (function(_super) {
   EditView.prototype.className = 'ui-content';
 
   EditView.prototype.initialize = function(params) {
-    var _ref;
+    var _ref, _ref1;
     EditView.__super__.initialize.apply(this, arguments);
     this.params = params;
     this.model = this.params.model;
     this.form_name = this.params.form_name;
     this.can_edit = this.params.can_edit;
     this.edit_type = this.params.edit_type;
-    this.delete_only = (_ref = this.params.delete_only) != null ? _ref : false;
+    this.listing_type = (_ref = this.params.listing_type) != null ? _ref : false;
+    this.delete_only = (_ref1 = this.params.delete_only) != null ? _ref1 : false;
     this.subscribeEvent('delete:clicked', this.delete_action);
     this.subscribeEvent('save:clicked', this.save_action);
     this.subscribeEvent('save_and_add:clicked', this.save_and_add_action);
@@ -3224,6 +3228,68 @@ module.exports = ListView = (function(_super) {
 
 });
 
+;require.register("views/listing-add-view", function(exports, require, module) {
+var AddView, View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/edit-view');
+
+mediator = require('mediator');
+
+module.exports = AddView = (function(_super) {
+
+  __extends(AddView, _super);
+
+  function AddView() {
+    this.save_action = __bind(this.save_action, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return AddView.__super__.constructor.apply(this, arguments);
+  }
+
+  AddView.prototype.initialize = function(params) {
+    return AddView.__super__.initialize.apply(this, arguments);
+  };
+
+  AddView.prototype.save_action = function(url) {
+    var _this = this;
+    AddView.__super__.save_action.apply(this, arguments);
+    this.publishEvent('log:info', 'commmit form');
+    if (_.isUndefined(this.form.commit({
+      validate: true
+    }))) {
+      return this.model.save({}, {
+        success: function(event) {
+          ({
+            wait: true
+          });
+          if (mediator.collections[_this.listing_type] != null) {
+            mediator.collections[_this.listing_type].add(_this.model);
+          }
+          _this.publishEvent('tell_user', 'Rekord zapisany');
+          return console.log(url);
+        },
+        error: function(model, response, options) {
+          if (response.responseJSON != null) {
+            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+          } else {
+            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+          }
+        }
+      });
+    } else {
+      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+    }
+  };
+
+  return AddView;
+
+})(View);
+
+});
+
 ;require.register("views/login-view", function(exports, require, module) {
 var LoginView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -3330,37 +3396,6 @@ module.exports = LoginView = (function(_super) {
   };
 
   return LoginView;
-
-})(View);
-
-});
-
-;require.register("views/property-add-view", function(exports, require, module) {
-var PropertyAddView, View, mediator,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/edit-view');
-
-mediator = require('mediator');
-
-module.exports = PropertyAddView = (function(_super) {
-
-  __extends(PropertyAddView, _super);
-
-  function PropertyAddView() {
-    this.initialize = __bind(this.initialize, this);
-    return PropertyAddView.__super__.constructor.apply(this, arguments);
-  }
-
-  PropertyAddView.prototype.initialize = function(options) {
-    PropertyAddView.__super__.initialize.apply(this, arguments);
-    this.params = options;
-    return console.log(this.params);
-  };
-
-  return PropertyAddView;
 
 })(View);
 

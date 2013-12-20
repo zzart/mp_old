@@ -15,8 +15,8 @@ module.exports = class StructureController extends Controller
         @compose 'structure', StructureView
         @compose 'header', Header, region: 'header'
         edit_footer = [
-            'property#add',
-            'property#show',
+            'listing#add',
+            'listing#show',
             'client#add',
             'client#show',
             'client-public#show',
@@ -27,7 +27,7 @@ module.exports = class StructureController extends Controller
             'bon#show'
             ]
         list_footer = [
-            'property#list',
+            'listing#list',
             'client#list',
             'client-public#list',
             'branch#list',

@@ -13,6 +13,7 @@ module.exports = class EditView extends View
         @form_name = @params.form_name
         @can_edit = @params.can_edit
         @edit_type = @params.edit_type
+        @listing_type = @params.listing_type ? false
         @delete_only = @params.delete_only ? false
         # events
         @subscribeEvent('delete:clicked', @delete_action)

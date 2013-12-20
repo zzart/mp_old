@@ -2202,8 +2202,9 @@ Form.editors.Date = Form.editors.Base.extend({
         date = this.$date.val();
 
     if (!year || !month || !date) return null;
-
-    return new Date(year, month, date);
+    current = new Date()
+    //console.log(new Date(Date.UTC(year, month, date, current.getHours(), current.getMinutes())));
+    return new Date(Date.UTC(year, month, date, current.getHours(), current.getMinutes()));
   },
 
   /**
