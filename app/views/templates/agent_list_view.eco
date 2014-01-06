@@ -45,11 +45,11 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
        </tr>
      </thead>
      <tbody>
-      <% for item in @agent : %>
+      <% for item in @collection : %>
 
        <tr>
          <td width="2%"> <label> <input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true"  type="checkbox"> </label> </td>
-         <td><%= item['id'] %></td>
+         <td><a href='/agenci/<%= item['id'] %>'><%= item['id'] %></a></td>
          <td><%= item['branch'] %></td>
          <td><a href='/agenci/<%= item['id'] %>'><%= item['first_name'] %></a></td>
          <td><a href='/agenci/<%= item['id'] %>'><%= item['surname'] %></a></td>

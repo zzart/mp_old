@@ -14,6 +14,7 @@ module.exports = class ListView extends View
         @filter = @params.filter
         @collection_hard = @params.collection
         @collection = _.clone(@params.collection)
+        console.log(@collection)
         @template = require "views/templates/#{@params.template}"
         @delegate 'change', '#select-action', @select_action
         @delegate 'change', '#all', @select_all_action
@@ -115,8 +116,8 @@ module.exports = class ListView extends View
         @publishEvent('log:info', 'view: list-view afterRender()')
         #initialize sorting tables  http://tablesorter.com/docs/
         #można sortować wielokolumnowo przytrzymując shift ;)
-        #if @collection.length > 1
-        #    $("#list-table").tablesorter({sortList:[[4,0]], headers:{0:{'sorter':false}, 1:{'sorter':false}}})
+        if @collection.length > 1
+            $("#list-table").tablesorter({sortList:[[4,0]], headers:{0:{'sorter':false}, 1:{'sorter':false}}})
         @publishEvent 'jqm_refersh:render'
         @publishEvent 'table_refresh'
 

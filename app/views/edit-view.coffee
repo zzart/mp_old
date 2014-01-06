@@ -41,9 +41,10 @@ module.exports = class EditView extends View
             #templateData:{ }
 
         @publishEvent('log:info', 2)
+        @publishEvent('loading_start')
         window.form = @form
-        @publishEvent('log:info', 3)
         @form.render()
+        @publishEvent('log:info', 3)
 
     save_action: =>
         console.log('save_action caught')
@@ -62,5 +63,6 @@ module.exports = class EditView extends View
         @publishEvent('log:info', 'view: edit-view afterRender()')
         @publishEvent 'jqm_refersh:render'
         @publishEvent 'disable_buttons', @can_edit ? False , @edit_type, @delete_only
+        @publishEvent('loading_stop')
 
 

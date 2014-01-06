@@ -4971,6 +4971,10 @@ table.tablesorter thead tr .headerSortDown {
 hr{color:#333333; border:2px; }
 .help-block{color:red}
 
+/* address */
+.address_suggestion:hover{
+    background-color:lightgrey;
+}
 
 
 /*# sourceMappingURL=app.css.map*/

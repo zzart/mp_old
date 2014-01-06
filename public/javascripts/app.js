@@ -135,7 +135,7 @@ module.exports = Application = (function(_super) {
     mediator.schemas = {};
     mediator.upload_url = 'http://localhost:8080/v1/dodaj-plik';
     mediator.app_key = 'mp';
-    mediator.app = '10cdcef6-6251-11e3-9070-00241dd943c7';
+    mediator.app = '4ba2b78a-5675-42d9-8aab-f65ecf3ce9ba';
     mediator.can_edit = function(is_admin, author_id, user_id) {
       if (is_admin) {
         return true;
@@ -253,7 +253,7 @@ module.exports = AgentController = (function(_super) {
         _this.publishEvent('loading_stop');
         return _this.view = new ListView({
           collection: mediator.collections.agents,
-          template: 'agents_list_view',
+          template: 'agent_list_view',
           filter: 'agent_type',
           region: 'content'
         });
@@ -1784,8 +1784,8 @@ module.exports = LoginView = (function(_super) {
     var apphash, apphash_hexed, auth_header, header_string, userhash, userhash_hexed,
       _this = this;
     this.publishEvent('log:error', 'autologin------');
-    this.user = 'zzart';
-    this.pass = 'maddog';
+    this.user = 'mars';
+    this.pass = 'test';
     apphash = CryptoJS.HmacSHA256(this.model.url, mediator.app_key);
     apphash_hexed = apphash.toString(CryptoJS.enc.Hex);
     userhash = CryptoJS.HmacSHA256(this.model.url, this.pass);
@@ -2430,9 +2430,10 @@ module.exports = EditView = (function(_super) {
       template: _.template(localStorage.getObject('schemas')[this.form_name])
     });
     this.publishEvent('log:info', 2);
+    this.publishEvent('loading_start');
     window.form = this.form;
-    this.publishEvent('log:info', 3);
-    return this.form.render();
+    this.form.render();
+    return this.publishEvent('log:info', 3);
   };
 
   EditView.prototype.save_action = function() {
@@ -2450,7 +2451,8 @@ module.exports = EditView = (function(_super) {
     EditView.__super__.attach.apply(this, arguments);
     this.publishEvent('log:info', 'view: edit-view afterRender()');
     this.publishEvent('jqm_refersh:render');
-    return this.publishEvent('disable_buttons', (_ref = this.can_edit) != null ? _ref : False, this.edit_type, this.delete_only);
+    this.publishEvent('disable_buttons', (_ref = this.can_edit) != null ? _ref : False, this.edit_type, this.delete_only);
+    return this.publishEvent('loading_stop');
   };
 
   return EditView;
@@ -3112,6 +3114,7 @@ module.exports = ListView = (function(_super) {
     this.filter = this.params.filter;
     this.collection_hard = this.params.collection;
     this.collection = _.clone(this.params.collection);
+    console.log(this.collection);
     this.template = require("views/templates/" + this.params.template);
     this.delegate('change', '#select-action', this.select_action);
     this.delegate('change', '#all', this.select_all_action);
@@ -3218,6 +3221,19 @@ module.exports = ListView = (function(_super) {
   ListView.prototype.attach = function() {
     ListView.__super__.attach.apply(this, arguments);
     this.publishEvent('log:info', 'view: list-view afterRender()');
+    if (this.collection.length > 1) {
+      $("#list-table").tablesorter({
+        sortList: [[4, 0]],
+        headers: {
+          0: {
+            'sorter': false
+          },
+          1: {
+            'sorter': false
+          }
+        }
+      });
+    }
     this.publishEvent('jqm_refersh:render');
     return this.publishEvent('table_refresh');
   };
@@ -3243,6 +3259,8 @@ module.exports = AddView = (function(_super) {
   __extends(AddView, _super);
 
   function AddView() {
+    this.attach = __bind(this.attach, this);
+
     this.save_action = __bind(this.save_action, this);
 
     this.initialize = __bind(this.initialize, this);
@@ -3250,7 +3268,9 @@ module.exports = AddView = (function(_super) {
   }
 
   AddView.prototype.initialize = function(params) {
-    return AddView.__super__.initialize.apply(this, arguments);
+    AddView.__super__.initialize.apply(this, arguments);
+    this.delegate('filterablebeforefilter', '#autocomplete', _.debounce(this.address_search, 3000));
+    return this.delegate('click', '.address_suggestion', this.fill_address);
   };
 
   AddView.prototype.save_action = function(url) {
@@ -3282,6 +3302,101 @@ module.exports = AddView = (function(_super) {
     } else {
       return this.publishEvent('tell_user', 'Błąd w formularzu!');
     }
+  };
+
+  AddView.prototype.fill_address = function(event) {
+    var $ul, commune, district, full_name, item, obj, _i, _len;
+    this.publishEvent('log:info', 'fill address event');
+    obj = this.response[event.target.value];
+    window.addr = obj;
+    $("[name='postcode']").val(obj.address.postcode);
+    $("[name='street']").val(obj.address.road);
+    $("[name='town']").val(obj.address.city);
+    $("[name='province']").val(obj.address.state);
+    $("[name='quarter']").val(obj.address.city_district);
+    $("[name='province']").val(obj.address.state);
+    $("[name='lat']").val(obj.lat);
+    $("[name='lng']").val(obj.lon);
+    full_name = obj.display_name.split(',');
+    for (_i = 0, _len = full_name.length; _i < _len; _i++) {
+      item = full_name[_i];
+      console.log('looping', item);
+      if (item.indexOf('powiat') > -1) {
+        district = item;
+      } else if (item.indexOf('gmina') > -1) {
+        commune = item;
+      }
+    }
+    $("[name='commune']").val(commune || '');
+    $("[name='district']").val(district || '');
+    $ul = $('ul#autocomplete.ui-listview');
+    $('ul#autocomplete.ui-listview > li').remove();
+    return $ul.listview("refresh");
+  };
+
+  AddView.prototype.address_search = function(e, data) {
+    var $input, $ul, html, self, value;
+    self = this;
+    $ul = $('ul#autocomplete.ui-listview');
+    $input = $(data.input);
+    value = $input.val();
+    html = "";
+    $ul.html("");
+    window.ul = $ul;
+    if (value && value.length > 2) {
+      $ul.html("<li><div class='ui-loader'><span class='ui-icon ui-icon-loading'></span></div></li>");
+      $ul.listview("refresh");
+      return $.ajax({
+        url: "http://nominatim.openstreetmap.org/search",
+        dataType: 'json',
+        crossDomain: true,
+        data: {
+          q: $input.val(),
+          addressdetails: 1,
+          format: 'json',
+          'accept-language': 'pl',
+          countrycodes: 'pl'
+        },
+        success: function(response, type, rbody) {
+          var i, obj, _i, _len;
+          self.publishEvent('log:debug', "response from address server " + (JSON.stringify(response)));
+          self.response = response;
+          i = 0;
+          for (_i = 0, _len = response.length; _i < _len; _i++) {
+            obj = response[_i];
+            html += "<li class='address_suggestion' value=" + i + ">" + obj.display_name + "</li>";
+            i++;
+          }
+          $ul.html(html);
+          $ul.listview("refresh");
+          return $ul.trigger("updatelayout");
+        },
+        error: function(error) {
+          self.publishEvent('log:error', "no response from address server " + error);
+          return publishEvent('tell_user', 'Nie można połączyć się z serwerem adresowym');
+        }
+      });
+    }
+  };
+
+  AddView.prototype.openstreet = function() {
+    var lat, layer, lon, map, zoom;
+    OpenLayers.ImgPath = 'img/';
+    $("#openmap").css('height', '200px');
+    lat = 6651050.4274274;
+    lon = 2209967.3614734;
+    zoom = 7;
+    layer = new OpenLayers.Layer.OSM();
+    map = new OpenLayers.Map('openmap', {
+      controls: [new OpenLayers.Control.PanZoom()]
+    });
+    map.addLayers([layer]);
+    return window.map = map;
+  };
+
+  AddView.prototype.attach = function() {
+    AddView.__super__.attach.apply(this, arguments);
+    return this.openstreet();
   };
 
   return AddView;
@@ -3682,16 +3797,18 @@ module.exports = function (__obj) {
     
       __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/agenci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Pośrednik</option>\n                    <option value="2">Administrator nieruchomości</option>\n                    <option value="3">Menadzer</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="agent-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th width="2%"> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>\n         <th data-priority="6">Admin&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
-      _ref = this.agent;
+      _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
         __out.push('\n\n       <tr>\n         <td width="2%"> <label> <input name="');
         __out.push(__sanitize(item['id']));
         __out.push('" id="');
         __out.push(__sanitize(item['id']));
-        __out.push('" data-mini="true"  type="checkbox"> </label> </td>\n         <td>');
+        __out.push('" data-mini="true"  type="checkbox"> </label> </td>\n         <td><a href=\'/agenci/');
         __out.push(__sanitize(item['id']));
-        __out.push('</td>\n         <td>');
+        __out.push('\'>');
+        __out.push(__sanitize(item['id']));
+        __out.push('</a></td>\n         <td>');
         __out.push(__sanitize(item['branch']));
         __out.push('</td>\n         <td><a href=\'/agenci/');
         __out.push(__sanitize(item['id']));

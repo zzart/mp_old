@@ -30,6 +30,7 @@ exports.config =
           'vendor/scripts/hmac-sha256.js',
           'vendor/scripts/enc-base64-min.js'
           'vendor/scripts/fineuploader-4.2.0-1.js'
+          'vendor/scripts/OpenLayers.debug.js'
         ]
         after: [
           'test/vendor/scripts/test-helper.js'
@@ -45,6 +46,7 @@ exports.config =
                 'vendor/styles/jquery.mobile-1.4.0.css',
                 #'vendor/styles/jquery.mobile-1.4.0-rc.1.css',
                 'vendor/styles/fineuploader-4.2.0-1.css',
+                #'vendor/styles/openlayers.css',
                 #'vendor/styles/jqm-icon-pack-fa.css',
                 ]
                 #after: ['vendor/styles/helpers.css']

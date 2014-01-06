@@ -68,7 +68,7 @@ module.exports = class Application extends Chaplin.Application
     mediator.schemas = {}
     mediator.upload_url = 'http://localhost:8080/v1/dodaj-plik'
     mediator.app_key = 'mp'
-    mediator.app = '10cdcef6-6251-11e3-9070-00241dd943c7'
+    mediator.app = '4ba2b78a-5675-42d9-8aab-f65ecf3ce9ba'
     mediator.can_edit = (is_admin, author_id, user_id) ->
         if is_admin
             return true

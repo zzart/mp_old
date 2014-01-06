@@ -19,8 +19,8 @@ module.exports = class LoginView extends View
         @publishEvent('log:error', 'autologin------')
         #check credentials and set up settings
         #get data from form
-        @user = 'zzart'
-        @pass = 'maddog'
+        @user = 'mars'
+        @pass = 'test'
         #@user = 'test'
         #@pass = 'test'
         # -------------------------
