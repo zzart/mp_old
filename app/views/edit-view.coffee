@@ -32,30 +32,27 @@ module.exports = class EditView extends View
         @publishEvent('log:info', 'save_and_add_action  caught')
 
     get_form: =>
-        @publishEvent('log:info', 1)
         @publishEvent('log:info', @form_name)
         window.model = @model
         @form = new Backbone.Form
             model: @model
-            template: _.template(localStorage.getObject('schemas')[@form_name])
+            template: _.template(localStorage.getObject('forms')[@form_name])
             #templateData:{ }
 
-        @publishEvent('log:info', 2)
-        @publishEvent('loading_start')
         window.form = @form
         @form.render()
-        @publishEvent('log:info', 3)
 
     save_action: =>
         console.log('save_action caught')
 
 
-
     render: =>
         super
+        @publishEvent('log:info', 'view: edit-view beforeRender()')
         #set the template context of @el to our rendered form - otherwise backbone.forms get out of context
         @get_form()
         @$el.append(@form.el)
+        @publishEvent('log:info', 'view: edit-view RenderEnd()')
 
 
     attach: =>
@@ -63,6 +60,5 @@ module.exports = class EditView extends View
         @publishEvent('log:info', 'view: edit-view afterRender()')
         @publishEvent 'jqm_refersh:render'
         @publishEvent 'disable_buttons', @can_edit ? False , @edit_type, @delete_only
-        @publishEvent('loading_stop')
 
 

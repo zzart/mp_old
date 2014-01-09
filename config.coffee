@@ -43,7 +43,9 @@ exports.config =
       order:
         before: [
                 #'vendor/styles/jquery.mobile-1.3.min.css'
-                'vendor/styles/jquery.mobile-1.4.0.css',
+                #'vendor/styles/jquery.mobile-1.4.0.css',
+                #'vendor/styles/jquery.mobile.structure-1.4.0.min.css',
+                'vendor/styles/jquery.mobile-1.4.0.min.css',
                 #'vendor/styles/jquery.mobile-1.4.0-rc.1.css',
                 'vendor/styles/fineuploader-4.2.0-1.css',
                 #'vendor/styles/openlayers.css',

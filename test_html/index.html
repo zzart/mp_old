@@ -27,7 +27,7 @@
 </div>
 
 <script>
-$("#openmap").css('height', '400px');
+$("#openmap").css('height', '400px', 'width','200px');
  //var map = new OpenLayers.Map('openmap', { controls: [] });
  //var map = new OpenLayers.Map({div:'openmap', size:OpenLayers.Size(w=200, h=200), controls: [] });
  var lat = 6651050.4274274;
@@ -65,14 +65,14 @@ var marker = new OpenLayers.Marker(new OpenLayers.LonLat(0,0),icon)
 markers.addMarker(marker);
 
 
-map.events.register("click", map , function(e){
-console.log(e);
-var opx = map.getLayerPxFromViewPortPx(e.xy) ;
-var lonLat = map.getLonLatFromPixel(e.xy);
-console.log(opx, lonLat, map);
-marker.map = map;
-marker.moveTo(opx);
-});
+  map.events.register("click", map , function(e){
+  console.log(e);
+  var opx = map.getLayerPxFromViewPortPx(e.xy) ;
+  var lonLat = map.getLonLatFromPixel(e.xy);
+  console.log(opx, lonLat, map);
+  marker.map = map;
+  marker.moveTo(opx);
+  });
 
 
  </script>

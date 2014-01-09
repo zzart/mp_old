@@ -113,13 +113,48 @@ module.exports = class Layout extends Chaplin.Layout
         #$("#left-panel").panel('open')
 
     jqm_refersh: =>
+        #this is callbacks based so i know precisely WHEN jqm finished rendering !!!
+        f1 = (callback) ->
+            callback()
+        f2 = (callback) ->
+            callback()
+        self = @
+        f1(->
+            self.tell_user('Renderuje formularz')
+            $("#content-region").enhanceWithin()
+            f2(->
+                self.publishEvent('jqm_finished_rendering')
+            )
+        )
+
+    jqm_refersh_alone: =>
         #manually doing page refresh straight from DOM
-        @log.info('layout: event jqm_refresh caugth')
-        $("#content").enhanceWithin()
+        f1 = (callback) ->
+            callback()
+        f2 = (callback) ->
+            callback()
+        f3 = (callback) ->
+            callback()
+
+        self = @
+        f1(->
+            self.jqm_loading_start()
+            self.tell_user('loading')
+            console.log(1)
+            f2(->
+                elf.jqm_refersh()
+                console.log(2)
+                f3(->
+                    self.jqm_loading_stop()
+                    console.log(3)
+                )
+            )
+        )
+
     jqm_page_refersh: =>
-        #manually doing page refresh straight from DOM
         @log.info('layout: event jqm_page_refresh caugth')
         $("#page").enhanceWithin()
+        #manually doing page refresh straight from DOM
     jqm_footer_refersh: =>
         #manually doing page refresh straight from DOM
         @log.info('layout: event jqm_footer_refresh caugth')

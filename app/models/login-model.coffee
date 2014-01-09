@@ -3,6 +3,7 @@ module.exports = class Login extends Chaplin.Model
     update_db: =>
         localStorage.clear() #clear old rubbish
         localStorage.setObject('schemas', @.get('schemas'))
+        localStorage.setObject('forms', @.get('forms'))
         @.set({is_logged:true})
 
 

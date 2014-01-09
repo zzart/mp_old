@@ -1,11 +1,21 @@
 View = require 'views/edit-view'
+TabView = require 'views/listing-tab-view'
 mediator = require 'mediator'
 module.exports = class AddView extends View
     initialize: (params) =>
         super
         # send url data from controler
-        @delegate 'filterablebeforefilter', '#autocomplete', _.debounce(@address_search,3000)
+        @delegate 'filterablebeforefilter', '#autocomplete', _.debounce(@address_search,1500)
         @delegate 'click', '.address_suggestion', @fill_address
+        @delegate 'click', "[data-role='navbar'] a", @change_tab
+        @rendered_tabs = []
+
+    change_tab: (e)=>
+        e.preventDefault()
+        #NOTE: this assumes that we don't have more then 9 tabs (value [1] gets only one digit) !!
+        @publishEvent('log:info', "change tab #{e.target.attributes.href.value[1]}")
+        tab_id = "tab_#{e.target.attributes.href.value[5]}"
+        @render_subview(tab_id)
 
 
     save_action: (url) =>
@@ -36,7 +46,7 @@ module.exports = class AddView extends View
         obj = @response[event.target.value]
         window.addr = obj
         $("[name='postcode']").val(obj.address.postcode)
-        $("[name='street']").val(obj.address.road)
+        $("[name='street']").val(obj.address.road or obj.address.pedestrian)
         $("[name='town']").val(obj.address.city)
         $("[name='province']").val(obj.address.state)
         $("[name='quarter']").val(obj.address.city_district)
@@ -56,6 +66,15 @@ module.exports = class AddView extends View
         $ul = $('ul#autocomplete.ui-listview')
         $('ul#autocomplete.ui-listview > li').remove()
         $ul.listview "refresh"
+
+        #set point on the map
+        projection = new OpenLayers.Projection("EPSG:4326")
+        openlayers_projection = new OpenLayers.Projection("EPSG:900913")
+        position =  new OpenLayers.LonLat(obj.lon,obj.lat).transform( projection, openlayers_projection)
+        newPx = @map.getLayerPxFromLonLat(position)
+        @marker.moveTo(newPx)
+        zoom = 14
+        @map.setCenter(position, zoom)
 
     address_search: (e,data)->
         self = @
@@ -91,52 +110,101 @@ module.exports = class AddView extends View
                     $ul.trigger "updatelayout"
                 error:(error) ->
                     self.publishEvent('log:error', "no response from address server #{error}")
-                    publishEvent('tell_user', 'Nie można połączyć się z serwerem adresowym')
+                    self.publishEvent('tell_user', 'Nie można połączyć się z serwerem adresowym')
+
+    init_openstreet: =>
+        @publishEvent('log:info', 'init openstreet map')
+        @openstreet()
 
     openstreet: ->
+        @publishEvent('log:debug', 'opentstreet called')
         OpenLayers.ImgPath = 'img/'
-        $("#openmap").css('height', '200px')
-        lat = 6651050.4274274
-        lon= 2209967.3614734
+        $("#openmap").css('height', '400px')
+        #NOTE: openlayers uses EPSG:900913 projection
+        #we need a way to go from geolocation (EPSG:4326) to OpenLayers (EPSG:900913) and vice versa
+        projection = new OpenLayers.Projection("EPSG:4326") #Transform from WGS 1984
+        openlayers_projection = new OpenLayers.Projection("EPSG:900913") # Spherical Mercator Projection
+        #set POLAND ;)
+        lat= 52.05
+        lon = 19.55
         zoom = 7
-        #map, layer;
+        #Init all the layers
         layer = new OpenLayers.Layer.OSM()
-        #markers = new OpenLayers.Layer.Markers( "Markers" )
-        #vlayer = new OpenLayers.Layer.Vector( "Editable" )
-        map = new OpenLayers.Map( 'openmap',
+        markers = new OpenLayers.Layer.Markers( "Markers",
+            projection: projection
+            displayProjection: projection
+
+        )
+        vlayer = new OpenLayers.Layer.Vector( "Editable",
+            projection: projection
+            displayProjection: projection
+        )
+        map = new OpenLayers.Map( "openmap",
             controls: [
                 new OpenLayers.Control.PanZoom(),
-                #new OpenLayers.Control.EditingToolbar(vlayer)
+                new OpenLayers.Control.EditingToolbar(vlayer)
                 ]
+            units: 'km'
+            projection: projection
+            displayProjection: projection
         )
-        #map.addLayers([layer, vlayer, markers])
-        map.addLayers([layer])
-        window.map = map
-        #map.setCenter(new OpenLayers.LonLat(lon, lat), zoom)
-        #map.addLayers([vlayer])
-        #map.addLayers([markers])
-        #map.addControl(new OpenLayers.Control.MousePosition())
-        #map.addControl(new OpenLayers.Control.OverviewMap())
-        #map.addControl(new OpenLayers.Control.Attribution())
+        map.addLayers([layer, vlayer, markers])
+        map.addControl(new OpenLayers.Control.MousePosition())
+        map.addControl(new OpenLayers.Control.OverviewMap())
+        map.addControl(new OpenLayers.Control.Attribution())
         ##TODO: map.addControl(new OpenLayers.Control.Geolocate())
-        #map.setCenter(new OpenLayers.LonLat(lon, lat), zoom)
+        lonLat = new OpenLayers.LonLat(lon, lat).transform(projection, map.getProjectionObject())
+        map.setCenter(lonLat, zoom)
 
         ##markers
-        #size = new OpenLayers.Size(21,25)
-        #offset = new OpenLayers.Pixel(-(size.w/2), -size.h)
-        #icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset)
-        #marker = new OpenLayers.Marker(new OpenLayers.LonLat(0,0),icon)
-        #markers.addMarker(marker)
+        size = new OpenLayers.Size(21,25)
+        offset = new OpenLayers.Pixel(-(size.w/2), -size.h)
+        icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset)
+        marker = new OpenLayers.Marker(new OpenLayers.LonLat(0,0).transform(projection), icon)
+        markers.addMarker(marker)
+        window.map = map
+        window.marker = marker
 
+        map.events.register "click", map, (e) ->
+            opx = map.getLayerPxFromViewPortPx(e.xy)
+            lonLat = map.getLonLatFromPixel(e.xy)
+            marker.map = map
+            marker.moveTo(opx)
+            new_position = marker.lonlat.transform(openlayers_projection, projection)
+            $("[name='lat']").val(new_position.lat)
+            $("[name='lng']").val(new_position.lon)
 
-        #map.events.register "click", map , (e) ->
-        #    opx = map.getLayerPxFromViewPortPx(e.xy)
-        #    lonLat = map.getLonLatFromPixel(e.xy)
-        #    console.log(opx, lonLat, map)
-        #    console.log(e)
-        #    marker.map = map
-        #    marker.moveTo(opx)
+        #for further referance
+        @map = map
+        @marker = marker
+
+    render: =>
+        #NOTE: because of inheritence - we would've got edit-view EL which contains whole form
+        #insted we want to split it into parts which we can render quickly
+        #save clean el element
+        @$el_clean = @$el.clone()
+        super
+        #split form in tabs
+        @tabs = $(@form.el).find('.ui-grid-a')
+        @base = $(@form.el).find('.ui-grid-a').remove()
+        @$el_clean.append(@base)
+        #set el to clean el ... this is because inheritence - we would've got edit-view EL which contains whole form
+        @$el = @$el_clean
+        @publishEvent('log:info', 'view: edit-view RenderEnd()')
+
+    render_subview: (tab_id='tab_1')=>
+        #NOTE: this assumes that we don't have more then 9 tabs (value [1] gets only one digit and substracts one for array compatybility) !!
+        id = parseInt(tab_id.split('_')[1])-1
+        @publishEvent('log:info', "render sub_view #{tab_id}")
+        @subview tab_id, new TabView container: @el, template: @tabs[id], id: tab_id
+        @subview(tab_id).render()
+        if tab_id is 'tab_2'
+            @init_openstreet()
+        #if element in DOM already don't render again .....
+        if tab_id not in @rendered_tabs
+            @publishEvent 'jqm_refersh:render'
+            @rendered_tabs.push(tab_id)
 
     attach: =>
         super
-        @openstreet()
+        @render_subview()

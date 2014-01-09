@@ -1463,6 +1463,7 @@ module.exports = Login = (function(_super) {
   Login.prototype.update_db = function() {
     localStorage.clear();
     localStorage.setObject('schemas', this.get('schemas'));
+    localStorage.setObject('forms', this.get('forms'));
     return this.set({
       is_logged: true
     });
@@ -2422,18 +2423,14 @@ module.exports = EditView = (function(_super) {
   };
 
   EditView.prototype.get_form = function() {
-    this.publishEvent('log:info', 1);
     this.publishEvent('log:info', this.form_name);
     window.model = this.model;
     this.form = new Backbone.Form({
       model: this.model,
-      template: _.template(localStorage.getObject('schemas')[this.form_name])
+      template: _.template(localStorage.getObject('forms')[this.form_name])
     });
-    this.publishEvent('log:info', 2);
-    this.publishEvent('loading_start');
     window.form = this.form;
-    this.form.render();
-    return this.publishEvent('log:info', 3);
+    return this.form.render();
   };
 
   EditView.prototype.save_action = function() {
@@ -2442,8 +2439,10 @@ module.exports = EditView = (function(_super) {
 
   EditView.prototype.render = function() {
     EditView.__super__.render.apply(this, arguments);
+    this.publishEvent('log:info', 'view: edit-view beforeRender()');
     this.get_form();
-    return this.$el.append(this.form.el);
+    this.$el.append(this.form.el);
+    return this.publishEvent('log:info', 'view: edit-view RenderEnd()');
   };
 
   EditView.prototype.attach = function() {
@@ -2451,8 +2450,7 @@ module.exports = EditView = (function(_super) {
     EditView.__super__.attach.apply(this, arguments);
     this.publishEvent('log:info', 'view: edit-view afterRender()');
     this.publishEvent('jqm_refersh:render');
-    this.publishEvent('disable_buttons', (_ref = this.can_edit) != null ? _ref : False, this.edit_type, this.delete_only);
-    return this.publishEvent('loading_stop');
+    return this.publishEvent('disable_buttons', (_ref = this.can_edit) != null ? _ref : False, this.edit_type, this.delete_only);
   };
 
   return EditView;
@@ -2646,7 +2644,8 @@ module.exports = HeaderView = (function(_super) {
   HeaderView.prototype.id = 'header';
 
   HeaderView.prototype.attributes = {
-    'data-role': 'header'
+    'data-role': 'header',
+    'data-theme': 'b'
   };
 
   HeaderView.prototype.initialize = function() {
@@ -2791,6 +2790,8 @@ module.exports = Layout = (function(_super) {
     this.jqm_footer_refersh = __bind(this.jqm_footer_refersh, this);
 
     this.jqm_page_refersh = __bind(this.jqm_page_refersh, this);
+
+    this.jqm_refersh_alone = __bind(this.jqm_refersh_alone, this);
 
     this.jqm_refersh = __bind(this.jqm_refersh, this);
 
@@ -2954,8 +2955,48 @@ module.exports = Layout = (function(_super) {
   };
 
   Layout.prototype.jqm_refersh = function() {
-    this.log.info('layout: event jqm_refresh caugth');
-    return $("#content").enhanceWithin();
+    var f1, f2, self;
+    f1 = function(callback) {
+      return callback();
+    };
+    f2 = function(callback) {
+      return callback();
+    };
+    self = this;
+    return f1(function() {
+      self.tell_user('Renderuje formularz');
+      $("#content-region").enhanceWithin();
+      return f2(function() {
+        return self.publishEvent('jqm_finished_rendering');
+      });
+    });
+  };
+
+  Layout.prototype.jqm_refersh_alone = function() {
+    var f1, f2, f3, self;
+    f1 = function(callback) {
+      return callback();
+    };
+    f2 = function(callback) {
+      return callback();
+    };
+    f3 = function(callback) {
+      return callback();
+    };
+    self = this;
+    return f1(function() {
+      self.jqm_loading_start();
+      self.tell_user('loading');
+      console.log(1);
+      return f2(function() {
+        elf.jqm_refersh();
+        console.log(2);
+        return f3(function() {
+          self.jqm_loading_stop();
+          return console.log(3);
+        });
+      });
+    });
   };
 
   Layout.prototype.jqm_page_refersh = function() {
@@ -3245,12 +3286,15 @@ module.exports = ListView = (function(_super) {
 });
 
 ;require.register("views/listing-add-view", function(exports, require, module) {
-var AddView, View, mediator,
+var AddView, TabView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 View = require('views/edit-view');
+
+TabView = require('views/listing-tab-view');
 
 mediator = require('mediator');
 
@@ -3261,7 +3305,15 @@ module.exports = AddView = (function(_super) {
   function AddView() {
     this.attach = __bind(this.attach, this);
 
+    this.render_subview = __bind(this.render_subview, this);
+
+    this.render = __bind(this.render, this);
+
+    this.init_openstreet = __bind(this.init_openstreet, this);
+
     this.save_action = __bind(this.save_action, this);
+
+    this.change_tab = __bind(this.change_tab, this);
 
     this.initialize = __bind(this.initialize, this);
     return AddView.__super__.constructor.apply(this, arguments);
@@ -3269,8 +3321,18 @@ module.exports = AddView = (function(_super) {
 
   AddView.prototype.initialize = function(params) {
     AddView.__super__.initialize.apply(this, arguments);
-    this.delegate('filterablebeforefilter', '#autocomplete', _.debounce(this.address_search, 3000));
-    return this.delegate('click', '.address_suggestion', this.fill_address);
+    this.delegate('filterablebeforefilter', '#autocomplete', _.debounce(this.address_search, 1500));
+    this.delegate('click', '.address_suggestion', this.fill_address);
+    this.delegate('click', "[data-role='navbar'] a", this.change_tab);
+    return this.rendered_tabs = [];
+  };
+
+  AddView.prototype.change_tab = function(e) {
+    var tab_id;
+    e.preventDefault();
+    this.publishEvent('log:info', "change tab " + e.target.attributes.href.value[1]);
+    tab_id = "tab_" + e.target.attributes.href.value[5];
+    return this.render_subview(tab_id);
   };
 
   AddView.prototype.save_action = function(url) {
@@ -3305,12 +3367,12 @@ module.exports = AddView = (function(_super) {
   };
 
   AddView.prototype.fill_address = function(event) {
-    var $ul, commune, district, full_name, item, obj, _i, _len;
+    var $ul, commune, district, full_name, item, newPx, obj, openlayers_projection, position, projection, zoom, _i, _len;
     this.publishEvent('log:info', 'fill address event');
     obj = this.response[event.target.value];
     window.addr = obj;
     $("[name='postcode']").val(obj.address.postcode);
-    $("[name='street']").val(obj.address.road);
+    $("[name='street']").val(obj.address.road || obj.address.pedestrian);
     $("[name='town']").val(obj.address.city);
     $("[name='province']").val(obj.address.state);
     $("[name='quarter']").val(obj.address.city_district);
@@ -3331,7 +3393,14 @@ module.exports = AddView = (function(_super) {
     $("[name='district']").val(district || '');
     $ul = $('ul#autocomplete.ui-listview');
     $('ul#autocomplete.ui-listview > li').remove();
-    return $ul.listview("refresh");
+    $ul.listview("refresh");
+    projection = new OpenLayers.Projection("EPSG:4326");
+    openlayers_projection = new OpenLayers.Projection("EPSG:900913");
+    position = new OpenLayers.LonLat(obj.lon, obj.lat).transform(projection, openlayers_projection);
+    newPx = this.map.getLayerPxFromLonLat(position);
+    this.marker.moveTo(newPx);
+    zoom = 14;
+    return this.map.setCenter(position, zoom);
   };
 
   AddView.prototype.address_search = function(e, data) {
@@ -3373,33 +3442,156 @@ module.exports = AddView = (function(_super) {
         },
         error: function(error) {
           self.publishEvent('log:error', "no response from address server " + error);
-          return publishEvent('tell_user', 'Nie można połączyć się z serwerem adresowym');
+          return self.publishEvent('tell_user', 'Nie można połączyć się z serwerem adresowym');
         }
       });
     }
   };
 
+  AddView.prototype.init_openstreet = function() {
+    this.publishEvent('log:info', 'init openstreet map');
+    return this.openstreet();
+  };
+
   AddView.prototype.openstreet = function() {
-    var lat, layer, lon, map, zoom;
+    var icon, lat, layer, lon, lonLat, map, marker, markers, offset, openlayers_projection, projection, size, vlayer, zoom;
+    this.publishEvent('log:debug', 'opentstreet called');
     OpenLayers.ImgPath = 'img/';
-    $("#openmap").css('height', '200px');
-    lat = 6651050.4274274;
-    lon = 2209967.3614734;
+    $("#openmap").css('height', '400px');
+    projection = new OpenLayers.Projection("EPSG:4326");
+    openlayers_projection = new OpenLayers.Projection("EPSG:900913");
+    lat = 52.05;
+    lon = 19.55;
     zoom = 7;
     layer = new OpenLayers.Layer.OSM();
-    map = new OpenLayers.Map('openmap', {
-      controls: [new OpenLayers.Control.PanZoom()]
+    markers = new OpenLayers.Layer.Markers("Markers", {
+      projection: projection,
+      displayProjection: projection
     });
-    map.addLayers([layer]);
-    return window.map = map;
+    vlayer = new OpenLayers.Layer.Vector("Editable", {
+      projection: projection,
+      displayProjection: projection
+    });
+    map = new OpenLayers.Map("openmap", {
+      controls: [new OpenLayers.Control.PanZoom(), new OpenLayers.Control.EditingToolbar(vlayer)],
+      units: 'km',
+      projection: projection,
+      displayProjection: projection
+    });
+    map.addLayers([layer, vlayer, markers]);
+    map.addControl(new OpenLayers.Control.MousePosition());
+    map.addControl(new OpenLayers.Control.OverviewMap());
+    map.addControl(new OpenLayers.Control.Attribution());
+    lonLat = new OpenLayers.LonLat(lon, lat).transform(projection, map.getProjectionObject());
+    map.setCenter(lonLat, zoom);
+    size = new OpenLayers.Size(21, 25);
+    offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+    icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset);
+    marker = new OpenLayers.Marker(new OpenLayers.LonLat(0, 0).transform(projection), icon);
+    markers.addMarker(marker);
+    window.map = map;
+    window.marker = marker;
+    map.events.register("click", map, function(e) {
+      var new_position, opx;
+      opx = map.getLayerPxFromViewPortPx(e.xy);
+      lonLat = map.getLonLatFromPixel(e.xy);
+      marker.map = map;
+      marker.moveTo(opx);
+      new_position = marker.lonlat.transform(openlayers_projection, projection);
+      $("[name='lat']").val(new_position.lat);
+      return $("[name='lng']").val(new_position.lon);
+    });
+    this.map = map;
+    return this.marker = marker;
+  };
+
+  AddView.prototype.render = function() {
+    this.$el_clean = this.$el.clone();
+    AddView.__super__.render.apply(this, arguments);
+    this.tabs = $(this.form.el).find('.ui-grid-a');
+    this.base = $(this.form.el).find('.ui-grid-a').remove();
+    this.$el_clean.append(this.base);
+    this.$el = this.$el_clean;
+    return this.publishEvent('log:info', 'view: edit-view RenderEnd()');
+  };
+
+  AddView.prototype.render_subview = function(tab_id) {
+    var id;
+    if (tab_id == null) {
+      tab_id = 'tab_1';
+    }
+    id = parseInt(tab_id.split('_')[1]) - 1;
+    this.publishEvent('log:info', "render sub_view " + tab_id);
+    this.subview(tab_id, new TabView({
+      container: this.el,
+      template: this.tabs[id],
+      id: tab_id
+    }));
+    this.subview(tab_id).render();
+    if (tab_id === 'tab_2') {
+      this.init_openstreet();
+    }
+    if (__indexOf.call(this.rendered_tabs, tab_id) < 0) {
+      this.publishEvent('jqm_refersh:render');
+      return this.rendered_tabs.push(tab_id);
+    }
   };
 
   AddView.prototype.attach = function() {
     AddView.__super__.attach.apply(this, arguments);
-    return this.openstreet();
+    return this.render_subview();
   };
 
   return AddView;
+
+})(View);
+
+});
+
+;require.register("views/listing-tab-view", function(exports, require, module) {
+var View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+mediator = require('mediator');
+
+module.exports = View = (function(_super) {
+
+  __extends(View, _super);
+
+  function View() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return View.__super__.constructor.apply(this, arguments);
+  }
+
+  View.prototype.autoRender = true;
+
+  View.prototype.className = 'ui-content';
+
+  View.prototype.initialize = function(options) {
+    this.template = options.template;
+    return this.id = options.id;
+  };
+
+  View.prototype.render = function() {
+    View.__super__.render.apply(this, arguments);
+    this.publishEvent('log:info', 'tabview: tab-view render()');
+    return this.$el.append(this.template);
+  };
+
+  View.prototype.attach = function() {
+    $(this.container).find('form div:first').append(this.$el);
+    return this.publishEvent('log:info', 'tabview: tab-view afterAttach()');
+  };
+
+  return View;
 
 })(View);
 
