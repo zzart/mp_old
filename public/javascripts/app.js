@@ -3324,6 +3324,7 @@ module.exports = AddView = (function(_super) {
     this.delegate('filterablebeforefilter', '#autocomplete', _.debounce(this.address_search, 1500));
     this.delegate('click', '.address_suggestion', this.fill_address);
     this.delegate('click', "[data-role='navbar'] a", this.change_tab);
+    this.delegate('click', "#copy_address", this.copy_address);
     return this.rendered_tabs = [];
   };
 
@@ -3366,17 +3367,52 @@ module.exports = AddView = (function(_super) {
     }
   };
 
+  AddView.prototype.copy_address = function(event) {
+    this.publishEvent('log:info', 'copy address event');
+    event.preventDefault();
+    $("[name='internet_postcode']").val($("[name='postcode']").val());
+    $("[name='internet_street']").val($("[name='street']").val());
+    $("[name='internet_town']").val($("[name='town']").val());
+    $("[name='internet_province']").val($("[name='province']").val());
+    $("[name='internet_quarter']").val($("[name='quarter']").val());
+    $("[name='internet_lat']").val($("[name='lat']").val());
+    $("[name='internet_lng']").val($("[name='lng']").val());
+    $("[name='internet_commune']").val($("[name='commune']").val());
+    return $("[name='internet_district']").val($("[name='district']").val());
+  };
+
+  AddView.prototype.address_reset = function() {
+    this.publishEvent('log:info', 'address reset');
+    $("[name='internet_postcode']").val('');
+    $("[name='postcode']").val('');
+    $("[name='internet_street']").val('');
+    $("[name='street']").val('');
+    $("[name='internet_town']").val('');
+    $("[name='town']").val('');
+    $("[name='internet_province']").val('');
+    $("[name='province']").val('');
+    $("[name='internet_quarter']").val('');
+    $("[name='quarter']").val('');
+    $("[name='internet_lat']").val('');
+    $("[name='lat']").val('');
+    $("[name='internet_lng']").val('');
+    $("[name='lng']").val('');
+    $("[name='internet_commune']").val('');
+    $("[name='commune']").val('');
+    $("[name='internet_district']").val('');
+    return $("[name='district']").val('');
+  };
+
   AddView.prototype.fill_address = function(event) {
     var $ul, commune, district, full_name, item, newPx, obj, openlayers_projection, position, projection, zoom, _i, _len;
     this.publishEvent('log:info', 'fill address event');
+    this.address_reset();
     obj = this.response[event.target.value];
-    window.addr = obj;
     $("[name='postcode']").val(obj.address.postcode);
     $("[name='street']").val(obj.address.road || obj.address.pedestrian);
     $("[name='town']").val(obj.address.city);
     $("[name='province']").val(obj.address.state);
     $("[name='quarter']").val(obj.address.city_district);
-    $("[name='province']").val(obj.address.state);
     $("[name='lat']").val(obj.lat);
     $("[name='lng']").val(obj.lon);
     full_name = obj.display_name.split(',');

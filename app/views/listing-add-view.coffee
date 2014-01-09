@@ -8,6 +8,7 @@ module.exports = class AddView extends View
         @delegate 'filterablebeforefilter', '#autocomplete', _.debounce(@address_search,1500)
         @delegate 'click', '.address_suggestion', @fill_address
         @delegate 'click', "[data-role='navbar'] a", @change_tab
+        @delegate 'click', "#copy_address", @copy_address
         @rendered_tabs = []
 
     change_tab: (e)=>
@@ -40,17 +41,48 @@ module.exports = class AddView extends View
             })
         else
             @publishEvent 'tell_user', 'Błąd w formularzu!'
+    copy_address: (event) ->
+        @publishEvent('log:info', 'copy address event')
+        event.preventDefault()
+        $("[name='internet_postcode']").val($("[name='postcode']").val())
+        $("[name='internet_street']").val(  $("[name='street']").val())
+        $("[name='internet_town']").val(    $("[name='town']").val())
+        $("[name='internet_province']").val($("[name='province']").val())
+        $("[name='internet_quarter']").val( $("[name='quarter']").val())
+        $("[name='internet_lat']").val(     $("[name='lat']").val())
+        $("[name='internet_lng']").val(     $("[name='lng']").val())
+        $("[name='internet_commune']").val( $("[name='commune']").val())
+        $("[name='internet_district']").val($("[name='district']").val())
+    address_reset: ->
+        @publishEvent('log:info', 'address reset')
+        $("[name='internet_postcode']").val('')
+        $("[name='postcode']").val('')
+        $("[name='internet_street']").val('')
+        $("[name='street']").val('')
+        $("[name='internet_town']").val('')
+        $("[name='town']").val('')
+        $("[name='internet_province']").val('')
+        $("[name='province']").val('')
+        $("[name='internet_quarter']").val('')
+        $("[name='quarter']").val('')
+        $("[name='internet_lat']").val('')
+        $("[name='lat']").val('')
+        $("[name='internet_lng']").val('')
+        $("[name='lng']").val('')
+        $("[name='internet_commune']").val('')
+        $("[name='commune']").val('')
+        $("[name='internet_district']").val('')
+        $("[name='district']").val('')
 
     fill_address: (event) ->
         @publishEvent('log:info', 'fill address event')
+        @address_reset()
         obj = @response[event.target.value]
-        window.addr = obj
         $("[name='postcode']").val(obj.address.postcode)
         $("[name='street']").val(obj.address.road or obj.address.pedestrian)
         $("[name='town']").val(obj.address.city)
         $("[name='province']").val(obj.address.state)
         $("[name='quarter']").val(obj.address.city_district)
-        $("[name='province']").val(obj.address.state)
         $("[name='lat']").val(obj.lat)
         $("[name='lng']").val(obj.lon)
         full_name = obj.display_name.split(',')
