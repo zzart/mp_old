@@ -25,7 +25,7 @@ module.exports = class ClientPublicController extends Controller
         @publishEvent('log:info', 'in client show controller')
         @redirectTo {'/klienci-wspolni'} unless _.isObject(mediator.collections.clients_public.get(params.id))
         @model = mediator.collections.clients_public.get(params.id)
-        @schema =localStorage.getObject('schemas').client
+        @schema =localStorage.getObject('client_schema')
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
         @view = new ClientView {form_name:'client_form', model:@model, can_edit:@can_edit, delete_only:true, region:'content'}

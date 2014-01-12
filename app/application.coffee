@@ -1,5 +1,6 @@
 #Chaplin = require 'chaplin'
 StructureController = require 'controllers/structure-controller'
+RefreshController = require 'controllers/refresh-controller'
 Layout = require 'views/layout'
 mediator = require 'mediator'
 routes = require 'routes'
@@ -57,6 +58,7 @@ module.exports = class Application extends Chaplin.Application
     # or navigation views.
     # e.g. new NavigationController()
     new StructureController()
+    new RefreshController()
 
   # Create additional mediator properties
   # -------------------------------------

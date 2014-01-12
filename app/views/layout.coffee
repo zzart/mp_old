@@ -120,7 +120,7 @@ module.exports = class Layout extends Chaplin.Layout
             callback()
         self = @
         f1(->
-            self.tell_user('Renderuje formularz')
+            self.tell_user('Pracuje....')
             $("#content-region").enhanceWithin()
             f2(->
                 self.publishEvent('jqm_finished_rendering')

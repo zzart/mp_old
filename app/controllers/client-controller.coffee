@@ -26,7 +26,7 @@ module.exports = class ClientListController extends Controller
     add:(params, route, options) ->
         @publishEvent('log:info', 'in clientadd controller')
         mediator.models.client = new Model
-        @schema =localStorage.getObject('schemas').client
+        @schema =localStorage.getObject('client_schema')
         @model = mediator.models.client
         @model.schema = _.clone(@schema)
         @view = new ClientView {form_name:'client_form', model:@model, can_edit:true, edit_type:'add',  region:'content'}
@@ -34,7 +34,7 @@ module.exports = class ClientListController extends Controller
     show:(params, route, options) ->
         @publishEvent('log:info', 'in client show controller')
         @redirectTo {'/klienci'} unless _.isObject(mediator.collections.clients.get(params.id))
-        @schema =localStorage.getObject('schemas').client
+        @schema =localStorage.getObject('client_schema')
         @model = mediator.collections.clients.get(params.id)
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))

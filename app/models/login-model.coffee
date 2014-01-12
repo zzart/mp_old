@@ -2,8 +2,10 @@ module.exports = class Login extends Chaplin.Model
     url: 'http://localhost:8080/v1/login'
     update_db: =>
         localStorage.clear() #clear old rubbish
-        localStorage.setObject('schemas', @.get('schemas'))
-        localStorage.setObject('forms', @.get('forms'))
+        for key, val of @.get('schemas')
+            localStorage.setObject(key, val)
+        for key, val of @.get('forms')
+            localStorage.setObject(key, val)
         @.set({is_logged:true})
 
 

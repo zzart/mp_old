@@ -18,6 +18,8 @@ exports.config =
           'vendor/scripts/jquery-1.10.2.min.js',
           'vendor/scripts/jquery.mobile.setup.js',#!!!
           'vendor/scripts/jquery.mobile-1.4.0.js',
+          'vendor/scripts/queue.min.js',
+          'vendor/scripts/async.js',
           #'vendor/scripts/jquery.mobile-1.4.0-rc.1.js',
           #'vendor/scripts/jquery.mobile-1.3.2.min.js',
           'vendor/scripts/underscore-1.4.3.js',

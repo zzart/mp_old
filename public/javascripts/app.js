@@ -91,11 +91,13 @@
   globals.require.brunch = true;
 })();
 require.register("application", function(exports, require, module) {
-var Application, Layout, StructureController, mediator, routes,
+var Application, Layout, RefreshController, StructureController, mediator, routes,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 StructureController = require('controllers/structure-controller');
+
+RefreshController = require('controllers/refresh-controller');
 
 Layout = require('views/layout');
 
@@ -126,7 +128,8 @@ module.exports = Application = (function(_super) {
   };
 
   Application.prototype.initControllers = function() {
-    return new StructureController();
+    new StructureController();
+    return new RefreshController();
   };
 
   Application.prototype.initMediator = function() {
@@ -151,65 +154,6 @@ module.exports = Application = (function(_super) {
   return Application;
 
 })(Chaplin.Application);
-
-});
-
-;require.register("controllers/add-offer-controller", function(exports, require, module) {
-var AddOfferController, AddOfferView, Controller, Offer, Schema, mediator,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Controller = require('controllers/base/controller');
-
-AddOfferView = require('views/add-offer-view');
-
-Offer = require('models/offer-model');
-
-Schema = require('models/schema-model');
-
-mediator = require('mediator');
-
-module.exports = AddOfferController = (function(_super) {
-
-  __extends(AddOfferController, _super);
-
-  function AddOfferController() {
-    return AddOfferController.__super__.constructor.apply(this, arguments);
-  }
-
-  AddOfferController.prototype.show = function(params) {
-    var _this = this;
-    console.log('con: GET params ');
-    console.log(params);
-    this.view_conf = {
-      content: 'add_offer_structure',
-      footer: 'add_offer_footer',
-      nr_pages: 3
-    };
-    mediator.t_conf = this.view_conf;
-    mediator.publish('view:init');
-    this.model = new Offer;
-    this.schema_model = new Schema;
-    return this.schema_model.fetch({
-      data: params,
-      success: function() {
-        console.log('con: data fetched!!');
-        _this.schema_model.schema = _this.schema_model.attributes;
-        _this.form = new Backbone.Form({
-          model: _this.schema_model
-        });
-        _this.form.render();
-        return _this.view = new AddOfferView({
-          model: _this.model,
-          form: _this.form
-        });
-      }
-    });
-  };
-
-  return AddOfferController;
-
-})(Controller);
 
 });
 
@@ -282,7 +226,7 @@ module.exports = AgentController = (function(_super) {
             _this.publishEvent('loading_stop');
             _this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
             mediator.models.user.update_db();
-            _this.schema = localStorage.getObject('schemas').agent;
+            _this.schema = localStorage.getObject('agent_schema');
             _this.model.schema = _.clone(_this.schema);
             return _this.view = new EditView({
               form_name: 'agent_form',
@@ -332,7 +276,7 @@ module.exports = AgentController = (function(_super) {
               if (mediator.models.user.get('id') === _this.model.get('id')) {
                 _this.edit_type = 'add';
               }
-              _this.schema = localStorage.getObject('schemas').agent;
+              _this.schema = localStorage.getObject('agent_schema');
               _this.model.schema = _.clone(_this.schema);
               return _this.view = new EditView({
                 form_name: 'agent_form',
@@ -355,7 +299,7 @@ module.exports = AgentController = (function(_super) {
             _this.edit_type = 'add';
           }
           _this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
-          _this.schema = localStorage.getObject('schemas').agent;
+          _this.schema = localStorage.getObject('agent_schema');
           _this.model.schema = _.clone(_this.schema);
           return _this.view = new EditView({
             form_name: 'agent_form',
@@ -413,7 +357,6 @@ module.exports = AuthController = (function(_super) {
 
 gen_token = function(model, url, password) {
   var apphash, apphash_hexed, auth_header, header_string, userhash, userhash_hexed;
-  console.log('url: ', url);
   apphash = CryptoJS.HmacSHA256(url, mediator.app_key);
   apphash_hexed = apphash.toString(CryptoJS.enc.Hex);
   userhash = CryptoJS.HmacSHA256(url, mediator.models.user.get('user_pass'));
@@ -440,12 +383,10 @@ Backbone.sync = function(method, model, options) {
       params = $.param(options.data);
       url = "" + url + "?" + params;
     }
-    console.log(url);
     hash = gen_token(model, url, Chaplin.mediator.models.user.get('user_pass'));
     options.beforeSend = function(xhr) {
       return xhr.setRequestHeader('X-Auth-Token', hash);
     };
-    console.log(method, options, model);
   }
   return _sync.call(this, method, model, options);
 };
@@ -496,7 +437,7 @@ module.exports = BonController = (function(_super) {
     var _this = this;
     console.log(params, route, options);
     this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
-    this.schema = localStorage.getObject('schemas').company;
+    this.schema = localStorage.getObject('company_schema');
     this.publishEvent('log:info', 'in bon show controller');
     if (_.isObject(mediator.models.bon)) {
       mediator.models.bon.schema = _.clone(this.schema);
@@ -595,7 +536,7 @@ module.exports = BranchController = (function(_super) {
     this.publishEvent('log:info', 'in branchadd controller');
     mediator.models.branch = new Model;
     this.model = mediator.models.branch;
-    this.schema = localStorage.getObject('schemas').branch;
+    this.schema = localStorage.getObject('branch_schema');
     this.model.schema = _.clone(this.schema);
     this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
     return this.view = new View({
@@ -614,7 +555,7 @@ module.exports = BranchController = (function(_super) {
       });
     }
     this.model = mediator.collections.branches.get(params.id);
-    this.schema = localStorage.getObject('schemas').branch;
+    this.schema = localStorage.getObject('branch_schema');
     this.model.schema = _.clone(this.schema);
     this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
     return this.view = new View({
@@ -686,7 +627,7 @@ module.exports = ClientListController = (function(_super) {
   ClientListController.prototype.add = function(params, route, options) {
     this.publishEvent('log:info', 'in clientadd controller');
     mediator.models.client = new Model;
-    this.schema = localStorage.getObject('schemas').client;
+    this.schema = localStorage.getObject('client_schema');
     this.model = mediator.models.client;
     this.model.schema = _.clone(this.schema);
     return this.view = new ClientView({
@@ -705,7 +646,7 @@ module.exports = ClientListController = (function(_super) {
         '/klienci': '/klienci'
       });
     }
-    this.schema = localStorage.getObject('schemas').client;
+    this.schema = localStorage.getObject('client_schema');
     this.model = mediator.collections.clients.get(params.id);
     this.model.schema = _.clone(this.schema);
     this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
@@ -780,7 +721,7 @@ module.exports = ClientPublicController = (function(_super) {
       });
     }
     this.model = mediator.collections.clients_public.get(params.id);
-    this.schema = localStorage.getObject('schemas').client;
+    this.schema = localStorage.getObject('client_schema');
     this.model.schema = _.clone(this.schema);
     this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
     return this.view = new ClientView({
@@ -887,7 +828,7 @@ module.exports = ListingController = (function(_super) {
     console.log(params, route, options);
     type = options.query.type;
     form = "" + type + "_form";
-    this.schema = localStorage.getObject('schemas')[type];
+    this.schema = localStorage.getObject("" + type + "_schema");
     mediator.models.property = new Model;
     mediator.models.property.schema = _.clone(this.schema);
     this.publishEvent('log:info', "init view property controller");
@@ -1412,6 +1353,29 @@ module.exports = Client = (function(_super) {
     return data;
   };
 
+  Client.prototype.initialize = function() {
+    this.on('change:surname', this.onChange);
+    this.on('add', this.onAdd);
+    this.on('remove', this.onRemove);
+    return this.on('destroy', this.onDestory);
+  };
+
+  Client.prototype.onChange = function() {
+    return this.publishEvent('modelchanged', 'client');
+  };
+
+  Client.prototype.onAdd = function() {
+    return console.log('--> model add');
+  };
+
+  Client.prototype.onDestroy = function() {
+    return this.publishEvent('modelchanged', 'client');
+  };
+
+  Client.prototype.onRemove = function() {
+    return console.log('--> model remove');
+  };
+
   return Client;
 
 })(Chaplin.Model);
@@ -1461,9 +1425,18 @@ module.exports = Login = (function(_super) {
   Login.prototype.url = 'http://localhost:8080/v1/login';
 
   Login.prototype.update_db = function() {
+    var key, val, _ref, _ref1;
     localStorage.clear();
-    localStorage.setObject('schemas', this.get('schemas'));
-    localStorage.setObject('forms', this.get('forms'));
+    _ref = this.get('schemas');
+    for (key in _ref) {
+      val = _ref[key];
+      localStorage.setObject(key, val);
+    }
+    _ref1 = this.get('forms');
+    for (key in _ref1) {
+      val = _ref1[key];
+      localStorage.setObject(key, val);
+    }
     return this.set({
       is_logged: true
     });
@@ -1558,6 +1531,29 @@ module.exports = Property = (function(_super) {
   Property.prototype.schema = {};
 
   return Property;
+
+})(Chaplin.Model);
+
+});
+
+;require.register("models/refresh-model", function(exports, require, module) {
+var Refresh, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+mediator = require('mediator');
+
+module.exports = Refresh = (function(_super) {
+
+  __extends(Refresh, _super);
+
+  function Refresh() {
+    return Refresh.__super__.constructor.apply(this, arguments);
+  }
+
+  Refresh.prototype.urlRoot = 'http://localhost:8080/v1/refresh';
+
+  return Refresh;
 
 })(Chaplin.Model);
 
@@ -2245,7 +2241,6 @@ module.exports = ClientAddView = (function(_super) {
             mediator.collections.clients.add(_this.model);
           }
           _this.publishEvent('tell_user', 'Klient zapisany');
-          console.log(url);
           return Chaplin.utils.redirectTo({
             url: url != null ? url : '/klienci'
           });
@@ -2427,14 +2422,14 @@ module.exports = EditView = (function(_super) {
     window.model = this.model;
     this.form = new Backbone.Form({
       model: this.model,
-      template: _.template(localStorage.getObject('forms')[this.form_name])
+      template: _.template(localStorage.getObject(this.form_name))
     });
     window.form = this.form;
     return this.form.render();
   };
 
   EditView.prototype.save_action = function() {
-    return console.log('save_action caught');
+    return this.publishEvent('log:debug', 'save_action caugth');
   };
 
   EditView.prototype.render = function() {
@@ -2710,7 +2705,7 @@ module.exports = HomePageView = (function(_super) {
 
   HomePageView.prototype.getTemplateData = function() {
     return {
-      title: 'na homepage!'
+      title: "na homepage!"
     };
   };
 
@@ -2964,7 +2959,7 @@ module.exports = Layout = (function(_super) {
     };
     self = this;
     return f1(function() {
-      self.tell_user('Renderuje formularz');
+      self.tell_user('Pracuje....');
       $("#content-region").enhanceWithin();
       return f2(function() {
         return self.publishEvent('jqm_finished_rendering');
@@ -3525,8 +3520,6 @@ module.exports = AddView = (function(_super) {
     icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset);
     marker = new OpenLayers.Marker(new OpenLayers.LonLat(0, 0).transform(projection), icon);
     markers.addMarker(marker);
-    window.map = map;
-    window.marker = marker;
     map.events.register("click", map, function(e) {
       var new_position, opx;
       opx = map.getLayerPxFromViewPortPx(e.xy);

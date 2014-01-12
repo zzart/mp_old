@@ -21,3 +21,16 @@ module.exports = class Client extends Chaplin.Model
         , this)
         data
 
+    initialize: ->
+        @on('change:surname', @onChange)
+        @on('add', @onAdd)
+        @on('remove', @onRemove)
+        @on('destroy', @onDestory)
+    onChange: ->
+        @publishEvent('modelchanged', 'client')
+    onAdd: ->
+        console.log('--> model add')
+    onDestroy: ->
+        @publishEvent('modelchanged', 'client')
+    onRemove: ->
+        console.log('--> model remove')

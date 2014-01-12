@@ -194,8 +194,6 @@ module.exports = class AddView extends View
         icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset)
         marker = new OpenLayers.Marker(new OpenLayers.LonLat(0,0).transform(projection), icon)
         markers.addMarker(marker)
-        window.map = map
-        window.marker = marker
 
         map.events.register "click", map, (e) ->
             opx = map.getLayerPxFromViewPortPx(e.xy)

@@ -7,7 +7,7 @@ module.exports = class BonController extends Controller
     show:(params, route, options) ->
         console.log(params, route, options)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
-        @schema =localStorage.getObject('schemas').company
+        @schema =localStorage.getObject('company_schema')
         @publishEvent('log:info', 'in bon show controller')
         if _.isObject(mediator.models.bon)
             mediator.models.bon.schema = _.clone(@schema)

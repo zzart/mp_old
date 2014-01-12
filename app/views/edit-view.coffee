@@ -36,14 +36,14 @@ module.exports = class EditView extends View
         window.model = @model
         @form = new Backbone.Form
             model: @model
-            template: _.template(localStorage.getObject('forms')[@form_name])
+            template: _.template(localStorage.getObject(@form_name))
             #templateData:{ }
 
         window.form = @form
         @form.render()
 
     save_action: =>
-        console.log('save_action caught')
+        @publishEvent('log:debug', 'save_action caugth')
 
 
     render: =>

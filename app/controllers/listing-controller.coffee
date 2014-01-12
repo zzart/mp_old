@@ -29,7 +29,7 @@ module.exports = class ListingController extends Controller
         console.log(params, route, options)
         type = options.query.type
         form = "#{type}_form"
-        @schema =localStorage.getObject('schemas')[type]
+        @schema =localStorage.getObject("#{type}_schema")
         mediator.models.property = new Model
         mediator.models.property.schema = _.clone(@schema)
         @publishEvent('log:info', "init view property controller" )

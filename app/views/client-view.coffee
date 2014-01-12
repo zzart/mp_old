@@ -9,6 +9,7 @@ module.exports = class ClientAddView extends View
         super
         @save_action('/klienci/dodaj')
 
+
     save_action: (url) =>
         super
         @publishEvent('log:info','commmit form')
@@ -20,7 +21,6 @@ module.exports = class ClientAddView extends View
                         # add it to collection so we don't need to use server ...
                         mediator.collections.clients.add(@model)
                     @publishEvent 'tell_user', 'Klient zapisany'
-                    console.log(url)
                     Chaplin.utils.redirectTo {url: url ? '/klienci'}
                 error:(model, response, options) =>
                     if response.responseJSON?

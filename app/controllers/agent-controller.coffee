@@ -42,7 +42,7 @@ module.exports = class AgentController extends Controller
                         @publishEvent 'loading_stop'
                         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
                         mediator.models.user.update_db()
-                        @schema =localStorage.getObject('schemas').agent
+                        @schema =localStorage.getObject('agent_schema')
                         @model.schema = _.clone(@schema)
                         @view = new EditView {form_name:'agent_form', model:@model, can_edit:@can_edit, edit_type:'add', region:'content'}
                     error: =>
@@ -75,7 +75,7 @@ module.exports = class AgentController extends Controller
                             @edit_type = ''
                             if mediator.models.user.get('id') is @model.get('id')
                                 @edit_type = 'add'
-                            @schema =localStorage.getObject('schemas').agent
+                            @schema =localStorage.getObject('agent_schema')
                             @model.schema = _.clone(@schema)
                             @view = new EditView {form_name:'agent_form', model:@model, can_edit:@can_edit, edit_type:@edit_type,  region:'content'}
                         error: =>
@@ -89,7 +89,7 @@ module.exports = class AgentController extends Controller
                     if mediator.models.user.get('id') is @model.get('id')
                         @edit_type = 'add'
                     @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
-                    @schema =localStorage.getObject('schemas').agent
+                    @schema =localStorage.getObject('agent_schema')
                     @model.schema = _.clone(@schema)
                     @view = new EditView {form_name:'agent_form', model:@model, can_edit:@can_edit, edit_type:@edit_type,  region:'content'}
 

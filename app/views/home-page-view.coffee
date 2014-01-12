@@ -7,9 +7,16 @@ module.exports = class HomePageView extends View
     id: 'content'
     template: template
     className: 'ui-content'
+    #initialize: ->
+    #    @delegate 'mouseenter', @route_change
+
+    #route_change:(e) ->
+    #    console.log('hover')
+    #    @publishEvent('refreshmodel', 'flat_rent/form')
+
 
     getTemplateData: =>
-        title:'na homepage!'
+        title:"na homepage!"
 
     attach: =>
         super

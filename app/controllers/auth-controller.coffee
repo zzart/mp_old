@@ -17,7 +17,7 @@ module.exports = class AuthController extends StructureController
 
 #AUTH -----------------------------------------------------------------------
 gen_token = ( model, url, password) =>
-    console.log('url: ' , url)
+    # console.log('url: ' , url)
     apphash = CryptoJS.HmacSHA256(url, mediator.app_key)
     apphash_hexed = apphash.toString(CryptoJS.enc.Hex)
     userhash = CryptoJS.HmacSHA256(url, mediator.models.user.get('user_pass'))
@@ -47,12 +47,12 @@ Backbone.sync = (method, model, options) ->
             # if we have parameters in query include them in url
             params = $.param(options.data)
             url = "#{url}?#{params}"
-        console.log( url )
+        # console.log( url )
         hash = gen_token(model, url , Chaplin.mediator.models.user.get('user_pass'))
         options.beforeSend = (xhr) ->
             xhr.setRequestHeader('X-Auth-Token' , hash)
         # console.log('header set',hash, method, model, options)
-        console.log(method, options, model)
+        # console.log(method, options, model)
 
     #calling the original sync funtion so we only overriding what we need
     _sync.call( this, method, model, options )

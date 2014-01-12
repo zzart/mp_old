@@ -27,7 +27,7 @@ module.exports = class BranchController extends Controller
         @publishEvent('log:info', 'in branchadd controller')
         mediator.models.branch = new Model
         @model = mediator.models.branch
-        @schema =localStorage.getObject('schemas').branch
+        @schema =localStorage.getObject('branch_schema')
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
         @view = new View {form_name:'branch_form', model:@model, can_edit:@can_edit, region:'content'}
@@ -36,7 +36,7 @@ module.exports = class BranchController extends Controller
         @publishEvent('log:info', 'in branch show controller')
         @redirectTo {'/oddzialy'} unless _.isObject(mediator.collections.branches.get(params.id))
         @model = mediator.collections.branches.get(params.id)
-        @schema =localStorage.getObject('schemas').branch
+        @schema =localStorage.getObject('branch_schema')
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
         @view = new View {form_name:'branch_form', model:@model, can_edit:@can_edit, region:'content'}
