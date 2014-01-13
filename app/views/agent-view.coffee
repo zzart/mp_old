@@ -1,4 +1,5 @@
 View = require 'views/edit-view'
+upload_template = require 'views/templates/upload'
 mediator = require 'mediator'
 module.exports = class View extends View
     initialize: (options) =>
@@ -12,18 +13,22 @@ module.exports = class View extends View
         console.log('adding pic')
 
     init_uploader: =>
-        @uploader = new qq.FineUploaderBasic
-            button: $("#avatar")[0]
-            debug: true
-            request:
-                # endpoint: mediator.upload_url
-                endpoint: 'http://localhost:8080/v1/pliki/dodaj'
-                #params: {h: hash}
-            callbacks:
-                onSubmit : @onSubmit
-                onComplete: @onComplete
-            cors: # ALL requests are expected to be cross-domain requests
-                expected: true
+        @$el.append(upload_template).then(
+            # @uploader = new qq.FineUploaderBasic
+            @uploader = new qq.FineUploader
+                button: $("#avatar")[0]
+                debug: true
+                request:
+                    # endpoint: mediator.upload_url
+                    endpoint: 'http://localhost:8080/v1/pliki/dodaj'
+                    #params: {h: hash}
+                callbacks:
+                    onSubmit : @onSubmit
+                    onComplete: @onComplete
+                cors: # ALL requests are expected to be cross-domain requests
+                    expected: true
+            )
+
     onSubmit: =>
         console.log('submit')
     onComplete: =>

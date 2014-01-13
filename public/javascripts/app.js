@@ -1693,12 +1693,14 @@ module.exports = ListView = (function(_super) {
 });
 
 ;require.register("views/agent-view", function(exports, require, module) {
-var View, mediator,
+var View, mediator, upload_template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 View = require('views/edit-view');
+
+upload_template = require('views/templates/upload');
 
 mediator = require('mediator');
 
@@ -1736,7 +1738,7 @@ module.exports = View = (function(_super) {
   };
 
   View.prototype.init_uploader = function() {
-    return this.uploader = new qq.FineUploaderBasic({
+    return this.$el.append(upload_template).then(this.uploader = new qq.FineUploader({
       button: $("#avatar")[0],
       debug: true,
       request: {
@@ -1749,7 +1751,7 @@ module.exports = View = (function(_super) {
       cors: {
         expected: true
       }
-    });
+    }));
   };
 
   View.prototype.onSubmit = function() {
@@ -5351,6 +5353,57 @@ module.exports = function (__obj) {
       }
     
       __out.push('\n\n</form>\n\n\n\n\n\n\n\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/upload", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+    
+      __out.push('<div id="qq-template">\n        <div class="qq-uploader-selector qq-uploader">\n            <div class="qq-upload-drop-area-selector qq-upload-drop-area" qq-hide-dropzone>\n                <span>Drop files here to upload</span>\n            </div>\n            <div class="qq-upload-button-selector qq-upload-button">\n                <div>Upload a file</div>\n            </div>\n            <span class="qq-drop-processing-selector qq-drop-processing">\n                <span>Processing dropped files...</span>\n                <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>\n            </span>\n            <ul class="qq-upload-list-selector qq-upload-list">\n                <li>\n                  <div class="qq-progress-bar-container-selector">\n                      <div class="qq-progress-bar-selector qq-progress-bar"></div>\n                  </div>\n                  <span class="qq-upload-spinner-selector qq-upload-spinner"></span>\n                  <span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>\n                  <span class="qq-upload-file-selector qq-upload-file"></span>\n                  <input class="qq-edit-filename-selector qq-edit-filename" tabindex="0" type="text">\n                  <span class="qq-upload-size-selector qq-upload-size"></span>\n                  <a class="qq-upload-cancel-selector qq-upload-cancel" href="#">Cancel</a>\n                  <a class="qq-upload-retry-selector qq-upload-retry" href="#">Retry</a>\n                  <a class="qq-upload-delete-selector qq-upload-delete" href="#">Delete</a>\n                  <span class="qq-upload-status-text-selector qq-upload-status-text"></span>\n                </li>\n            </ul>\n        </div>\n</div>\n');
     
     }).call(this);
     
