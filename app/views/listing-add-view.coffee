@@ -8,6 +8,7 @@ module.exports = class AddView extends View
         @delegate 'filterablebeforefilter', '#autocomplete', _.debounce(@address_search,1500)
         @delegate 'click', '.address_suggestion', @fill_address
         @delegate 'click', "[data-role='navbar'] a", @change_tab
+        @delegate 'change', "[name='category']", @rerender_form
         @delegate 'click', "#copy_address", @copy_address
         @rendered_tabs = []
 
@@ -17,6 +18,23 @@ module.exports = class AddView extends View
         @publishEvent('log:info', "change tab #{e.target.attributes.href.value[1]}")
         tab_id = "tab_#{e.target.attributes.href.value[5]}"
         @render_subview(tab_id)
+
+    rerender_form: (e) =>
+        categories = localStorage.getObject('categories')
+        selected_id = parseInt(e.target.value)
+        current_form_name = @form_name.substring(0, @form_name.length - 5)
+        current_category_id = categories[current_form_name]
+        # console.log(e, current_category_id, current_form_name, parseInt(e.target.value))
+        if current_category_id isnt selected_id
+            # flip categories dict and construct ie. flat_sell_schema
+            cat = _.invert(categories)
+            @form_name = "#{cat[selected_id]}_form"
+            @model.schema = localStorage.getObject("#{cat[selected_id]}_schema")
+            @rendered_tabs = []
+            @render()
+            @render_subview()
+
+
 
 
     save_action: (url) =>
@@ -213,6 +231,7 @@ module.exports = class AddView extends View
         #insted we want to split it into parts which we can render quickly
         #save clean el element
         @$el_clean = @$el.clone()
+        # console.log('-->>el clean:', @$el_clean)
         super
         #split form in tabs
         @tabs = $(@form.el).find('.ui-grid-a')
@@ -220,12 +239,14 @@ module.exports = class AddView extends View
         @$el_clean.append(@base)
         #set el to clean el ... this is because inheritence - we would've got edit-view EL which contains whole form
         @$el = @$el_clean
+        # console.log('-->>el: ', @el)
         @publishEvent('log:info', 'view: edit-view RenderEnd()')
 
     render_subview: (tab_id='tab_1')=>
         #NOTE: this assumes that we don't have more then 9 tabs (value [1] gets only one digit and substracts one for array compatybility) !!
         id = parseInt(tab_id.split('_')[1])-1
         @publishEvent('log:info', "render sub_view #{tab_id}")
+        # console.log('->>', @el, tab_id, id)
         @subview tab_id, new TabView container: @el, template: @tabs[id], id: tab_id
         @subview(tab_id).render()
         if tab_id is 'tab_2'
@@ -237,4 +258,5 @@ module.exports = class AddView extends View
 
     attach: =>
         super
+        @publishEvent('log:info', "listing-add attach")
         @render_subview()

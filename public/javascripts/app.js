@@ -888,6 +888,80 @@ module.exports = LoginController = (function(_super) {
 
 });
 
+;require.register("controllers/refresh-controller", function(exports, require, module) {
+var Controller, Model, RefreshController, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Controller = require('controllers/auth-controller');
+
+Model = require('models/refresh-model');
+
+mediator = require('mediator');
+
+module.exports = RefreshController = (function(_super) {
+
+  __extends(RefreshController, _super);
+
+  function RefreshController() {
+    this.refresh_dependencies = __bind(this.refresh_dependencies, this);
+    return RefreshController.__super__.constructor.apply(this, arguments);
+  }
+
+  RefreshController.prototype.initialize = function() {
+    this.subscribeEvent('refreshmodel', this.refresh_model);
+    this.subscribeEvent('modelchanged', this.refresh_dependencies);
+    return window.refresh = this.refresh_model;
+  };
+
+  RefreshController.prototype.refresh_model = function(model, callback) {
+    var data, params,
+      _this = this;
+    this.callback = callback;
+    data = model.split('/');
+    params = {};
+    params['model'] = data[0];
+    params['type'] = data[1];
+    this.model = new Model;
+    return this.model.fetch({
+      data: params,
+      success: function() {
+        _this.publishEvent('log:info', "data with " + params.model + params.type + " fetched ok");
+        if (_.isObject(_this.model.attributes[params.type]["" + params.model + "_" + params.type])) {
+          localStorage.setObject("" + params.model + "_" + params.type, _this.model.attributes[params.type]["" + params.model + "_" + params.type]);
+          return typeof _this.callback === "function" ? _this.callback() : void 0;
+        }
+      },
+      error: function() {
+        _this.publishEvent('tell_user', 'Brak połączenia z serwerem - formularze nie zostały odświerzone');
+        return typeof _this.callback === "function" ? _this.callback() : void 0;
+      }
+    });
+  };
+
+  RefreshController.prototype.refresh_dependencies = function(model) {
+    var self;
+    self = this;
+    return async.series([
+      function(callback) {
+        return self.refresh_model('flat_rent/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('flat_sell/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('house_rent/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('house_sell/schema', callback);
+      }
+    ]);
+  };
+
+  return RefreshController;
+
+})(Controller);
+
+});
+
 ;require.register("controllers/structure-controller", function(exports, require, module) {
 var ConfirmView, Controller, Footer, Header, InfoView, LeftPanelView, ListFooter, NavFooter, StructureController, StructureView,
   __hasProp = {}.hasOwnProperty,
@@ -1437,6 +1511,7 @@ module.exports = Login = (function(_super) {
       val = _ref1[key];
       localStorage.setObject(key, val);
     }
+    localStorage.setObject('categories', this.get('categories'));
     return this.set({
       is_logged: true
     });
@@ -1632,6 +1707,8 @@ module.exports = View = (function(_super) {
   __extends(View, _super);
 
   function View() {
+    this.attach = __bind(this.attach, this);
+
     this.delete_action = __bind(this.delete_action, this);
 
     this.save_action = __bind(this.save_action, this);
@@ -1642,6 +1719,8 @@ module.exports = View = (function(_super) {
 
     this.init_uploader = __bind(this.init_uploader, this);
 
+    this.picture_add = __bind(this.picture_add, this);
+
     this.initialize = __bind(this.initialize, this);
     return View.__super__.constructor.apply(this, arguments);
   }
@@ -1649,6 +1728,11 @@ module.exports = View = (function(_super) {
   View.prototype.initialize = function(options) {
     View.__super__.initialize.apply(this, arguments);
     return this.publishEvent('log:info', 'edit vewq');
+  };
+
+  View.prototype.picture_add = function(e) {
+    e.preventDefault();
+    return console.log('adding pic');
   };
 
   View.prototype.init_uploader = function() {
@@ -1722,6 +1806,11 @@ module.exports = View = (function(_super) {
         }
       }
     });
+  };
+
+  View.prototype.attach = function() {
+    View.__super__.attach.apply(this, arguments);
+    return this.init_uploader();
   };
 
   return View;
@@ -2395,6 +2484,7 @@ module.exports = EditView = (function(_super) {
     this.edit_type = this.params.edit_type;
     this.listing_type = (_ref = this.params.listing_type) != null ? _ref : false;
     this.delete_only = (_ref1 = this.params.delete_only) != null ? _ref1 : false;
+    this.publishEvent('log:debug', "form_name:" + this.form_name + ", can_edit:" + this.can_edit + ", listing_type:" + this.listing_type + ", delete_only:" + this.delete_only + " ");
     this.subscribeEvent('delete:clicked', this.delete_action);
     this.subscribeEvent('save:clicked', this.save_action);
     this.subscribeEvent('save_and_add:clicked', this.save_and_add_action);
@@ -2418,7 +2508,7 @@ module.exports = EditView = (function(_super) {
   };
 
   EditView.prototype.get_form = function() {
-    this.publishEvent('log:info', this.form_name);
+    this.publishEvent('log:info', "form name: " + this.form_name);
     window.model = this.model;
     this.form = new Backbone.Form({
       model: this.model,
@@ -2437,6 +2527,7 @@ module.exports = EditView = (function(_super) {
     this.publishEvent('log:info', 'view: edit-view beforeRender()');
     this.get_form();
     this.$el.append(this.form.el);
+    console.log(this.$el, this.form.el);
     return this.publishEvent('log:info', 'view: edit-view RenderEnd()');
   };
 
@@ -3308,6 +3399,8 @@ module.exports = AddView = (function(_super) {
 
     this.save_action = __bind(this.save_action, this);
 
+    this.rerender_form = __bind(this.rerender_form, this);
+
     this.change_tab = __bind(this.change_tab, this);
 
     this.initialize = __bind(this.initialize, this);
@@ -3319,6 +3412,7 @@ module.exports = AddView = (function(_super) {
     this.delegate('filterablebeforefilter', '#autocomplete', _.debounce(this.address_search, 1500));
     this.delegate('click', '.address_suggestion', this.fill_address);
     this.delegate('click', "[data-role='navbar'] a", this.change_tab);
+    this.delegate('change', "[name='category']", this.rerender_form);
     this.delegate('click', "#copy_address", this.copy_address);
     return this.rendered_tabs = [];
   };
@@ -3329,6 +3423,22 @@ module.exports = AddView = (function(_super) {
     this.publishEvent('log:info', "change tab " + e.target.attributes.href.value[1]);
     tab_id = "tab_" + e.target.attributes.href.value[5];
     return this.render_subview(tab_id);
+  };
+
+  AddView.prototype.rerender_form = function(e) {
+    var cat, categories, current_category_id, current_form_name, selected_id;
+    categories = localStorage.getObject('categories');
+    selected_id = parseInt(e.target.value);
+    current_form_name = this.form_name.substring(0, this.form_name.length - 5);
+    current_category_id = categories[current_form_name];
+    if (current_category_id !== selected_id) {
+      cat = _.invert(categories);
+      this.form_name = "" + cat[selected_id] + "_form";
+      this.model.schema = localStorage.getObject("" + cat[selected_id] + "_schema");
+      this.rendered_tabs = [];
+      this.render();
+      return this.render_subview();
+    }
   };
 
   AddView.prototype.save_action = function(url) {
@@ -3568,6 +3678,7 @@ module.exports = AddView = (function(_super) {
 
   AddView.prototype.attach = function() {
     AddView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', "listing-add attach");
     return this.render_subview();
   };
 

@@ -15,6 +15,7 @@ module.exports = class EditView extends View
         @edit_type = @params.edit_type
         @listing_type = @params.listing_type ? false
         @delete_only = @params.delete_only ? false
+        @publishEvent('log:debug', "form_name:#{@form_name}, can_edit:#{@can_edit}, listing_type:#{@listing_type}, delete_only:#{@delete_only} ")
         # events
         @subscribeEvent('delete:clicked', @delete_action)
         @subscribeEvent('save:clicked', @save_action)
@@ -32,7 +33,7 @@ module.exports = class EditView extends View
         @publishEvent('log:info', 'save_and_add_action  caught')
 
     get_form: =>
-        @publishEvent('log:info', @form_name)
+        @publishEvent('log:info',"form name: #{@form_name}")
         window.model = @model
         @form = new Backbone.Form
             model: @model
@@ -52,6 +53,7 @@ module.exports = class EditView extends View
         #set the template context of @el to our rendered form - otherwise backbone.forms get out of context
         @get_form()
         @$el.append(@form.el)
+        console.log(@$el, @form.el)
         @publishEvent('log:info', 'view: edit-view RenderEnd()')
 
 

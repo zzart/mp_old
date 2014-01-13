@@ -4,7 +4,12 @@ module.exports = class View extends View
     initialize: (options) =>
         super
         @publishEvent('log:info', 'edit vewq' )
+        # @delegate('click','#avatar', @picture_add )
         # send url data from controler
+
+    picture_add: (e)=>
+        e.preventDefault()
+        console.log('adding pic')
 
     init_uploader: =>
         @uploader = new qq.FineUploaderBasic
@@ -57,3 +62,6 @@ module.exports = class View extends View
                 else
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
+    attach: =>
+        super
+        @init_uploader()
