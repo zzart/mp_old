@@ -1,5 +1,5 @@
 /**
- * Backbone Forms v0.13.0
+ * Backbone Forms v0.14.0
  *
  * Copyright (c) 2013 Charles Davison, Pow Media Ltd
  *
@@ -56,14 +56,10 @@ var Form = Backbone.View.extend({
 
       //Then schema on model
       var model = options.model;
-      if (model && model.schema) {
-        return (_.isFunction(model.schema)) ? model.schema() : model.schema;
-      }
+      if (model && model.schema) return _.result(model, 'schema');
 
       //Then built-in schema
-      if (self.schema) {
-        return (_.isFunction(self.schema)) ? self.schema() : self.schema;
-      }
+      if (self.schema) return _.result(self, 'schema');
 
       //Fallback to empty schema
       return {};
@@ -226,9 +222,9 @@ var Form = Backbone.View.extend({
 
       //Add them
       _.each(keys, function(key) {
-        //log ...................
-        console.log(key)
         var field = fields[key];
+        console.log(key)
+
         $container.append(field.render().el);
       });
     });
@@ -519,6 +515,7 @@ Form.validators = (function() {
 
     options = _.extend({
       type: 'regexp',
+      match: true,
       message: this.errMessages.regexp
     }, options);
 
@@ -533,7 +530,10 @@ Form.validators = (function() {
       //Don't check empty values (add a 'required' validator for this)
       if (value === null || value === undefined || value === '') return;
 
-      if (!options.regexp.test(value)) return err;
+      //Create RegExp from string if it's valid
+      if ('string' === typeof options.regexp) options.regexp = new RegExp(options.regexp, options.flags);
+
+       if ((options.match) ? !options.regexp.test(value) : options.regexp.test(value)) return err;
     };
   };
 
@@ -612,7 +612,7 @@ Form.Fieldset = Backbone.View.extend({
     this.fields = _.pick(options.fields, schema.fields);
 
     //Override defaults
-    this.template = options.template || this.constructor.template;
+    this.template = options.template || schema.template || this.template || this.constructor.template;
   },
 
   /**
@@ -739,8 +739,8 @@ Form.Field = Backbone.View.extend({
     var schema = this.schema = this.createSchema(options.schema);
 
     //Override defaults
-    this.template = options.template || schema.template || this.constructor.template;
-    this.errorClassName = options.errorClassName || this.constructor.errorClassName;
+    this.template = options.template || schema.template || this.template || this.constructor.template;
+    this.errorClassName = options.errorClassName || this.errorClassName || this.constructor.errorClassName;
 
     //Create editor
     this.editor = this.createEditor();
@@ -1736,7 +1736,7 @@ Form.editors.Select = Form.editors.Base.extend({
  */
 Form.editors.Radio = Form.editors.Select.extend({
 
-  tagName: 'div',
+  tagName: 'ul',
 
   events: {
     'change input[type=radio]': function() {
@@ -1754,6 +1754,15 @@ Form.editors.Radio = Form.editors.Select.extend({
         self.trigger('blur', self);
       }, 0);
     }
+  },
+
+  /**
+   * Returns the template. Override for custom templates
+   *
+   * @return {Function}       Compiled template
+   */
+  getTemplate: function() {
+    return this.schema.template || this.constructor.template;
   },
 
   getValue: function() {
@@ -1789,26 +1798,45 @@ Form.editors.Radio = Form.editors.Select.extend({
    * @return {String} HTML
    */
   _arrayToHtml: function (array) {
-    var html = [];
     var self = this;
 
-    _.each(array, function(option, index) {
-      var itemHtml = '';
+    var template = this.getTemplate(),
+        name = self.getName(),
+        id = self.id;
+
+    var items = _.map(array, function(option, index) {
+      var item = {
+        name: name,
+        id: id + '-' + index
+      }
+
       if (_.isObject(option)) {
-        var val = (option.val || option.val === 0) ? option.val : '';
-        itemHtml += ('<input type="radio" name="'+self.getName()+'" value="'+val+'" id="'+self.id+'-'+index+'" />');
-        itemHtml += ('<label for="'+self.id+'-'+index+'">'+option.label+'</label>');
+        item.value = (option.val || option.val === 0) ? option.val : '';
+        item.label = option.label;
+      } else {
+        item.value = option;
+        item.label = option;
       }
-      else {
-        itemHtml += ('<input type="radio" name="'+self.getName()+'" value="'+option+'" id="'+self.id+'-'+index+'" />');
-        itemHtml += ('<label for="'+self.id+'-'+index+'">'+option+'</label>');
-      }
-      itemHtml += '';
-      html.push(itemHtml);
+
+      return item;
     });
 
-    return html.join('');
+    return template({ items: items });
   }
+
+}, {
+
+  //STATICS
+  template: _.template('\
+    <ul>\
+      <% _.each(items, function(item) { %>\
+        <li>\
+          <input type="radio" name="<%= item.name %>" value="<%= item.value %>" id="<%= item.id %>" />\
+          <label for="<%= item.id %>"><%= item.label %></label>\
+        </li>\
+      <% }); %>\
+    </ul>\
+  ', null, Form.templateSettings)
 
 });
 
@@ -1881,7 +1909,7 @@ Form.editors.Checkboxes = Form.editors.Select.extend({
     var self = this;
 
     _.each(array, function(option, index) {
-      var itemHtml = '';
+      var itemHtml = '<li>';
 			var close = true;
       if (_.isObject(option)) {
         if (option.group) {
@@ -1903,7 +1931,7 @@ Form.editors.Checkboxes = Form.editors.Select.extend({
         itemHtml += ('<label for="'+self.id+'-'+index+'">'+option+'</label>');
       }
 			if(close){
-				itemHtml += '';
+				itemHtml += '</li>';
 			}
       html.push(itemHtml);
     });
@@ -2205,6 +2233,8 @@ Form.editors.Date = Form.editors.Base.extend({
     current = new Date()
     //console.log(new Date(Date.UTC(year, month, date, current.getHours(), current.getMinutes())));
     return new Date(Date.UTC(year, month, date, current.getHours(), current.getMinutes()));
+
+    //return new Date(year, month, date);
   },
 
   /**
@@ -2259,7 +2289,6 @@ Form.editors.Date = Form.editors.Base.extend({
   //Replace for localisation, e.g. Form.editors.Date.monthNames = ['Janvier', 'Fevrier'...]
   monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 });
-
 
 /**
  * DateTime editor
@@ -2437,7 +2466,7 @@ Form.editors.DateTime = Form.editors.Base.extend({
 
 
   //Metadata
-  Form.VERSION = '0.13.0';
+  Form.VERSION = '0.14.0';
 
 
   //Exports

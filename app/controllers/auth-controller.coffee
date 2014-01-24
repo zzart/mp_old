@@ -22,7 +22,7 @@ gen_token = ( model, url, password) =>
     apphash_hexed = apphash.toString(CryptoJS.enc.Hex)
     userhash = CryptoJS.HmacSHA256(url, mediator.models.user.get('user_pass'))
     userhash_hexed = userhash.toString(CryptoJS.enc.Hex)
-    header_string = "#{mediator.app},#{apphash_hexed},#{mediator.models.user.get('username')},#{userhash_hexed}"
+    header_string = "#{mediator.app},#{apphash_hexed},#{mediator.models.user.get('username')}@#{mediator.models.user.get('company_name')},#{userhash_hexed}"
     auth_header = btoa(header_string)
 
 _sync = Backbone.sync

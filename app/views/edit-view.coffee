@@ -35,6 +35,7 @@ module.exports = class EditView extends View
     get_form: =>
         @publishEvent('log:info',"form name: #{@form_name}")
         window.model = @model
+        console.log(@model.schema)
         @form = new Backbone.Form
             model: @model
             template: _.template(localStorage.getObject(@form_name))
@@ -50,11 +51,13 @@ module.exports = class EditView extends View
     render: =>
         super
         @publishEvent('log:info', 'view: edit-view beforeRender()')
+        #we want to override render method higher if it's listing stuff
+        if not @form_name.match('rent|sell')
         #set the template context of @el to our rendered form - otherwise backbone.forms get out of context
-        @get_form()
-        @$el.append(@form.el)
-        console.log(@$el, @form.el)
-        @publishEvent('log:info', 'view: edit-view RenderEnd()')
+            @get_form()
+            @$el.append(@form.el)
+            console.log(@$el, @form.el, @template, @form_name)
+            @publishEvent('log:info', 'view: edit-view RenderEnd()')
 
 
     attach: =>

@@ -7,7 +7,11 @@
 
 <link rel="stylesheet" href="">
 <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="javascripts/OpenLayers.debug.js"></script>
+<script src="javascripts/underscore-1.4.3.js"></script>
+<script src="javascripts/backbone-1.10.js"></script>
+<script src="javascripts/backbone-forms.js"></script>
+<script src="javascripts/list.js"></script>
+<script src="javascripts/mp-editors.js"></script>
 <!-- <script src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
 <script>
 		$( document ).on( "pagecreate", function() {
@@ -15,69 +19,122 @@
 		});
 	</script>
     -->
-    
+
 
 </head>
 <body>
 
-<div id="page" data-role="page" >
+ <div id='list'></div>
+    <input type="file" id="file" name="files[]" multiple>
 
-    <div id='openmap' style='height:100%; width:100%'></div>
-
-</div>
+    <input type="file" id="files" name="files[]" multiple>
+<button id="readFile">Read File</button>
+<output id="content"></output>
+     
+<output id="list"></output>
 
 <script>
-$("#openmap").css('height', '400px', 'width','200px');
- //var map = new OpenLayers.Map('openmap', { controls: [] });
- //var map = new OpenLayers.Map({div:'openmap', size:OpenLayers.Size(w=200, h=200), controls: [] });
- var lat = 6651050.4274274;
-var lon= 2209967.3614734;
-  
-  var zoom = 7;
-  var map, layer;
-var layer = new OpenLayers.Layer.OSM();
-var markers = new OpenLayers.Layer.Markers( "Markers" );
-   //layer = new OpenLayers.Layer.WMS( "OpenLayers WMS", "http://vmap0.tiles.osgeo.org/wms/vmap0", {layers: 'basic'} );
+  function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+
+    // Loop through the FileList and render image files as thumbnails.
+    for (var i = 0, f; f = files[i]; i++) {
+
+      // Only process image files.
+      if (!f.type.match('image.*')) {
+        continue;
+      }
+
+      var reader = new FileReader();
+
+      // Closure to capture the file information.
+      reader.onload = (function(theFile) {
+        return function(e) {
+          // Render thumbnail.
+          var span = document.createElement('span');
+          span.innerHTML = ['<img class="thumb" src="', e.target.result,
+                            '" title="', escape(theFile.name), '"/>'].join('');
+          document.getElementById('list').insertBefore(span, null);
+        };
+      })(f);
+
+      // Read in the image file as a data URL.
+      reader.readAsDataURL(f);
+    }
+  }
+
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+
+
+     
+function readFile()
+{
+    /* Get the reference of the inpout element. */
+    var files = document.getElementById('files').files;
+ 
+    if (!files.length)
+    {
+      alert('Please select a file!');
+      return;
+    }
+     
+    /* Reading the first file selected. You can process other files similarly in loop. */
+    var file = files[0];
+ 
+    /* Instantiate the File Reader object. */
+    var reader = new FileReader();
     
-                vlayer = new OpenLayers.Layer.Vector( "Editable" );
-                map = new OpenLayers.Map( 'openmap', {
-                    controls: [
-                        new OpenLayers.Control.PanZoom(),
-                        new OpenLayers.Control.EditingToolbar(vlayer)
-                        
-                    ]
-                });
-                map.addLayers([layer, vlayer, markers]);
-//map.addControl(new OpenLayers.Control.PanZoomBar());
-//map.addControl(new OpenLayers.Control.LayerSwitcher({'ascending':false}));
-//map.addControl(new OpenLayers.Control.Permalink());
-//map.addControl(new OpenLayers.Control.Permalink('permalink'));
-//map.addControl(new OpenLayers.Control.MousePosition());
-map.addControl(new OpenLayers.Control.OverviewMap());
-map.addControl(new OpenLayers.Control.Attribution());
-map.addControl(new OpenLayers.Control.Geolocate());
-map.setCenter(new OpenLayers.LonLat(lon, lat), zoom);
-
-var size = new OpenLayers.Size(21,25);
-var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset);
-var marker = new OpenLayers.Marker(new OpenLayers.LonLat(0,0),icon)
-markers.addMarker(marker);
+ 
+    /* onLoad event is fired when the load completes. */
+    reader.onload = function(event) {
+        document.getElementById('content').textContent = event.target.result;     
+    };
+ 
+    /* The readAsText method will read the file's data as a text string. By default the string is decoded as 'UTF-8'. */
+    reader.readAsText(file);
+    window.file = file;
+    window.reader = reader;
+}
+      
+document.getElementById('readFile').addEventListener('click', function(event) {
+      readFile();   
+  }, false);
+ 
 
 
-  map.events.register("click", map , function(e){
-  console.log(e);
-  var opx = map.getLayerPxFromViewPortPx(e.xy) ;
-  var lonLat = map.getLonLatFromPixel(e.xy);
-  console.log(opx, lonLat, map);
-  marker.map = map;
-  marker.moveTo(opx);
-  });
+function listFileProperties(event)
+{
+    /* Read the list of the selected files. */
+    var files = event.target.files;
+ 
+    /* Read each file and list down the properties in a table. */
+    var output = "<table><tr><td>Filename</td><td>File Type</td><td>File Size</td><td>Last Modified Date</td></tr>";
+ 
+    for (var i = 0, f; f = files[i]; i++)
+    {
+        output += "<tr><td>" + escape(f.name) + "</td>";       /* f.name - Filename  */
+        output += "<td>" + f.type  + "</td>";                  /* f.type - File Type */
+        output += "<td>" + f.size + " bytes</td>";             /* f.size - File Size */
+        output += "<td>" + f.lastModifiedDate + "</td></tr>";  /* f.lastModifiedDate - Last Modified Date */
+    }
+     
+    output += "</table>";
+    document.getElementById('list').innerHTML = output;  
+}
+ 
+/* Listener for single file input element. */
+document.getElementById('file').addEventListener('change', listFileProperties, false);
+ 
+/* Listener for multiple files input element. */
+document.getElementById('file').addEventListener('change', listFileProperties, false);
+</script>
+
+   
 
 
- </script>
-
-
+    
+    
 </body>
 </html>
 

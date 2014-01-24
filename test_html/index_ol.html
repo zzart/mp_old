@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<link rel="stylesheet" href="">
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="javascripts/OpenLayers.debug.js"></script>
+<!-- <script src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script>
+<script>
+		$( document ).on( "pagecreate", function() {
+
+		});
+	</script>
+    -->
+    
+
+</head>
+<body>
+
+<div id="page" data-role="page" >
+
+    <div id='openmap' style='height:100%; width:100%'></div>
+
+</div>
+
+<script>
+$("#openmap").css('height', '400px', 'width','200px');
+ //var map = new OpenLayers.Map('openmap', { controls: [] });
+ //var map = new OpenLayers.Map({div:'openmap', size:OpenLayers.Size(w=200, h=200), controls: [] });
+ var lat = 6651050.4274274;
+var lon= 2209967.3614734;
+  
+  var zoom = 7;
+  var map, layer;
+var layer = new OpenLayers.Layer.OSM();
+var markers = new OpenLayers.Layer.Markers( "Markers" );
+   //layer = new OpenLayers.Layer.WMS( "OpenLayers WMS", "http://vmap0.tiles.osgeo.org/wms/vmap0", {layers: 'basic'} );
+    
+                vlayer = new OpenLayers.Layer.Vector( "Editable" );
+                map = new OpenLayers.Map( 'openmap', {
+                    controls: [
+                        new OpenLayers.Control.PanZoom(),
+                        new OpenLayers.Control.EditingToolbar(vlayer)
+                        
+                    ]
+                });
+                map.addLayers([layer, vlayer, markers]);
+//map.addControl(new OpenLayers.Control.PanZoomBar());
+//map.addControl(new OpenLayers.Control.LayerSwitcher({'ascending':false}));
+//map.addControl(new OpenLayers.Control.Permalink());
+//map.addControl(new OpenLayers.Control.Permalink('permalink'));
+//map.addControl(new OpenLayers.Control.MousePosition());
+map.addControl(new OpenLayers.Control.OverviewMap());
+map.addControl(new OpenLayers.Control.Attribution());
+map.addControl(new OpenLayers.Control.Geolocate());
+map.setCenter(new OpenLayers.LonLat(lon, lat), zoom);
+
+var size = new OpenLayers.Size(21,25);
+var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset);
+var marker = new OpenLayers.Marker(new OpenLayers.LonLat(0,0),icon)
+markers.addMarker(marker);
+
+
+  map.events.register("click", map , function(e){
+  console.log(e);
+  var opx = map.getLayerPxFromViewPortPx(e.xy) ;
+  var lonLat = map.getLonLatFromPixel(e.xy);
+  console.log(opx, lonLat, map);
+  marker.map = map;
+  marker.moveTo(opx);
+  });
+
+
+ </script>
+
+
+</body>
+</html>
+

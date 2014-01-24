@@ -361,7 +361,7 @@ gen_token = function(model, url, password) {
   apphash_hexed = apphash.toString(CryptoJS.enc.Hex);
   userhash = CryptoJS.HmacSHA256(url, mediator.models.user.get('user_pass'));
   userhash_hexed = userhash.toString(CryptoJS.enc.Hex);
-  header_string = "" + mediator.app + "," + apphash_hexed + "," + (mediator.models.user.get('username')) + "," + userhash_hexed;
+  header_string = "" + mediator.app + "," + apphash_hexed + "," + (mediator.models.user.get('username')) + "@" + (mediator.models.user.get('company_name')) + "," + userhash_hexed;
   return auth_header = btoa(header_string);
 };
 
@@ -806,9 +806,9 @@ var AddView, Collection, Controller, ListingController, Model, mediator,
 
 Controller = require('controllers/auth-controller');
 
-Collection = require('models/offer-list-collection');
+Collection = require('models/listing-collection');
 
-Model = require('models/property-model');
+Model = require('models/listing-model');
 
 AddView = require('views/listing-add-view');
 
@@ -1481,6 +1481,73 @@ module.exports = ClientList = (function(_super) {
 
 });
 
+;require.register("models/listing-collection", function(exports, require, module) {
+var ListingList, Model,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Model = require('models/listing-model');
+
+module.exports = ListingList = (function(_super) {
+
+  __extends(ListingList, _super);
+
+  function ListingList() {
+    return ListingList.__super__.constructor.apply(this, arguments);
+  }
+
+  ListingList.prototype.model = Model;
+
+  ListingList.prototype.url = 'http://localhost:8080/mp/oferty';
+
+  return ListingList;
+
+})(Chaplin.Collection);
+
+});
+
+;require.register("models/listing-model", function(exports, require, module) {
+var Listing,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+module.exports = Listing = (function(_super) {
+
+  __extends(Listing, _super);
+
+  function Listing() {
+    return Listing.__super__.constructor.apply(this, arguments);
+  }
+
+  Listing.prototype.urlRoot = 'http://localhost:8080/v1/oferty';
+
+  Listing.prototype.schema = {};
+
+  Listing.prototype.file_to_string = function() {
+    return 'test function';
+  };
+
+  Listing.prototype.readFile = function(file) {
+    var reader, self;
+    reader = new FileReader();
+    self = this;
+    reader.onload = (function(theFile, self) {
+      return function(e) {
+        return self.set({
+          filename: theFile.name,
+          data: e.target.result
+        });
+      };
+    })(file, this);
+    return reader.readAsDataURL(file);
+  };
+
+  return Listing;
+
+})(Chaplin.Model);
+
+});
+
 ;require.register("models/login-model", function(exports, require, module) {
 var Login,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1523,50 +1590,6 @@ module.exports = Login = (function(_super) {
 
 });
 
-;require.register("models/offer-list-collection", function(exports, require, module) {
-var Model, OfferList,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Model = require('models/offer-list-model');
-
-module.exports = OfferList = (function(_super) {
-
-  __extends(OfferList, _super);
-
-  function OfferList() {
-    return OfferList.__super__.constructor.apply(this, arguments);
-  }
-
-  OfferList.prototype.model = Model;
-
-  OfferList.prototype.url = 'http://localhost:8080/mp/oferty';
-
-  return OfferList;
-
-})(Chaplin.Collection);
-
-});
-
-;require.register("models/offer-list-model", function(exports, require, module) {
-var OfferList,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-module.exports = OfferList = (function(_super) {
-
-  __extends(OfferList, _super);
-
-  function OfferList() {
-    return OfferList.__super__.constructor.apply(this, arguments);
-  }
-
-  return OfferList;
-
-})(Chaplin.Model);
-
-});
-
 ;require.register("models/offer-model", function(exports, require, module) {
 var Chaplin, Offer,
   __hasProp = {}.hasOwnProperty,
@@ -1583,29 +1606,6 @@ module.exports = Offer = (function(_super) {
   }
 
   return Offer;
-
-})(Chaplin.Model);
-
-});
-
-;require.register("models/property-model", function(exports, require, module) {
-var Property,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-module.exports = Property = (function(_super) {
-
-  __extends(Property, _super);
-
-  function Property() {
-    return Property.__super__.constructor.apply(this, arguments);
-  }
-
-  Property.prototype.urlRoot = 'http://localhost:8080/v1/oferty';
-
-  Property.prototype.schema = {};
-
-  return Property;
 
 })(Chaplin.Model);
 
@@ -1872,8 +1872,8 @@ module.exports = LoginView = (function(_super) {
     var apphash, apphash_hexed, auth_header, header_string, userhash, userhash_hexed,
       _this = this;
     this.publishEvent('log:error', 'autologin------');
-    this.user = 'mars';
-    this.pass = 'test';
+    this.user = 'admin@lutin';
+    this.pass = 'admin';
     apphash = CryptoJS.HmacSHA256(this.model.url, mediator.app_key);
     apphash_hexed = apphash.toString(CryptoJS.enc.Hex);
     userhash = CryptoJS.HmacSHA256(this.model.url, this.pass);
@@ -1889,8 +1889,11 @@ module.exports = LoginView = (function(_super) {
         _this.model.set({
           'user_pass': _this.pass
         });
+        _this.model.set({
+          'company_name': _this.user.split('@')[1]
+        });
         _this.model.update_db();
-        $('#first-name-placeholder').text(_this.model.get('first_name'));
+        $('#first-name-placeholder').text(_this.model.get('first_name') || _this.model.get('username'));
         $('#bon-config-link').attr('href', "/biura/" + (_this.model.get('company_id')));
         $('#agent-config-link').attr('href', "/agenci/" + (_this.model.get('id')));
         return Chaplin.utils.redirectTo({
@@ -2512,6 +2515,7 @@ module.exports = EditView = (function(_super) {
   EditView.prototype.get_form = function() {
     this.publishEvent('log:info', "form name: " + this.form_name);
     window.model = this.model;
+    console.log(this.model.schema);
     this.form = new Backbone.Form({
       model: this.model,
       template: _.template(localStorage.getObject(this.form_name))
@@ -2527,10 +2531,12 @@ module.exports = EditView = (function(_super) {
   EditView.prototype.render = function() {
     EditView.__super__.render.apply(this, arguments);
     this.publishEvent('log:info', 'view: edit-view beforeRender()');
-    this.get_form();
-    this.$el.append(this.form.el);
-    console.log(this.$el, this.form.el);
-    return this.publishEvent('log:info', 'view: edit-view RenderEnd()');
+    if (!this.form_name.match('rent|sell')) {
+      this.get_form();
+      this.$el.append(this.form.el);
+      console.log(this.$el, this.form.el, this.template, this.form_name);
+      return this.publishEvent('log:info', 'view: edit-view RenderEnd()');
+    }
   };
 
   EditView.prototype.attach = function() {
@@ -3405,6 +3411,8 @@ module.exports = AddView = (function(_super) {
 
     this.change_tab = __bind(this.change_tab, this);
 
+    this.add_file = __bind(this.add_file, this);
+
     this.initialize = __bind(this.initialize, this);
     return AddView.__super__.constructor.apply(this, arguments);
   }
@@ -3416,7 +3424,12 @@ module.exports = AddView = (function(_super) {
     this.delegate('click', "[data-role='navbar'] a", this.change_tab);
     this.delegate('change', "[name='category']", this.rerender_form);
     this.delegate('click', "#copy_address", this.copy_address);
+    this.delegate('add', this.add_file);
     return this.rendered_tabs = [];
+  };
+
+  AddView.prototype.add_file = function() {
+    return console.log('add');
   };
 
   AddView.prototype.change_tab = function(e) {
@@ -3438,6 +3451,7 @@ module.exports = AddView = (function(_super) {
       this.form_name = "" + cat[selected_id] + "_form";
       this.model.schema = localStorage.getObject("" + cat[selected_id] + "_schema");
       this.rendered_tabs = [];
+      $("#content").empty();
       this.render();
       return this.render_subview();
     }
@@ -3481,11 +3495,11 @@ module.exports = AddView = (function(_super) {
     $("[name='internet_street']").val($("[name='street']").val());
     $("[name='internet_town']").val($("[name='town']").val());
     $("[name='internet_province']").val($("[name='province']").val());
-    $("[name='internet_quarter']").val($("[name='quarter']").val());
+    $("[name='internet_town_district']").val($("[name='town_district']").val());
     $("[name='internet_lat']").val($("[name='lat']").val());
-    $("[name='internet_lng']").val($("[name='lng']").val());
-    $("[name='internet_commune']").val($("[name='commune']").val());
-    return $("[name='internet_district']").val($("[name='district']").val());
+    $("[name='internet_lon']").val($("[name='lon']").val());
+    $("[name='internet_borough']").val($("[name='borough']").val());
+    return $("[name='internet_county']").val($("[name='county']").val());
   };
 
   AddView.prototype.address_reset = function() {
@@ -3498,20 +3512,20 @@ module.exports = AddView = (function(_super) {
     $("[name='town']").val('');
     $("[name='internet_province']").val('');
     $("[name='province']").val('');
-    $("[name='internet_quarter']").val('');
-    $("[name='quarter']").val('');
+    $("[name='internet_town_district']").val('');
+    $("[name='town_district']").val('');
     $("[name='internet_lat']").val('');
     $("[name='lat']").val('');
-    $("[name='internet_lng']").val('');
-    $("[name='lng']").val('');
-    $("[name='internet_commune']").val('');
-    $("[name='commune']").val('');
-    $("[name='internet_district']").val('');
-    return $("[name='district']").val('');
+    $("[name='internet_lon']").val('');
+    $("[name='lon']").val('');
+    $("[name='internet_borough']").val('');
+    $("[name='borough']").val('');
+    $("[name='internet_county']").val('');
+    return $("[name='county']").val('');
   };
 
   AddView.prototype.fill_address = function(event) {
-    var $ul, commune, district, full_name, item, newPx, obj, openlayers_projection, position, projection, zoom, _i, _len;
+    var $ul, borough, county, full_name, item, newPx, obj, openlayers_projection, position, projection, zoom, _i, _len;
     this.publishEvent('log:info', 'fill address event');
     this.address_reset();
     obj = this.response[event.target.value];
@@ -3519,21 +3533,20 @@ module.exports = AddView = (function(_super) {
     $("[name='street']").val(obj.address.road || obj.address.pedestrian);
     $("[name='town']").val(obj.address.city);
     $("[name='province']").val(obj.address.state);
-    $("[name='quarter']").val(obj.address.city_district);
+    $("[name='town_district']").val(obj.address.city_district);
     $("[name='lat']").val(obj.lat);
-    $("[name='lng']").val(obj.lon);
+    $("[name='lon']").val(obj.lon);
     full_name = obj.display_name.split(',');
     for (_i = 0, _len = full_name.length; _i < _len; _i++) {
       item = full_name[_i];
-      console.log('looping', item);
       if (item.indexOf('powiat') > -1) {
-        district = item;
+        county = item;
       } else if (item.indexOf('gmina') > -1) {
-        commune = item;
+        borough = item;
       }
     }
-    $("[name='commune']").val(commune || '');
-    $("[name='district']").val(district || '');
+    $("[name='borough']").val(borough || '');
+    $("[name='county']").val(county || '');
     $ul = $('ul#autocomplete.ui-listview');
     $('ul#autocomplete.ui-listview > li').remove();
     $ul.listview("refresh");
@@ -3640,39 +3653,43 @@ module.exports = AddView = (function(_super) {
       marker.moveTo(opx);
       new_position = marker.lonlat.transform(openlayers_projection, projection);
       $("[name='lat']").val(new_position.lat);
-      return $("[name='lng']").val(new_position.lon);
+      return $("[name='lon']").val(new_position.lon);
     });
     this.map = map;
     return this.marker = marker;
   };
 
   AddView.prototype.render = function() {
-    this.$el_clean = this.$el.clone();
+    var $bt, base_template;
     AddView.__super__.render.apply(this, arguments);
-    this.tabs = $(this.form.el).find('.ui-grid-a');
-    this.base = $(this.form.el).find('.ui-grid-a').remove();
-    this.$el_clean.append(this.base);
-    this.$el = this.$el_clean;
+    this.get_form();
+    base_template = this.form.template();
+    $bt = $(base_template);
+    $bt.find('.ui-grid-a').remove();
+    window.bt = $bt;
+    this.$el.append($bt);
     return this.publishEvent('log:info', 'view: edit-view RenderEnd()');
   };
 
   AddView.prototype.render_subview = function(tab_id) {
-    var id;
+    var $temp;
     if (tab_id == null) {
       tab_id = 'tab_1';
     }
-    id = parseInt(tab_id.split('_')[1]) - 1;
     this.publishEvent('log:info', "render sub_view " + tab_id);
-    this.subview(tab_id, new TabView({
-      container: this.el,
-      template: this.tabs[id],
-      id: tab_id
-    }));
-    this.subview(tab_id).render();
-    if (tab_id === 'tab_2') {
-      this.init_openstreet();
-    }
     if (__indexOf.call(this.rendered_tabs, tab_id) < 0) {
+      $temp = $(this.form.el).find("#" + tab_id);
+      console.log('---> ', this.form.el, $temp, tab_id);
+      window.form = this.form;
+      this.subview(tab_id, new TabView({
+        container: this.el,
+        template: $temp,
+        id: tab_id
+      }));
+      this.subview(tab_id).render();
+      if (tab_id === 'tab_2') {
+        this.init_openstreet();
+      }
       this.publishEvent('jqm_refersh:render');
       return this.rendered_tabs.push(tab_id);
     }
@@ -3819,8 +3836,11 @@ module.exports = LoginView = (function(_super) {
         _this.model.set({
           'user_pass': _this.pass
         });
+        _this.model.set({
+          'company_name': _this.user.split('@')[1]
+        });
         _this.model.update_db();
-        $('#first-name-placeholder').text(_this.model.get('first_name'));
+        $('#first-name-placeholder').text(_this.model.get('first_name') || _this.model.get('username'));
         $('#bon-config-link').attr('href', "/biura/" + (_this.model.get('company_id')));
         $('#agent-config-link').attr('href', "/agenci/" + (_this.model.get('id')));
         $('#login').popup('close');

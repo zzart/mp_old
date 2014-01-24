@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<link rel="stylesheet" href="stylesheets/jquery.mobile-1.4.0.min.css">
+<link rel="stylesheet" href="stylesheets/fineuploader-4.2.1.css">
+<script src="javascripts/jquery-1.10.2.min.js"></script>
+<script src="javascripts/underscore-1.4.3.js"></script>
+<script src="javascripts/jquery.mobile-1.4.0.js"></script>
+<script src="javascripts/backbone-1.10.js"></script>
+<script src="javascripts/backbone-forms.js"></script>
+<script src="javascripts/backbone.bootstrap-modal.js"></script>
+<script src="javascripts/list.js"></script>
+<script src="javascripts/mp-editors.js"></script>
+<script src="javascripts/bootstrap.js"></script>
+<script src="javascripts/jquery.fineuploader-4.2.1.js"></script>
+</head>
+<!--
+<script>
+		$( document ).on( "pagecreate", function() {
+		});
+    </script>
+
+-->
+<body>
+
+
+<div  data-role="page">
+    <div  data-role="content">
+    <div id='test'></div>
+    <div id="fine-uploader"> </div>
+
+        </div>
+    </div>
+</div>
+
+
+</body>
+<script>
+  window.model = new Backbone.Model();
+  //window.model.attributes = {notes:[1,1,1]};
+  window.model.schema =
+{
+//"normal":{},
+resource:{"help":"Można dodawać zdjęcia lub inne pliki do tej oferty. Pierwszy plik graficzny to zdjęcie główne.Przy eksportach przetwarzane są tylko pliki graficzne (jpg, gif, bmp, png)",
+"itemType":"Object", "title":"Pliki","type":"List", "subSchema":{
+file:{dataType:'file', title:"Plik"},
+url:{title:"Ścieżka", editorAttrs:{disabled:true}},
+uuid:{title:"UUID",  editorAttrs:{disabled:true}},
+filesize:{title:"Wielkość pliku", editorAttrs:{disabled:true}},
+filename:{title:"Nazwa pliku"},
+file:{title:"Plik"},
+mimetype:{title:"Typ"},
+order:{title:"Kolejność", dataType:'number'}
+} },
+
+}
+   ;
+  window.form = new Backbone.Form({model:window.model});
+  window.form.render();
+  $("#test").append(window.form.el);
+
+//window.form.fields.rr.setValue([{url:3, test:234},{url:342, test:32}])
+//window.form.fields.rr.getValue()
+//window.form.fields.rr.render()
+//window.form.fields.rr.remove()
+
+//@uploader = new qq.FineUploaderBasic
+    $(document).ready(function () {
+   // var uploader = new qq.FineUploader({
+        $("#fine-uploader").fineUploader({
+    debug: true,
+    button: $("#avatar")[0],
+    request:{
+        endpoint: 'http://localhost:8080/v1/pliki/dodaj',
+        //params: {h: hash}
+    },
+    callbacks:{
+        onSubmit : function(){
+        },
+        onComplete: function(response_code, filename, response, xmlhttprequest){
+            console.log(arguments);
+            order = window.form.fields.resource.getValue().length;
+            current_val = {
+                url:response.url,
+                mimetype:response.mimetype,
+                uuid:response.uuid,
+                file:response.file,
+                filename:response.filename,
+                filesize: response.filesize,
+                order:order + 1
+            };
+            window.form.fields.resource.editor.addItem(current_val);
+            return function () {
+                $.mobile.initializePage();
+                $.mobile.loading('hide');
+                $("ul").listview('refresh');
+            };
+        },
+    },
+    cors: {
+        expected: true,
+    },
+    validation: {
+        allowedExtensions: ['jpeg', 'jpg', 'png', 'gif', 'bmp'],
+        sizeLimit: 2048000, // 2000 kB = 2000 * 1024 bytes
+        //maxHeight: 1500,
+        //maxWidth: 1500,
+      },
+
+});
+
+});
+
+</script>
+
+
+    <script type="text/template" id="qq-template">
+        <div class="qq-uploader-selector qq-uploader">
+            <div class="qq-upload-drop-area-selector qq-upload-drop-area" qq-hide-dropzone>
+                <span>Wrzuć pliki na serwer</span>
+            </div>
+            <button class="ui-btn qq-upload-button-selector qq-upload-button">
+                <div>Dodaj plik</div>
+            </button>
+            <span class="qq-drop-processing-selector qq-drop-processing">
+                <span>Przetwarzam pliki...</span>
+                <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>
+            </span>
+            <ul class="qq-upload-list-selector qq-upload-list" data-role='listview' data-inset='true'>
+
+                <li>
+                  <div class="qq-progress-bar-container-selector">
+                      <div class="qq-progress-bar-selector qq-progress-bar"></div>
+                  </div>
+                  <span class="qq-upload-spinner-selector qq-upload-spinner"></span>
+                    <img class="qq-thumbnail-selector" qq-max-size="100" qq-server-scale>
+                  <span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>
+                  <span class="qq-upload-file-selector qq-upload-file"></span>
+                  <input class="qq-edit-filename-selector qq-edit-filename" tabindex="0" type="text">
+                  <span class="qq-upload-size-selector qq-upload-size"></span>
+                  <a class="qq-upload-cancel-selector qq-upload-cancel" href="#">Zaniechaj</a>
+                  <a class="qq-upload-retry-selector qq-upload-retry" href="#">Spróbuj ponownie</a>
+                  <a class="qq-upload-delete-selector qq-upload-delete" href="#">Usuń</a>
+                  <span class="qq-upload-status-text-selector qq-upload-status-text"></span>
+                </li>
+            </ul>
+        </div>
+    </script>
+
+
+
+

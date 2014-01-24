@@ -19,8 +19,8 @@ module.exports = class LoginView extends View
         @publishEvent('log:error', 'autologin------')
         #check credentials and set up settings
         #get data from form
-        @user = 'mars'
-        @pass = 'test'
+        @user = 'admin@lutin'
+        @pass = 'admin'
         #@user = 'test'
         #@pass = 'test'
         # -------------------------
@@ -37,8 +37,9 @@ module.exports = class LoginView extends View
             success: =>
                 @publishEvent('log:info', 'login SUCCESS')
                 @model.set({'user_pass':@pass}) # set this manually so we don't send password back and forth
+                @model.set({'company_name':@user.split('@')[1]}) #
                 @model.update_db()
-                $('#first-name-placeholder').text(@model.get('first_name'))
+                $('#first-name-placeholder').text(@model.get('first_name') or @model.get('username'))
                 $('#bon-config-link').attr('href', "/biura/#{@model.get('company_id')}")
                 $('#agent-config-link').attr('href', "/agenci/#{@model.get('id')}")
                 # $('#login').popup('close')

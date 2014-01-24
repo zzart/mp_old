@@ -10,7 +10,11 @@ module.exports = class AddView extends View
         @delegate 'click', "[data-role='navbar'] a", @change_tab
         @delegate 'change', "[name='category']", @rerender_form
         @delegate 'click', "#copy_address", @copy_address
+        @delegate 'add', @add_file
         @rendered_tabs = []
+
+    add_file: =>
+        console.log('add')
 
     change_tab: (e)=>
         e.preventDefault()
@@ -31,6 +35,7 @@ module.exports = class AddView extends View
             @form_name = "#{cat[selected_id]}_form"
             @model.schema = localStorage.getObject("#{cat[selected_id]}_schema")
             @rendered_tabs = []
+            $("#content").empty()
             @render()
             @render_subview()
 
@@ -66,11 +71,11 @@ module.exports = class AddView extends View
         $("[name='internet_street']").val(  $("[name='street']").val())
         $("[name='internet_town']").val(    $("[name='town']").val())
         $("[name='internet_province']").val($("[name='province']").val())
-        $("[name='internet_quarter']").val( $("[name='quarter']").val())
+        $("[name='internet_town_district']").val( $("[name='town_district']").val())
         $("[name='internet_lat']").val(     $("[name='lat']").val())
-        $("[name='internet_lng']").val(     $("[name='lng']").val())
-        $("[name='internet_commune']").val( $("[name='commune']").val())
-        $("[name='internet_district']").val($("[name='district']").val())
+        $("[name='internet_lon']").val(     $("[name='lon']").val())
+        $("[name='internet_borough']").val( $("[name='borough']").val())
+        $("[name='internet_county']").val($("[name='county']").val())
     address_reset: ->
         @publishEvent('log:info', 'address reset')
         $("[name='internet_postcode']").val('')
@@ -81,16 +86,16 @@ module.exports = class AddView extends View
         $("[name='town']").val('')
         $("[name='internet_province']").val('')
         $("[name='province']").val('')
-        $("[name='internet_quarter']").val('')
-        $("[name='quarter']").val('')
+        $("[name='internet_town_district']").val('')
+        $("[name='town_district']").val('')
         $("[name='internet_lat']").val('')
         $("[name='lat']").val('')
-        $("[name='internet_lng']").val('')
-        $("[name='lng']").val('')
-        $("[name='internet_commune']").val('')
-        $("[name='commune']").val('')
-        $("[name='internet_district']").val('')
-        $("[name='district']").val('')
+        $("[name='internet_lon']").val('')
+        $("[name='lon']").val('')
+        $("[name='internet_borough']").val('')
+        $("[name='borough']").val('')
+        $("[name='internet_county']").val('')
+        $("[name='county']").val('')
 
     fill_address: (event) ->
         @publishEvent('log:info', 'fill address event')
@@ -100,18 +105,18 @@ module.exports = class AddView extends View
         $("[name='street']").val(obj.address.road or obj.address.pedestrian)
         $("[name='town']").val(obj.address.city)
         $("[name='province']").val(obj.address.state)
-        $("[name='quarter']").val(obj.address.city_district)
+        $("[name='town_district']").val(obj.address.city_district)
         $("[name='lat']").val(obj.lat)
-        $("[name='lng']").val(obj.lon)
+        $("[name='lon']").val(obj.lon)
         full_name = obj.display_name.split(',')
         for item in full_name
-            console.log('looping', item)
+            # console.log('looping', item)
             if item.indexOf('powiat') > -1
-                district = item
+                county = item
             else if item.indexOf('gmina') > -1
-                commune = item
-        $("[name='commune']").val(commune or '')
-        $("[name='district']").val(district or '')
+                borough = item
+        $("[name='borough']").val(borough or '')
+        $("[name='county']").val(county or '')
         #clean suggested list items
         $ul = $('ul#autocomplete.ui-listview')
         $('ul#autocomplete.ui-listview > li').remove()
@@ -220,39 +225,36 @@ module.exports = class AddView extends View
             marker.moveTo(opx)
             new_position = marker.lonlat.transform(openlayers_projection, projection)
             $("[name='lat']").val(new_position.lat)
-            $("[name='lng']").val(new_position.lon)
+            $("[name='lon']").val(new_position.lon)
 
         #for further referance
         @map = map
         @marker = marker
 
     render: =>
-        #NOTE: because of inheritence - we would've got edit-view EL which contains whole form
-        #insted we want to split it into parts which we can render quickly
-        #save clean el element
-        @$el_clean = @$el.clone()
-        # console.log('-->>el clean:', @$el_clean)
+        #NOTE:
+        #we want to split it into parts which we can render quickly
         super
-        #split form in tabs
-        @tabs = $(@form.el).find('.ui-grid-a')
-        @base = $(@form.el).find('.ui-grid-a').remove()
-        @$el_clean.append(@base)
-        #set el to clean el ... this is because inheritence - we would've got edit-view EL which contains whole form
-        @$el = @$el_clean
-        # console.log('-->>el: ', @el)
+        @get_form()
+        base_template = @form.template()
+        $bt = $(base_template)
+        $bt.find('.ui-grid-a').remove()
+        window.bt = $bt
+        @$el.append($bt)
         @publishEvent('log:info', 'view: edit-view RenderEnd()')
 
     render_subview: (tab_id='tab_1')=>
         #NOTE: this assumes that we don't have more then 9 tabs (value [1] gets only one digit and substracts one for array compatybility) !!
-        id = parseInt(tab_id.split('_')[1])-1
         @publishEvent('log:info', "render sub_view #{tab_id}")
         # console.log('->>', @el, tab_id, id)
-        @subview tab_id, new TabView container: @el, template: @tabs[id], id: tab_id
-        @subview(tab_id).render()
-        if tab_id is 'tab_2'
-            @init_openstreet()
-        #if element in DOM already don't render again .....
         if tab_id not in @rendered_tabs
+            $temp = $(@form.el).find("##{tab_id}")
+            console.log('---> ', @form.el, $temp, tab_id)
+            window.form = @form
+            @subview tab_id, new TabView container: @el, template: $temp, id: tab_id
+            @subview(tab_id).render()
+            if tab_id is 'tab_2'
+                @init_openstreet()
             @publishEvent 'jqm_refersh:render'
             @rendered_tabs.push(tab_id)
 

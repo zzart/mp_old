@@ -1,7 +1,7 @@
 exports.config =
   # See http://brunch.readthedocs.org/en/latest/config.html for documentation.
   # NOTE: WATCH FOR COMMMMMMMMMMMMMMAS !!!!!!!!!!!!!!!!!
-  # NOTE: files inside vendor will be compressed anyway !!!!!!
+  # NOTE: ALL FILES (in vendor dir)ARE COMPRESSED ANYWAY !!!!!!!!!!!!!!
   files:
     javascripts:
       joinTo:
@@ -18,7 +18,7 @@ exports.config =
           'vendor/scripts/jquery-1.10.2.min.js',
           'vendor/scripts/jquery.mobile.setup.js',#!!!
           'vendor/scripts/jquery.mobile-1.4.0.js',
-          'vendor/scripts/queue.min.js',
+          # 'vendor/scripts/queue.min.js',
           'vendor/scripts/async.js',
           #'vendor/scripts/jquery.mobile-1.4.0-rc.1.js',
           #'vendor/scripts/jquery.mobile-1.3.2.min.js',
@@ -26,12 +26,14 @@ exports.config =
           'vendor/scripts/backbone-1.10.js',
           'vendor/scripts/chaplin-0.12.js',
           'vendor/scripts/backbone-forms.js',
+          'vendor/scripts/backbone.bootstrap-modal.js',
+          'vendor/scripts/list.js',
           'vendor/scripts/mp-editors.js',
-          # 'vendor/scripts/default-forms-template.js',
+          'vendor/scripts/default-forms-template.js',
           'vendor/scripts/jquery.tablesorter.min.js',
           'vendor/scripts/hmac-sha256.js',
           'vendor/scripts/enc-base64-min.js'
-          'vendor/scripts/fineuploader-4.2.0-1.js'
+          'vendor/scripts/fineuploader-4.2.1.js'
           'vendor/scripts/OpenLayers.debug.js'
         ]
         after: [
@@ -49,7 +51,7 @@ exports.config =
                 #'vendor/styles/jquery.mobile.structure-1.4.0.min.css',
                 'vendor/styles/jquery.mobile-1.4.0.min.css',
                 #'vendor/styles/jquery.mobile-1.4.0-rc.1.css',
-                'vendor/styles/fineuploader-4.2.0-1.css',
+                'vendor/styles/fineuploader-4.2.1.css',
                 #'vendor/styles/openlayers.css',
                 #'vendor/styles/jqm-icon-pack-fa.css',
                 ]

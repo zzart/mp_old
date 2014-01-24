@@ -1,8 +1,8 @@
 #Controller = require 'controllers/structure-controller'
 Controller = require 'controllers/auth-controller'
 # OfferListView = require 'views/offer-list-view'
-Collection = require 'models/offer-list-collection'
-Model = require 'models/property-model'
+Collection = require 'models/listing-collection'
+Model = require 'models/listing-model'
 AddView = require 'views/listing-add-view'
 mediator =  require 'mediator'
 
