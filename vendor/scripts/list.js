@@ -1,4 +1,4 @@
-;(function(Form) {
+  ;(function(Form) {
 
   /**
    * List editor
@@ -12,11 +12,10 @@
   Form.editors.List = Form.editors.Base.extend({
 
     events: {
-      'click [data-action="add"]': function(event) {
-        console.log('add-----');
-        event.preventDefault();
-        this.addItem(null, true);
-      }
+     // 'click [data-action="add"]': function(event) {
+     //   event.preventDefault();
+     //   this.addItem(null, true);
+     // }
     },
 
     initialize: function(options) {
@@ -27,7 +26,7 @@
       editors.Base.prototype.initialize.call(this, options);
 
       var schema = this.schema;
-      if (!schema) throw new Error("Missing required option 'schema'");
+      if (!schema) throw "Missing required option 'schema'";
 
       this.template = options.template || this.constructor.template;
 
@@ -49,14 +48,30 @@
     },
 
     render: function() {
-      var self = this,
-          value = this.value || [];
-
       //Create main element
       var $el = $($.trim(this.template()));
 
       //Store a reference to the list (item container)
       this.$list = $el.is('[data-items]') ? $el : $el.find('[data-items]');
+
+      //Add existing items
+      this.renderItems();
+
+      this.setElement($el);
+      this.$el.attr('id', this.id);
+      this.$el.attr('name', this.key);
+
+      if (this.hasFocus) this.trigger('blur', this);
+
+      return this;
+    },
+
+    renderItems: function() {
+      var self = this,
+          value = this.value || [];
+
+      // Remove any old items
+      this.$list.empty();
 
       //Add existing items
       if (value.length) {
@@ -69,14 +84,6 @@
       else {
         if (!this.Editor.isAsync) this.addItem();
       }
-
-      this.setElement($el);
-      this.$el.attr('id', this.id);
-      this.$el.attr('name', this.key);
-
-      if (this.hasFocus) this.trigger('blur', this);
-
-      return this;
     },
 
     /**
@@ -115,7 +122,6 @@
         }, self);
 
         item.editor.on('change', function() {
-            console.log('editor change triggered');
           if (!item.addEventTriggered) {
             item.addEventTriggered = true;
             this.trigger('add', this, item.editor);
@@ -194,7 +200,7 @@
 
     setValue: function(value) {
       this.value = value;
-      this.render();
+      this.renderItems();
     },
 
     focus: function() {
@@ -248,11 +254,11 @@
     }
   }, {
 
+        //<button class="ui-btn" data-action="add">Dodaj Plik</button>\
     //STATICS
     template: _.template('\
-      <div>\
-        <div data-items></div>\
-        <button type="button" data-action="add">Add</button>\
+      <div >\
+        <ul data-role="listview" id="resource_list" data-split-icon="delete" data-split-theme="a" data-inset="true" data-items></ul>\
       </div>\
     ', null, Form.templateSettings)
 
@@ -302,16 +308,27 @@
         value: this.value,
         list: this.list,
         item: this,
+	tagName: 'li',
         form: this.form
       }).render();
 
       //Create main element
-      var $el = $($.trim(this.template()));
+      //var $el = $($.trim(this.template()));
 
-      $el.find('[data-editor]').append(this.editor.el);
-
+      //window.el = $el;
+      //window.ee = this.editor.el;
+      //window.template = this.template();
+      //$el.empty();
+      //$(this.editor.el).attr('data-role', 'listview');
+      //$(this.editor.el).attr('data-split-icon', 'gear');
+      //$(this.editor.el).attr('data-inset', 'true');
+      //$el.find('[data-editor]').append(this.editor.el);
+      //$el.append(this.editor.el);
+      //window.ell = $el;
       //Replace the entire element so there isn't a wrapper tag
-      this.setElement($el);
+      //this.setElement($el);
+      this.setElement($(this.editor.el));
+
 
       return this;
     },
@@ -383,11 +400,8 @@
   }, {
 
     //STATICS
+
     template: _.template('\
-      <div>\
-        <span data-editor></span>\
-        <button type="button" data-action="remove">&times;</button>\
-      </div>\
     ', null, Form.templateSettings),
 
     errorClassName: 'error'
@@ -402,7 +416,8 @@
   Form.editors.List.Modal = Form.editors.Base.extend({
 
     events: {
-      'click': 'openEditor'
+      //TODO: set this click more specyfic!!!!!!!!!!!
+     // 'click': 'openEditor'
     },
 
     /**
@@ -419,10 +434,10 @@
       Form.editors.Base.prototype.initialize.call(this, options);
 
       //Dependencies
-      if (!Form.editors.List.Modal.ModalAdapter) throw new Error('A ModalAdapter is required');
+      if (!Form.editors.List.Modal.ModalAdapter) throw 'A ModalAdapter is required';
 
       this.form = options.form;
-      if (!options.form) throw new Error('Missing required option: "form"');
+      if (!options.form) throw 'Missing required option: "form"';
 
       //Template
       this.template = options.template || this.constructor.template;
@@ -480,16 +495,52 @@
 
       //Pretty print the object keys and values
       var parts = [];
+      var file = false;
+      var mimetype = false;
+      var uuid = false;
+
       _.each(this.nestedSchema, function(schema, key) {
         var desc = schema.title ? schema.title : createTitle(key),
             val = value[key];
+console.log(key, val);
 
         if (_.isUndefined(val) || _.isNull(val)) val = '';
 
-        parts.push(desc + ': ' + val);
+        if (key == 'mime_type'){
+             mimetype = val;
+        }
+        if (key == 'uuid'){
+            uuid = val;
+        }
+        if (key == 'thumbnail'){
+             file = val;
+        }
+        else {
+            if (key == 'url' || key == 'filesize' || key== 'order' ){
+                if (key == 'filesize' && val != 0){
+                val = Math.round(parseInt(val)/1028) + 'kB';
+                }
+            parts.push( '<b>' + desc + '</b>: ' + val );
+            }
+        }
       });
 
-      return parts.join('<br />');
+
+var remove_button = "<a data-action='remove' id='"+uuid+"'>Usuń Plik</a>";
+parts.forEach(function(part, i){
+    return parts[i] = "<p>" + part+ "</p>";
+
+})
+//window.file = file;
+var img = new Image();
+img.src = 'data:' + mimetype + ';base64,' + file;
+parts.unshift(img.outerHTML);
+parts.unshift("<a href='#'>");
+parts.push("</a>");
+parts.push(remove_button);
+
+return parts.join(' ');
+      //return parts.join('<br/>');
     },
 
     /**
@@ -593,7 +644,7 @@
   }, {
     //STATICS
     template: _.template('\
-      <div><%= summary %></div>\
+      <%= summary %>\
     ', null, Form.templateSettings),
 
     //The modal adapter that creates and manages the modal dialog.
@@ -612,7 +663,7 @@
 
       var schema = this.schema;
 
-      if (!schema.subSchema) throw new Error('Missing required option "schema.subSchema"');
+      if (!schema.subSchema) throw 'Missing required option "schema.subSchema"';
 
       this.nestedSchema = schema.subSchema;
     }
@@ -625,7 +676,7 @@
 
       var schema = this.schema;
 
-      if (!schema.model) throw new Error('Missing required option "schema.model"');
+      if (!schema.model) throw 'Missing required option "schema.model"';
 
       var nestedSchema = schema.model.prototype.schema;
 
@@ -640,7 +691,7 @@
           value = this.getValue();
 
       if (_.isEmpty(value)) return null;
-
+      //console.log(value);
       //If there's a specified toString use that
       if (schema.itemToString) return schema.itemToString(value);
 

@@ -133,6 +133,7 @@ module.exports = Application = (function(_super) {
   };
 
   Application.prototype.initMediator = function() {
+    var _this = this;
     mediator.models = {};
     mediator.collections = {};
     mediator.schemas = {};
@@ -147,6 +148,15 @@ module.exports = Application = (function(_super) {
         return true;
       }
       return false;
+    };
+    mediator.gen_token = function(url) {
+      var apphash, apphash_hexed, auth_header, header_string, userhash, userhash_hexed;
+      apphash = CryptoJS.HmacSHA256(url, mediator.app_key);
+      apphash_hexed = apphash.toString(CryptoJS.enc.Hex);
+      userhash = CryptoJS.HmacSHA256(url, mediator.models.user.get('user_pass'));
+      userhash_hexed = userhash.toString(CryptoJS.enc.Hex);
+      header_string = "" + mediator.app + "," + apphash_hexed + "," + (mediator.models.user.get('username')) + "@" + (mediator.models.user.get('company_name')) + "," + userhash_hexed;
+      return auth_header = btoa(header_string);
     };
     return mediator.seal();
   };
@@ -181,6 +191,11 @@ module.exports = AgentController = (function(_super) {
   function AgentController() {
     return AgentController.__super__.constructor.apply(this, arguments);
   }
+
+  AgentController.prototype.beforeAction = function(params, route) {
+    AgentController.__super__.beforeAction.apply(this, arguments);
+    return this.publishEvent('tell_user', 'Pracuje ...');
+  };
 
   AgentController.prototype.list = function(params, route, options) {
     var _this = this;
@@ -320,10 +335,9 @@ module.exports = AgentController = (function(_super) {
 });
 
 ;require.register("controllers/auth-controller", function(exports, require, module) {
-var AuthController, StructureController, gen_token, mediator, _sync,
+var AuthController, StructureController, mediator, _sync,
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  _this = this;
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 StructureController = require('controllers/structure-controller');
 
@@ -355,16 +369,6 @@ module.exports = AuthController = (function(_super) {
 
 })(StructureController);
 
-gen_token = function(model, url, password) {
-  var apphash, apphash_hexed, auth_header, header_string, userhash, userhash_hexed;
-  apphash = CryptoJS.HmacSHA256(url, mediator.app_key);
-  apphash_hexed = apphash.toString(CryptoJS.enc.Hex);
-  userhash = CryptoJS.HmacSHA256(url, mediator.models.user.get('user_pass'));
-  userhash_hexed = userhash.toString(CryptoJS.enc.Hex);
-  header_string = "" + mediator.app + "," + apphash_hexed + "," + (mediator.models.user.get('username')) + "@" + (mediator.models.user.get('company_name')) + "," + userhash_hexed;
-  return auth_header = btoa(header_string);
-};
-
 _sync = Backbone.sync;
 
 Backbone.sync = function(method, model, options) {
@@ -383,7 +387,7 @@ Backbone.sync = function(method, model, options) {
       params = $.param(options.data);
       url = "" + url + "?" + params;
     }
-    hash = gen_token(model, url, Chaplin.mediator.models.user.get('user_pass'));
+    hash = Chaplin.mediator.gen_token(url);
     options.beforeSend = function(xhr) {
       return xhr.setRequestHeader('X-Auth-Token', hash);
     };
@@ -1715,13 +1719,13 @@ module.exports = View = (function(_super) {
 
     this.save_action = __bind(this.save_action, this);
 
-    this.onComplete = __bind(this.onComplete, this);
-
-    this.onSubmit = __bind(this.onSubmit, this);
-
     this.init_uploader = __bind(this.init_uploader, this);
 
-    this.picture_add = __bind(this.picture_add, this);
+    this.remove_resources = __bind(this.remove_resources, this);
+
+    this.init_events = __bind(this.init_events, this);
+
+    this.remove_resource = __bind(this.remove_resource, this);
 
     this.initialize = __bind(this.initialize, this);
     return View.__super__.constructor.apply(this, arguments);
@@ -1732,34 +1736,73 @@ module.exports = View = (function(_super) {
     return this.publishEvent('log:info', 'edit vewq');
   };
 
-  View.prototype.picture_add = function(e) {
+  View.prototype.remove_resource = function(e) {
     e.preventDefault();
-    return console.log('adding pic');
+    return console.log('preventing');
+  };
+
+  View.prototype.init_events = function() {
+    this.editor = this.form.fields.resources.editor;
+    return this.editor.on('remove', this.remove_resources);
+  };
+
+  View.prototype.remove_resources = function(listEditor, itemEditor, extra) {
+    return $.ajax({
+      url: "http://localhost:8080/v1/pliki/",
+      beforeSend: function(xhr) {
+        return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token('http://localhost:8080/v1/pliki'));
+      },
+      type: "DELETE",
+      contentType: "application/json",
+      dataType: "json",
+      data: {
+        "file": itemEditor.value.uuid
+      }
+    });
   };
 
   View.prototype.init_uploader = function() {
-    return this.$el.append(upload_template).then(this.uploader = new qq.FineUploader({
-      button: $("#avatar")[0],
-      debug: true,
+    var self;
+    self = this;
+    this.$el.append(upload_template);
+    this.uploader = new qq.FineUploader({
+      element: $("#upload")[0],
       request: {
-        endpoint: 'http://localhost:8080/v1/pliki/dodaj'
+        endpoint: 'http://localhost:8080/v1/pliki',
+        customHeaders: {
+          'X-Auth-Token': mediator.gen_token('http://localhost:8080/v1/pliki')
+        }
       },
       callbacks: {
-        onSubmit: this.onSubmit,
-        onComplete: this.onComplete
+        onSubmit: function(e) {
+          return self.publishEvent('log:info', "download submitted " + e);
+        },
+        onComplete: function(response_code, filename, response, xmlhttprequest) {
+          var current_val, order;
+          self.publishEvent('log:debug', arguments);
+          order = self.form.fields.resources.getValue().length;
+          current_val = {
+            url: response.url,
+            mime_type: response.mime_type,
+            uuid: response.uuid,
+            thumbnail: response.thumbnail,
+            filename: response.filename,
+            filesize: response.filesize,
+            order: order + 1
+          };
+          self.form.fields.resources.editor.addItem(current_val);
+          return self.publishEvent('log:info', "download complete " + arguments);
+        }
       },
       cors: {
         expected: true
+      },
+      validation: {
+        allowedExtensions: ['jpeg', 'jpg', 'png', 'gif', 'bmp'],
+        sizeLimit: 2048000
       }
-    }));
-  };
-
-  View.prototype.onSubmit = function() {
-    return console.log('submit');
-  };
-
-  View.prototype.onComplete = function() {
-    return console.log('compliete');
+    });
+    return window.uploader = this.uploader;
   };
 
   View.prototype.save_action = function() {
@@ -1812,6 +1855,7 @@ module.exports = View = (function(_super) {
 
   View.prototype.attach = function() {
     View.__super__.attach.apply(this, arguments);
+    this.init_events();
     return this.init_uploader();
   };
 
@@ -1872,7 +1916,7 @@ module.exports = LoginView = (function(_super) {
     var apphash, apphash_hexed, auth_header, header_string, userhash, userhash_hexed,
       _this = this;
     this.publishEvent('log:error', 'autologin------');
-    this.user = 'admin@lutin';
+    this.user = 'admin@novum';
     this.pass = 'admin';
     apphash = CryptoJS.HmacSHA256(this.model.url, mediator.app_key);
     apphash_hexed = apphash.toString(CryptoJS.enc.Hex);
@@ -2493,7 +2537,15 @@ module.exports = EditView = (function(_super) {
     this.subscribeEvent('delete:clicked', this.delete_action);
     this.subscribeEvent('save:clicked', this.save_action);
     this.subscribeEvent('save_and_add:clicked', this.save_and_add_action);
-    return this.delegate('click', 'a.form-help', this.form_help);
+    this.delegate('click', 'a.form-help', this.form_help);
+    return this.delegate('DOMSubtreeModified', '#resource_list', this.refresh_resource);
+  };
+
+  EditView.prototype.refresh_resource = function() {
+    var $ul;
+    $ul = $("#resource_list");
+    $ul.listview("refresh");
+    return $ul.trigger("updatelayout");
   };
 
   EditView.prototype.form_help = function(event) {
@@ -2516,6 +2568,7 @@ module.exports = EditView = (function(_super) {
     this.publishEvent('log:info', "form name: " + this.form_name);
     window.model = this.model;
     console.log(this.model.schema);
+    console.log(this.model.schema.type);
     this.form = new Backbone.Form({
       model: this.model,
       template: _.template(localStorage.getObject(this.form_name))
@@ -3058,7 +3111,6 @@ module.exports = Layout = (function(_super) {
     };
     self = this;
     return f1(function() {
-      self.tell_user('Pracuje....');
       $("#content-region").enhanceWithin();
       return f2(function() {
         return self.publishEvent('jqm_finished_rendering');
@@ -5423,7 +5475,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<div id="qq-template">\n        <div class="qq-uploader-selector qq-uploader">\n            <div class="qq-upload-drop-area-selector qq-upload-drop-area" qq-hide-dropzone>\n                <span>Drop files here to upload</span>\n            </div>\n            <div class="qq-upload-button-selector qq-upload-button">\n                <div>Upload a file</div>\n            </div>\n            <span class="qq-drop-processing-selector qq-drop-processing">\n                <span>Processing dropped files...</span>\n                <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>\n            </span>\n            <ul class="qq-upload-list-selector qq-upload-list">\n                <li>\n                  <div class="qq-progress-bar-container-selector">\n                      <div class="qq-progress-bar-selector qq-progress-bar"></div>\n                  </div>\n                  <span class="qq-upload-spinner-selector qq-upload-spinner"></span>\n                  <span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>\n                  <span class="qq-upload-file-selector qq-upload-file"></span>\n                  <input class="qq-edit-filename-selector qq-edit-filename" tabindex="0" type="text">\n                  <span class="qq-upload-size-selector qq-upload-size"></span>\n                  <a class="qq-upload-cancel-selector qq-upload-cancel" href="#">Cancel</a>\n                  <a class="qq-upload-retry-selector qq-upload-retry" href="#">Retry</a>\n                  <a class="qq-upload-delete-selector qq-upload-delete" href="#">Delete</a>\n                  <span class="qq-upload-status-text-selector qq-upload-status-text"></span>\n                </li>\n            </ul>\n        </div>\n</div>\n');
+      __out.push('<script type="text/template" id="qq-template">\n<div class="qq-uploader-selector qq-uploader">\n            <div class="qq-upload-drop-area-selector qq-upload-drop-area" qq-hide-dropzone>\n                <span>Wrzuć pliki na serwer</span>\n            </div>\n            <div class="ui-btn qq-upload-button-selector qq-upload-button">\n                <div>Dodaj pliki</div>\n            </div>\n            <span class="qq-drop-processing-selector qq-drop-processing">\n                <span>Przetwarzam pliki...</span>\n                <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>\n            </span>\n            <ul class="qq-upload-list-selector qq-upload-list" data-role=\'listview\' data-inset=\'true\'>\n\n                <li>\n                  <div class="qq-progress-bar-container-selector">\n                      <div class="qq-progress-bar-selector qq-progress-bar"></div>\n                  </div>\n                  <span class="qq-upload-spinner-selector qq-upload-spinner"></span>\n                    <img class="qq-thumbnail-selector" qq-max-size="100" qq-server-scale>\n                  <span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>\n                  <span class="qq-upload-file-selector qq-upload-file"></span>\n                  <input class="qq-edit-filename-selector qq-edit-filename" tabindex="0" type="text">\n                  <span class="qq-upload-size-selector qq-upload-size"></span>\n                  <a class="qq-upload-cancel-selector qq-upload-cancel" href="#">Zaniechaj</a>\n                  <a class="qq-upload-retry-selector qq-upload-retry" href="#">Spróbuj ponownie</a>\n                  <a class="qq-upload-delete-selector qq-upload-delete" href="#">Usuń</a>\n                  <span class="qq-upload-status-text-selector qq-upload-status-text"></span>\n                </li>\n            </ul>\n</div>\n</script>\n');
     
     }).call(this);
     

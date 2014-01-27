@@ -16,14 +16,14 @@ module.exports = class AuthController extends StructureController
 
 
 #AUTH -----------------------------------------------------------------------
-gen_token = ( model, url, password) =>
-    # console.log('url: ' , url)
-    apphash = CryptoJS.HmacSHA256(url, mediator.app_key)
-    apphash_hexed = apphash.toString(CryptoJS.enc.Hex)
-    userhash = CryptoJS.HmacSHA256(url, mediator.models.user.get('user_pass'))
-    userhash_hexed = userhash.toString(CryptoJS.enc.Hex)
-    header_string = "#{mediator.app},#{apphash_hexed},#{mediator.models.user.get('username')}@#{mediator.models.user.get('company_name')},#{userhash_hexed}"
-    auth_header = btoa(header_string)
+# gen_token = ( model, url, password) =>
+#     # console.log('url: ' , url)
+#     apphash = CryptoJS.HmacSHA256(url, mediator.app_key)
+#     apphash_hexed = apphash.toString(CryptoJS.enc.Hex)
+#     userhash = CryptoJS.HmacSHA256(url, mediator.models.user.get('user_pass'))
+#     userhash_hexed = userhash.toString(CryptoJS.enc.Hex)
+#     header_string = "#{mediator.app},#{apphash_hexed},#{mediator.models.user.get('username')}@#{mediator.models.user.get('company_name')},#{userhash_hexed}"
+#     auth_header = btoa(header_string)
 
 _sync = Backbone.sync
 Backbone.sync = (method, model, options) ->
@@ -48,7 +48,8 @@ Backbone.sync = (method, model, options) ->
             params = $.param(options.data)
             url = "#{url}?#{params}"
         # console.log( url )
-        hash = gen_token(model, url , Chaplin.mediator.models.user.get('user_pass'))
+        # hash = gen_token(model, url , Chaplin.mediator.models.user.get('user_pass'))
+        hash = Chaplin.mediator.gen_token(url)
         options.beforeSend = (xhr) ->
             xhr.setRequestHeader('X-Auth-Token' , hash)
         # console.log('header set',hash, method, model, options)

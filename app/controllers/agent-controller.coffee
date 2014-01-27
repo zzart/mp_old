@@ -6,6 +6,10 @@ Model = require 'models/agent-model'
 mediator = require 'mediator'
 
 module.exports = class AgentController extends Controller
+    beforeAction: (params, route) ->
+        super
+        @publishEvent('tell_user', 'Pracuje ...')
+
     list:(params, route, options) ->
         @publishEvent('log:info', 'in agent list controller')
         # check if collection is already fetched from server
@@ -76,6 +80,7 @@ module.exports = class AgentController extends Controller
                             if mediator.models.user.get('id') is @model.get('id')
                                 @edit_type = 'add'
                             @schema =localStorage.getObject('agent_schema')
+                            #@model.schema = @schema
                             @model.schema = _.clone(@schema)
                             @view = new EditView {form_name:'agent_form', model:@model, can_edit:@can_edit, edit_type:@edit_type,  region:'content'}
                         error: =>

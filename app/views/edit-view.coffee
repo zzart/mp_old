@@ -21,6 +21,12 @@ module.exports = class EditView extends View
         @subscribeEvent('save:clicked', @save_action)
         @subscribeEvent('save_and_add:clicked', @save_and_add_action)
         @delegate 'click', 'a.form-help', @form_help
+        @delegate('DOMSubtreeModified','#resource_list', @refresh_resource )
+
+    refresh_resource: ->
+        $ul = $("#resource_list")
+        $ul.listview "refresh"
+        $ul.trigger "updatelayout"
 
     form_help:(event) =>
         @publishEvent 'tell_user' , event.target.text
@@ -36,8 +42,10 @@ module.exports = class EditView extends View
         @publishEvent('log:info',"form name: #{@form_name}")
         window.model = @model
         console.log(@model.schema)
+        console.log(@model.schema.type)
+        #@form = new Backbone.Form
         @form = new Backbone.Form
-            model: @model
+            model:  @model
             template: _.template(localStorage.getObject(@form_name))
             #templateData:{ }
 
