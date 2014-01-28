@@ -30,17 +30,30 @@ module.exports = class View extends View
     remove_resources:(listEditor, itemEditor, extra) =>
         # fineuploader doesn't support deleting files later then directly after upload
         # so need to do this by hand
+        url = "http://localhost:8080/v1/pliki/#{itemEditor.value.uuid}"
         $.ajax(
-            url:"http://localhost:8080/v1/pliki/"
-            # url:"http://localhost:8080/v1/pliki/#{itemEditor.value.uuid}"
+            url: url
             beforeSend: (xhr) ->
-                xhr.setRequestHeader('X-Auth-Token' , mediator.gen_token('http://localhost:8080/v1/pliki'))
+                xhr.setRequestHeader('X-Auth-Token' , mediator.gen_token(url))
             type: "DELETE"
             contentType: "application/json"
-            dataType: "json"
-            data: {"file": itemEditor.value.uuid}
+            # dataType: "json"
+            # data: {"file": itemEditor.value.uuid}
         )
 
+    init_sortable: =>
+        self = @
+        $("#resource_list").sortable
+            stop: (event, ui) ->
+                key = []
+                sorted = []
+                $(@).children('li').find('p:last').each((i, str)->
+                    # order of uuid will be our key for sorting so lets get the values
+                    key.push(str.innerHTML.replace(/.+\:\s/,''))
+                )
+                to_sort = self.form.fields.resources.getValue()
+                # key.forEach((i, str)
+                console.log(key)
 
     init_uploader: =>
         self = @
@@ -59,23 +72,28 @@ module.exports = class View extends View
                 onSubmit: (e) ->
                     self.publishEvent('log:info', "download submitted #{e}")
 
-                onComplete: (response_code, filename, response, xmlhttprequest) ->
-                    self.publishEvent('log:debug', arguments)
-                    order = self.form.fields.resources.getValue().length
-                    current_val =
-                        url:response.url
-                        mime_type:response.mime_type
-                        uuid:response.uuid
-                        thumbnail:response.thumbnail
-                        filename:response.filename
-                        filesize: response.filesize
-                        order:order + 1
-                    self.form.fields.resources.editor.addItem(current_val)
-                    self.publishEvent('log:info', "download complete #{arguments}")
+                onComplete: (id, filename, response, xmlhttprequest) ->
+                    # self.publishEvent('log:debug', arguments)
+                    if response.success is true
+                        order = self.form.fields.resources.getValue().length
+                        current_val =
+                            # url:response.url
+                            mime_type:response.mime_type
+                            uuid:response.uuid
+                            thumbnail:response.thumbnail
+                            filename:response.filename
+                            size: response.size
+                            order:order + 1
+                        self.form.fields.resources.editor.addItem(current_val)
+                        self.publishEvent('log:info', "download complete #{arguments}")
+                    else
+                        self.publishEvent('log:info', "download failed #{arguments}")
+                        self.publishEvent('tell_user', "Plik nie został pomyślnie przesłany na serwer ")
+
             cors: # ALL requests are expected to be cross-domain requests
                 expected: true
             validation:
-                allowedExtensions: ['jpeg', 'jpg', 'png', 'gif', 'bmp']
+                # allowedExtensions: ['jpeg', 'jpg', 'png', 'gif', 'bmp', 'doc', 'odt', 'docx', 'pdf', 'txt', 'xml', 'csv', ]
                 sizeLimit: 2048000 #  2000 kB = 2000 * 1024 bytes
                 # deleteFile:
                 #     enabled: true
@@ -119,3 +137,4 @@ module.exports = class View extends View
         super
         @init_events()
         @init_uploader()
+        @init_sortable()

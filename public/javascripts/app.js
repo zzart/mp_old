@@ -1721,6 +1721,8 @@ module.exports = View = (function(_super) {
 
     this.init_uploader = __bind(this.init_uploader, this);
 
+    this.init_sortable = __bind(this.init_sortable, this);
+
     this.remove_resources = __bind(this.remove_resources, this);
 
     this.init_events = __bind(this.init_events, this);
@@ -1747,16 +1749,31 @@ module.exports = View = (function(_super) {
   };
 
   View.prototype.remove_resources = function(listEditor, itemEditor, extra) {
+    var url;
+    url = "http://localhost:8080/v1/pliki/" + itemEditor.value.uuid;
     return $.ajax({
-      url: "http://localhost:8080/v1/pliki/",
+      url: url,
       beforeSend: function(xhr) {
-        return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token('http://localhost:8080/v1/pliki'));
+        return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token(url));
       },
       type: "DELETE",
-      contentType: "application/json",
-      dataType: "json",
-      data: {
-        "file": itemEditor.value.uuid
+      contentType: "application/json"
+    });
+  };
+
+  View.prototype.init_sortable = function() {
+    var self;
+    self = this;
+    return $("#resource_list").sortable({
+      stop: function(event, ui) {
+        var key, sorted, to_sort;
+        key = [];
+        sorted = [];
+        $(this).children('li').find('p:last').each(function(i, str) {
+          return key.push(str.innerHTML.replace(/.+\:\s/, ''));
+        });
+        to_sort = self.form.fields.resources.getValue();
+        return console.log(key);
       }
     });
   };
@@ -1777,28 +1794,30 @@ module.exports = View = (function(_super) {
         onSubmit: function(e) {
           return self.publishEvent('log:info', "download submitted " + e);
         },
-        onComplete: function(response_code, filename, response, xmlhttprequest) {
+        onComplete: function(id, filename, response, xmlhttprequest) {
           var current_val, order;
-          self.publishEvent('log:debug', arguments);
-          order = self.form.fields.resources.getValue().length;
-          current_val = {
-            url: response.url,
-            mime_type: response.mime_type,
-            uuid: response.uuid,
-            thumbnail: response.thumbnail,
-            filename: response.filename,
-            filesize: response.filesize,
-            order: order + 1
-          };
-          self.form.fields.resources.editor.addItem(current_val);
-          return self.publishEvent('log:info', "download complete " + arguments);
+          if (response.success === true) {
+            order = self.form.fields.resources.getValue().length;
+            current_val = {
+              mime_type: response.mime_type,
+              uuid: response.uuid,
+              thumbnail: response.thumbnail,
+              filename: response.filename,
+              size: response.size,
+              order: order + 1
+            };
+            self.form.fields.resources.editor.addItem(current_val);
+            return self.publishEvent('log:info', "download complete " + arguments);
+          } else {
+            self.publishEvent('log:info', "download failed " + arguments);
+            return self.publishEvent('tell_user', "Plik nie został pomyślnie przesłany na serwer ");
+          }
         }
       },
       cors: {
         expected: true
       },
       validation: {
-        allowedExtensions: ['jpeg', 'jpg', 'png', 'gif', 'bmp'],
         sizeLimit: 2048000
       }
     });
@@ -1856,7 +1875,8 @@ module.exports = View = (function(_super) {
   View.prototype.attach = function() {
     View.__super__.attach.apply(this, arguments);
     this.init_events();
-    return this.init_uploader();
+    this.init_uploader();
+    return this.init_sortable();
   };
 
   return View;

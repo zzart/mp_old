@@ -502,7 +502,7 @@
       _.each(this.nestedSchema, function(schema, key) {
         var desc = schema.title ? schema.title : createTitle(key),
             val = value[key];
-console.log(key, val);
+//console.log(key, val);
 
         if (_.isUndefined(val) || _.isNull(val)) val = '';
 
@@ -516,8 +516,8 @@ console.log(key, val);
              file = val;
         }
         else {
-            if (key == 'url' || key == 'filesize' || key== 'order' ){
-                if (key == 'filesize' && val != 0){
+            if (key == 'uuid' || key == 'size' || key== 'order' ){
+                if (key == 'size' && val != 0){
                 val = Math.round(parseInt(val)/1028) + 'kB';
                 }
             parts.push( '<b>' + desc + '</b>: ' + val );
