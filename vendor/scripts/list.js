@@ -176,8 +176,11 @@
       var confirmMsg = this.schema.confirmDelete;
       if (confirmMsg && !confirm(confirmMsg)) return;
 
+      //var index = index; // _.indexOf(this.items, item);
       var index = _.indexOf(this.items, item);
+      //console.log(index, this.items);
 
+      //this.items[0].remove();
       this.items[index].remove();
       this.items.splice(index, 1);
 
@@ -259,6 +262,7 @@
     template: _.template('\
       <div >\
         <ul data-role="listview" id="resource_list" data-split-icon="delete" data-split-theme="a" data-inset="true" data-items></ul>\
+        <div data-role="popup" id="resource_preview" data-overlay-theme="b" data-theme="b" data-corners="false">Replace me</div>\
       </div>\
     ', null, Form.templateSettings)
 
@@ -498,6 +502,7 @@
       var file = false;
       var mimetype = false;
       var uuid = false;
+      var preview = false;
 
       _.each(this.nestedSchema, function(schema, key) {
         var desc = schema.title ? schema.title : createTitle(key),
@@ -516,7 +521,7 @@
              file = val;
         }
         else {
-            if (key == 'uuid' || key == 'size' || key== 'order' ){
+            if (key == 'filename' ||key == 'uuid' || key == 'size' ){
                 if (key == 'size' && val != 0){
                 val = Math.round(parseInt(val)/1028) + 'kB';
                 }
@@ -532,10 +537,18 @@ parts.forEach(function(part, i){
 
 })
 //window.file = file;
-var img = new Image();
-img.src = 'data:' + mimetype + ';base64,' + file;
+//console.log('-->', typeof(file) , file);
+    var img = new Image();
+if (_.isBoolean(file) || _.isEmpty(file)){
+    //meaning false...., sometimes we get empty string ?
+    img.src = "images/file.png";
+}
+else{
+    img.src = 'data:' + mimetype + ';base64,' + file;
+    preview = true;
+}
 parts.unshift(img.outerHTML);
-parts.unshift("<a href='#'>");
+parts.unshift("<a href='#resource_preview' data-rel='popup' data-position-to='window'>");
 parts.push("</a>");
 parts.push(remove_button);
 

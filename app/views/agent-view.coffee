@@ -7,11 +7,14 @@ module.exports = class View extends View
         @publishEvent('log:info', 'edit vewq' )
         # @delegate('click','#avatar', @picture_add )
         #@delegate('click',"#upload", @remove_resource )
-        #@delegate('click',"#uploader_button", @remove_resource )
+        @delegate('click',"[name='resources'] li a:first-child", @resource_preview )
 
-    remove_resource:(e)=>
+    resource_preview:(e)=>
         e.preventDefault()
-        console.log('preventing')
+        console.log('preventing', e)
+        img = new Image()
+        img.src = 'images/file.png'
+        $('#resource_preview').html(img.innerHTML).popup('open')
 
     init_events: =>
         @editor = @form.fields.resources.editor
@@ -30,13 +33,26 @@ module.exports = class View extends View
     remove_resources:(listEditor, itemEditor, extra) =>
         # fineuploader doesn't support deleting files later then directly after upload
         # so need to do this by hand
+        self = @
         url = "http://localhost:8080/v1/pliki/#{itemEditor.value.uuid}"
         $.ajax(
             url: url
             beforeSend: (xhr) ->
                 xhr.setRequestHeader('X-Auth-Token' , mediator.gen_token(url))
             type: "DELETE"
-            contentType: "application/json"
+            success: (data, textStatus, jqXHR ) =>
+                #lets delete this item from editor
+                console.log('success', data, textStatus, jqXHR)
+                items = self.form.fields.resources.getValue()
+                new_items = []
+                console.log('all itmes:', items, '  removing ' , itemEditor.value.uuid)
+                for i in items
+                    if i.uuid is itemEditor.value.uuid
+                        self.form.fields.resources.editor.removeItem(i, items.indexOf(i))
+                        console.log('removed:', i, items.indexOf(i))
+            error: (jqXHR, textStatus, errorThrown) ->
+                self.publishEvent("tell_user", errorThrown)
+            #contentType: "application/json"
             # dataType: "json"
             # data: {"file": itemEditor.value.uuid}
         )
@@ -47,13 +63,17 @@ module.exports = class View extends View
             stop: (event, ui) ->
                 key = []
                 sorted = []
+                pattern = /.+\:\s/ #for better performance storing regx in variable
                 $(@).children('li').find('p:last').each((i, str)->
                     # order of uuid will be our key for sorting so lets get the values
-                    key.push(str.innerHTML.replace(/.+\:\s/,''))
+                    key.push(str.innerHTML.replace(pattern,''))
                 )
                 to_sort = self.form.fields.resources.getValue()
-                # key.forEach((i, str)
-                console.log(key)
+                if to_sort.length > 0
+                    for i in to_sort
+                        order = key.indexOf(i.uuid) + 1 #order doesn't have 0
+                        i.order = order
+                    console.log('getValue', self.form.fields.resources.getValue())
 
     init_uploader: =>
         self = @
@@ -93,7 +113,9 @@ module.exports = class View extends View
             cors: # ALL requests are expected to be cross-domain requests
                 expected: true
             validation:
+                # TODO: this in config
                 # allowedExtensions: ['jpeg', 'jpg', 'png', 'gif', 'bmp', 'doc', 'odt', 'docx', 'pdf', 'txt', 'xml', 'csv', ]
+                # TODO: this in config ? or price up ?
                 sizeLimit: 2048000 #  2000 kB = 2000 * 1024 bytes
                 # deleteFile:
                 #     enabled: true

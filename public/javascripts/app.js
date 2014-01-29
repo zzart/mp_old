@@ -1727,7 +1727,7 @@ module.exports = View = (function(_super) {
 
     this.init_events = __bind(this.init_events, this);
 
-    this.remove_resource = __bind(this.remove_resource, this);
+    this.resource_preview = __bind(this.resource_preview, this);
 
     this.initialize = __bind(this.initialize, this);
     return View.__super__.constructor.apply(this, arguments);
@@ -1735,12 +1735,17 @@ module.exports = View = (function(_super) {
 
   View.prototype.initialize = function(options) {
     View.__super__.initialize.apply(this, arguments);
-    return this.publishEvent('log:info', 'edit vewq');
+    this.publishEvent('log:info', 'edit vewq');
+    return this.delegate('click', "[name='resources'] li a:first-child", this.resource_preview);
   };
 
-  View.prototype.remove_resource = function(e) {
+  View.prototype.resource_preview = function(e) {
+    var img;
     e.preventDefault();
-    return console.log('preventing');
+    console.log('preventing', e);
+    img = new Image();
+    img.src = 'images/file.png';
+    return $('#resource_preview').html(img.innerHTML).popup('open');
   };
 
   View.prototype.init_events = function() {
@@ -1749,7 +1754,9 @@ module.exports = View = (function(_super) {
   };
 
   View.prototype.remove_resources = function(listEditor, itemEditor, extra) {
-    var url;
+    var self, url,
+      _this = this;
+    self = this;
     url = "http://localhost:8080/v1/pliki/" + itemEditor.value.uuid;
     return $.ajax({
       url: url,
@@ -1757,7 +1764,27 @@ module.exports = View = (function(_super) {
         return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token(url));
       },
       type: "DELETE",
-      contentType: "application/json"
+      success: function(data, textStatus, jqXHR) {
+        var i, items, new_items, _i, _len, _results;
+        console.log('success', data, textStatus, jqXHR);
+        items = self.form.fields.resources.getValue();
+        new_items = [];
+        console.log('all itmes:', items, '  removing ', itemEditor.value.uuid);
+        _results = [];
+        for (_i = 0, _len = items.length; _i < _len; _i++) {
+          i = items[_i];
+          if (i.uuid === itemEditor.value.uuid) {
+            self.form.fields.resources.editor.removeItem(i, items.indexOf(i));
+            _results.push(console.log('removed:', i, items.indexOf(i)));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        return self.publishEvent("tell_user", errorThrown);
+      }
     });
   };
 
@@ -1766,14 +1793,22 @@ module.exports = View = (function(_super) {
     self = this;
     return $("#resource_list").sortable({
       stop: function(event, ui) {
-        var key, sorted, to_sort;
+        var i, key, order, pattern, sorted, to_sort, _i, _len;
         key = [];
         sorted = [];
+        pattern = /.+\:\s/;
         $(this).children('li').find('p:last').each(function(i, str) {
-          return key.push(str.innerHTML.replace(/.+\:\s/, ''));
+          return key.push(str.innerHTML.replace(pattern, ''));
         });
         to_sort = self.form.fields.resources.getValue();
-        return console.log(key);
+        if (to_sort.length > 0) {
+          for (_i = 0, _len = to_sort.length; _i < _len; _i++) {
+            i = to_sort[_i];
+            order = key.indexOf(i.uuid) + 1;
+            i.order = order;
+          }
+          return console.log('getValue', self.form.fields.resources.getValue());
+        }
       }
     });
   };
