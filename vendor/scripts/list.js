@@ -525,7 +525,7 @@
                 if (key == 'size' && val != 0){
                 val = Math.round(parseInt(val)/1028) + 'kB';
                 }
-            parts.push( '<b>' + desc + '</b>: ' + val );
+            parts.push( '' + desc + ': ' + val );
             }
         }
       });
@@ -533,7 +533,8 @@
 
 var remove_button = "<a data-action='remove' id='"+uuid+"'>Usuń Plik</a>";
 parts.forEach(function(part, i){
-    return parts[i] = "<p>" + part+ "</p>";
+    return parts[i] = "" + part+ "<br>";
+    //return parts[i] = "<p>" + part+ "</p>";
 
 })
 //window.file = file;
@@ -548,7 +549,7 @@ else{
     preview = true;
 }
 parts.unshift(img.outerHTML);
-parts.unshift("<a href='#resource_preview' data-rel='popup' data-position-to='window'>");
+parts.unshift("<a href='#resource_preview' data-rel='popup' data-position-to='window' id="+uuid+" data-preview="+preview+">");
 parts.push("</a>");
 parts.push(remove_button);
 

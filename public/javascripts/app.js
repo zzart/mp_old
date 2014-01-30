@@ -803,6 +803,39 @@ module.exports = HomeController = (function(_super) {
 
 });
 
+;require.register("controllers/iframe-controller", function(exports, require, module) {
+var Controller, IFrameController, View, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Controller = require('controllers/auth-controller');
+
+View = require('views/iframe-view');
+
+mediator = require('mediator');
+
+module.exports = IFrameController = (function(_super) {
+
+  __extends(IFrameController, _super);
+
+  function IFrameController() {
+    return IFrameController.__super__.constructor.apply(this, arguments);
+  }
+
+  IFrameController.prototype.show = function(params) {
+    this.publishEvent('log:info', 'controller:home');
+    return this.view = new View({
+      region: 'content',
+      template: params.template
+    });
+  };
+
+  return IFrameController;
+
+})(Controller);
+
+});
+
 ;require.register("controllers/listing-controller", function(exports, require, module) {
 var AddView, Collection, Controller, ListingController, Model, mediator,
   __hasProp = {}.hasOwnProperty,
@@ -1657,7 +1690,8 @@ module.exports = function(match) {
   match('agenci/:id', 'agent#show');
   match('oferty/dodaj', 'listing#add');
   match('oferty', 'listing#list');
-  return match('oferty/:id', 'listing#show');
+  match('oferty/:id', 'listing#show');
+  return match('iframe/:template', 'iframe#show');
 };
 
 });
@@ -1697,14 +1731,12 @@ module.exports = ListView = (function(_super) {
 });
 
 ;require.register("views/agent-view", function(exports, require, module) {
-var View, mediator, upload_template,
+var View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 View = require('views/edit-view');
-
-upload_template = require('views/templates/upload');
 
 mediator = require('mediator');
 
@@ -1719,144 +1751,13 @@ module.exports = View = (function(_super) {
 
     this.save_action = __bind(this.save_action, this);
 
-    this.init_uploader = __bind(this.init_uploader, this);
-
-    this.init_sortable = __bind(this.init_sortable, this);
-
-    this.remove_resources = __bind(this.remove_resources, this);
-
-    this.init_events = __bind(this.init_events, this);
-
-    this.resource_preview = __bind(this.resource_preview, this);
-
     this.initialize = __bind(this.initialize, this);
     return View.__super__.constructor.apply(this, arguments);
   }
 
   View.prototype.initialize = function(options) {
     View.__super__.initialize.apply(this, arguments);
-    this.publishEvent('log:info', 'edit vewq');
-    return this.delegate('click', "[name='resources'] li a:first-child", this.resource_preview);
-  };
-
-  View.prototype.resource_preview = function(e) {
-    var img;
-    e.preventDefault();
-    console.log('preventing', e);
-    img = new Image();
-    img.src = 'images/file.png';
-    return $('#resource_preview').html(img.innerHTML).popup('open');
-  };
-
-  View.prototype.init_events = function() {
-    this.editor = this.form.fields.resources.editor;
-    return this.editor.on('remove', this.remove_resources);
-  };
-
-  View.prototype.remove_resources = function(listEditor, itemEditor, extra) {
-    var self, url,
-      _this = this;
-    self = this;
-    url = "http://localhost:8080/v1/pliki/" + itemEditor.value.uuid;
-    return $.ajax({
-      url: url,
-      beforeSend: function(xhr) {
-        return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token(url));
-      },
-      type: "DELETE",
-      success: function(data, textStatus, jqXHR) {
-        var i, items, new_items, _i, _len, _results;
-        console.log('success', data, textStatus, jqXHR);
-        items = self.form.fields.resources.getValue();
-        new_items = [];
-        console.log('all itmes:', items, '  removing ', itemEditor.value.uuid);
-        _results = [];
-        for (_i = 0, _len = items.length; _i < _len; _i++) {
-          i = items[_i];
-          if (i.uuid === itemEditor.value.uuid) {
-            self.form.fields.resources.editor.removeItem(i, items.indexOf(i));
-            _results.push(console.log('removed:', i, items.indexOf(i)));
-          } else {
-            _results.push(void 0);
-          }
-        }
-        return _results;
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-        return self.publishEvent("tell_user", errorThrown);
-      }
-    });
-  };
-
-  View.prototype.init_sortable = function() {
-    var self;
-    self = this;
-    return $("#resource_list").sortable({
-      stop: function(event, ui) {
-        var i, key, order, pattern, sorted, to_sort, _i, _len;
-        key = [];
-        sorted = [];
-        pattern = /.+\:\s/;
-        $(this).children('li').find('p:last').each(function(i, str) {
-          return key.push(str.innerHTML.replace(pattern, ''));
-        });
-        to_sort = self.form.fields.resources.getValue();
-        if (to_sort.length > 0) {
-          for (_i = 0, _len = to_sort.length; _i < _len; _i++) {
-            i = to_sort[_i];
-            order = key.indexOf(i.uuid) + 1;
-            i.order = order;
-          }
-          return console.log('getValue', self.form.fields.resources.getValue());
-        }
-      }
-    });
-  };
-
-  View.prototype.init_uploader = function() {
-    var self;
-    self = this;
-    this.$el.append(upload_template);
-    this.uploader = new qq.FineUploader({
-      element: $("#upload")[0],
-      request: {
-        endpoint: 'http://localhost:8080/v1/pliki',
-        customHeaders: {
-          'X-Auth-Token': mediator.gen_token('http://localhost:8080/v1/pliki')
-        }
-      },
-      callbacks: {
-        onSubmit: function(e) {
-          return self.publishEvent('log:info', "download submitted " + e);
-        },
-        onComplete: function(id, filename, response, xmlhttprequest) {
-          var current_val, order;
-          if (response.success === true) {
-            order = self.form.fields.resources.getValue().length;
-            current_val = {
-              mime_type: response.mime_type,
-              uuid: response.uuid,
-              thumbnail: response.thumbnail,
-              filename: response.filename,
-              size: response.size,
-              order: order + 1
-            };
-            self.form.fields.resources.editor.addItem(current_val);
-            return self.publishEvent('log:info', "download complete " + arguments);
-          } else {
-            self.publishEvent('log:info', "download failed " + arguments);
-            return self.publishEvent('tell_user', "Plik nie został pomyślnie przesłany na serwer ");
-          }
-        }
-      },
-      cors: {
-        expected: true
-      },
-      validation: {
-        sizeLimit: 2048000
-      }
-    });
-    return window.uploader = this.uploader;
+    return this.publishEvent('log:info', 'edit vewq');
   };
 
   View.prototype.save_action = function() {
@@ -1908,10 +1809,7 @@ module.exports = View = (function(_super) {
   };
 
   View.prototype.attach = function() {
-    View.__super__.attach.apply(this, arguments);
-    this.init_events();
-    this.init_uploader();
-    return this.init_sortable();
+    return View.__super__.attach.apply(this, arguments);
   };
 
   return View;
@@ -2532,7 +2430,7 @@ module.exports = ConfirmView = (function(_super) {
 });
 
 ;require.register("views/edit-view", function(exports, require, module) {
-var EditView, View, mediator,
+var EditView, View, mediator, upload_template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2540,6 +2438,8 @@ var EditView, View, mediator,
 View = require('views/base/view');
 
 mediator = require('mediator');
+
+upload_template = require('views/templates/upload');
 
 module.exports = EditView = (function(_super) {
 
@@ -2561,6 +2461,20 @@ module.exports = EditView = (function(_super) {
     this.delete_action = __bind(this.delete_action, this);
 
     this.form_help = __bind(this.form_help, this);
+
+    this.init_uploader = __bind(this.init_uploader, this);
+
+    this.init_sortable = __bind(this.init_sortable, this);
+
+    this.remove_resources = __bind(this.remove_resources, this);
+
+    this.refresh_resource = __bind(this.refresh_resource, this);
+
+    this.init_events = __bind(this.init_events, this);
+
+    this.resource_preview = __bind(this.resource_preview, this);
+
+    this.popup_position = __bind(this.popup_position, this);
 
     this.initialize = __bind(this.initialize, this);
     return EditView.__super__.constructor.apply(this, arguments);
@@ -2590,17 +2504,159 @@ module.exports = EditView = (function(_super) {
     this.delete_only = (_ref1 = this.params.delete_only) != null ? _ref1 : false;
     this.publishEvent('log:debug', "form_name:" + this.form_name + ", can_edit:" + this.can_edit + ", listing_type:" + this.listing_type + ", delete_only:" + this.delete_only + " ");
     this.subscribeEvent('delete:clicked', this.delete_action);
+    this.subscribeEvent('popupbeforeposition', this.popup_position);
     this.subscribeEvent('save:clicked', this.save_action);
     this.subscribeEvent('save_and_add:clicked', this.save_and_add_action);
     this.delegate('click', 'a.form-help', this.form_help);
-    return this.delegate('DOMSubtreeModified', '#resource_list', this.refresh_resource);
+    this.delegate('click', '[data-role=\'navbar\']:first li', this.refresh_resource);
+    return this.delegate('click', "[name='resources'] li a:first-child", this.resource_preview);
+  };
+
+  EditView.prototype.popup_position = function() {
+    return console.log('popup position fired');
+  };
+
+  EditView.prototype.resource_preview = function(e) {
+    var button, element, img, preview, save_button, uuid;
+    e.preventDefault();
+    uuid = e.target.id;
+    preview = e.target.dataset.preview;
+    this.publishEvent("log:info", "" + uuid + "," + preview + ", " + e);
+    img = new Image();
+    if (preview === "true") {
+      img.src = "http://localhost:8080/v1/pliki/" + uuid + "/" + (mediator.models.user.get('company_name'));
+    } else {
+      img.src = "images/file.png";
+    }
+    button = "<a href='#' data-rel='back' class='ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right'>Zamknij</a>";
+    save_button = "<a href='http://localhost:8080/v1/pliki/" + uuid + "/" + (mediator.models.user.get('company_name')) + "?download=true' class='ui-btn ui-btn-inline'>Zapisz na dysku</a>";
+    element = "" + button + img.outerHTML + "<br />" + save_button;
+    return setTimeout(function() {
+      return $('#resource_preview').html(element).popup('open');
+    }, 1000);
+  };
+
+  EditView.prototype.init_events = function() {
+    this.editor = this.form.fields.resources.editor;
+    this.editor.on('remove', this.remove_resources);
+    return this.editor.on('add', this.refresh_resource);
   };
 
   EditView.prototype.refresh_resource = function() {
-    var $ul;
+    var $li, $ul;
+    this.publishEvent("log:debug", "refresh_resource");
     $ul = $("#resource_list");
-    $ul.listview("refresh");
-    return $ul.trigger("updatelayout");
+    $li = $("#resource_list li");
+    this.publishEvent("log:debug", "marked: " + $ul + $li);
+    try {
+      $ul.listview("refresh");
+      return $ul.trigger("updatelayout");
+    } catch (error) {
+      return this.publishEvent("log:warn", error);
+    }
+  };
+
+  EditView.prototype.remove_resources = function(listEditor, itemEditor, extra) {
+    var self, url,
+      _this = this;
+    self = this;
+    url = "http://localhost:8080/v1/pliki/" + itemEditor.value.uuid;
+    return $.ajax({
+      url: url,
+      beforeSend: function(xhr) {
+        return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token(url));
+      },
+      type: "DELETE",
+      success: function(data, textStatus, jqXHR) {
+        var i, items, new_items, _i, _len, _results;
+        items = self.form.fields.resources.getValue();
+        new_items = [];
+        _results = [];
+        for (_i = 0, _len = items.length; _i < _len; _i++) {
+          i = items[_i];
+          if (i.uuid === itemEditor.value.uuid) {
+            _results.push(self.form.fields.resources.editor.removeItem(i, items.indexOf(i)));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        return self.publishEvent("tell_user", errorThrown);
+      }
+    });
+  };
+
+  EditView.prototype.init_sortable = function() {
+    var self;
+    self = this;
+    return $("#resource_list").sortable({
+      stop: function(event, ui) {
+        var i, key, order, pattern, sorted, to_sort, _i, _len, _results;
+        key = [];
+        sorted = [];
+        pattern = /.+\:\s/;
+        $(this).children('li').find('p:last').each(function(i, str) {
+          return key.push(str.innerHTML.replace(pattern, ''));
+        });
+        to_sort = self.form.fields.resources.getValue();
+        if (to_sort.length > 0) {
+          _results = [];
+          for (_i = 0, _len = to_sort.length; _i < _len; _i++) {
+            i = to_sort[_i];
+            order = key.indexOf(i.uuid) + 1;
+            _results.push(i.order = order);
+          }
+          return _results;
+        }
+      }
+    });
+  };
+
+  EditView.prototype.init_uploader = function() {
+    var self;
+    self = this;
+    this.$el.append(upload_template);
+    return this.uploader = new qq.FineUploader({
+      element: $("#upload")[0],
+      request: {
+        endpoint: 'http://localhost:8080/v1/pliki',
+        customHeaders: {
+          'X-Auth-Token': mediator.gen_token('http://localhost:8080/v1/pliki')
+        }
+      },
+      callbacks: {
+        onSubmit: function(e) {
+          return self.publishEvent('log:info', "download submitted " + e);
+        },
+        onComplete: function(id, filename, response, xmlhttprequest) {
+          var current_val, order;
+          if (response.success === true) {
+            order = self.form.fields.resources.getValue().length;
+            current_val = {
+              mime_type: response.mime_type,
+              uuid: response.uuid,
+              thumbnail: response.thumbnail,
+              filename: response.filename,
+              size: response.size,
+              order: order + 1
+            };
+            self.form.fields.resources.editor.addItem(current_val, true);
+            return self.publishEvent('log:info', "download complete " + arguments);
+          } else {
+            self.publishEvent('log:info', "download failed " + arguments);
+            return self.publishEvent('tell_user', "Plik nie został pomyślnie przesłany na serwer ");
+          }
+        }
+      },
+      cors: {
+        expected: true
+      },
+      validation: {
+        sizeLimit: 2048000
+      }
+    });
   };
 
   EditView.prototype.form_help = function(event) {
@@ -2622,8 +2678,6 @@ module.exports = EditView = (function(_super) {
   EditView.prototype.get_form = function() {
     this.publishEvent('log:info', "form name: " + this.form_name);
     window.model = this.model;
-    console.log(this.model.schema);
-    console.log(this.model.schema.type);
     this.form = new Backbone.Form({
       model: this.model,
       template: _.template(localStorage.getObject(this.form_name))
@@ -2642,7 +2696,6 @@ module.exports = EditView = (function(_super) {
     if (!this.form_name.match('rent|sell')) {
       this.get_form();
       this.$el.append(this.form.el);
-      console.log(this.$el, this.form.el, this.template, this.form_name);
       return this.publishEvent('log:info', 'view: edit-view RenderEnd()');
     }
   };
@@ -2651,8 +2704,13 @@ module.exports = EditView = (function(_super) {
     var _ref;
     EditView.__super__.attach.apply(this, arguments);
     this.publishEvent('log:info', 'view: edit-view afterRender()');
-    this.publishEvent('jqm_refersh:render');
-    return this.publishEvent('disable_buttons', (_ref = this.can_edit) != null ? _ref : False, this.edit_type, this.delete_only);
+    this.publishEvent('disable_buttons', (_ref = this.can_edit) != null ? _ref : False, this.edit_type, this.delete_only);
+    if (_.isObject(this.model.schema.resources)) {
+      this.init_events();
+      this.init_uploader();
+      this.init_sortable();
+    }
+    return this.publishEvent('jqm_refersh:render');
   };
 
   return EditView;
@@ -2927,6 +2985,85 @@ module.exports = HomePageView = (function(_super) {
 
 });
 
+;require.register("views/iframe-view", function(exports, require, module) {
+var IFrameView, View, template,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+template = require('views/templates/iframe');
+
+View = require('views/base/view');
+
+module.exports = IFrameView = (function(_super) {
+
+  __extends(IFrameView, _super);
+
+  function IFrameView() {
+    this.attach = __bind(this.attach, this);
+
+    this.getTemplateData = __bind(this.getTemplateData, this);
+    return IFrameView.__super__.constructor.apply(this, arguments);
+  }
+
+  IFrameView.prototype.autoRender = true;
+
+  IFrameView.prototype.containerMethod = "html";
+
+  IFrameView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  IFrameView.prototype.id = 'content';
+
+  IFrameView.prototype.template = template;
+
+  IFrameView.prototype.className = 'ui-content';
+
+  IFrameView.prototype.initialize = function(options) {
+    var dic;
+    dic = {
+      geodz: {
+        url: 'http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot',
+        title: ''
+      },
+      kw: {
+        url: 'http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html',
+        title: 'Księgi wieczyste '
+      },
+      geo: {
+        url: 'http://maps.geoportal.gov.pl/webclient/',
+        title: ''
+      },
+      calendar: {
+        url: 'https://www.google.com/calendar',
+        title: ''
+      }
+    };
+    this.url = dic[options.template]['url'];
+    return this.title = dic[options.template]['title'];
+  };
+
+  IFrameView.prototype.getTemplateData = function() {
+    return {
+      title: this.title,
+      url: this.url,
+      width: $(document.body).width(),
+      height: $(document.body).height()
+    };
+  };
+
+  IFrameView.prototype.attach = function() {
+    IFrameView.__super__.attach.apply(this, arguments);
+    return this.publishEvent('log:info', 'IFrameView: attach()');
+  };
+
+  return IFrameView;
+
+})(View);
+
+});
+
 ;require.register("views/info-view", function(exports, require, module) {
 var InfoView, View, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -3158,13 +3295,13 @@ module.exports = Layout = (function(_super) {
 
   Layout.prototype.jqm_refersh = function() {
     var f1, f2, self;
+    self = this;
     f1 = function(callback) {
       return callback();
     };
     f2 = function(callback) {
       return callback();
     };
-    self = this;
     return f1(function() {
       $("#content-region").enhanceWithin();
       return f2(function() {
@@ -5110,6 +5247,73 @@ module.exports = function (__obj) {
 }
 });
 
+;require.register("views/templates/iframe", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+    
+      __out.push('<h4>');
+    
+      __out.push(__sanitize(this.title));
+    
+      __out.push('</h4>\n<iframe src="');
+    
+      __out.push(__sanitize(this.url));
+    
+      __out.push('" width=\'');
+    
+      __out.push(__sanitize(this.width));
+    
+      __out.push('px\' height=\'');
+    
+      __out.push(__sanitize(this.height));
+    
+      __out.push('px\'></iframe>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
 ;require.register("views/templates/info", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
@@ -5202,7 +5406,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty/robocze" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/archiwalne" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>\n                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=hose_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="" >Oferty robocze</a></li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a id=\'agent-config-link\' href="" >Dane Profilu</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="" >Logo</a></li>\n                        <li ><a href="" >Watermark</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
+      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty/robocze" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/archiwalne" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>\n                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=hose_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="" >Oferty robocze</a></li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a id=\'agent-config-link\' href="" >Dane Profilu</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="" >Logo</a></li>\n                        <li ><a href="" >Watermark</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="/iframe/kw" >Księgi wieczyste</a></li>\n                        <li><a href="/iframe/geo" >Geoportal</a></li>\n                        <li><a href="/iframe/geodz">Wyszukaj działkę</a></li>\n                        <li><a href="/iframe/calendar">Kalendarz</a></li>\n                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>\n                        <!--\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        -->\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
     
     }).call(this);
     

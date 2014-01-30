@@ -20,3 +20,4 @@ module.exports = (match) ->
     match 'oferty/dodaj',                'listing#add'
     match 'oferty',                      'listing#list'
     match 'oferty/:id',                  'listing#show'
+    match 'iframe/:template',            'iframe#show'

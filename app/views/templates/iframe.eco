@@ -1,0 +1,2 @@
+<h4><%= @title %></h4>
+<iframe src="<%= @url %>" width='<%= @width %>px' height='<%= @height %>px'></iframe>

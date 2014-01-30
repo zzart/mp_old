@@ -114,11 +114,11 @@ module.exports = class Layout extends Chaplin.Layout
 
     jqm_refersh: =>
         #this is callbacks based so i know precisely WHEN jqm finished rendering !!!
+        self = @
         f1 = (callback) ->
             callback()
         f2 = (callback) ->
             callback()
-        self = @
         f1(->
             #self.tell_user('Pracuje....')
             $("#content-region").enhanceWithin()
@@ -126,6 +126,8 @@ module.exports = class Layout extends Chaplin.Layout
                 self.publishEvent('jqm_finished_rendering')
             )
         )
+        # $ ->
+        #     $("#content-region").enhanceWithin()
 
     jqm_refersh_alone: =>
         #manually doing page refresh straight from DOM
