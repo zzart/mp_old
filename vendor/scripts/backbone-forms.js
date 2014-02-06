@@ -2146,8 +2146,8 @@ Form.editors.Date = Form.editors.Base.extend({
 
     //Schema defaults
     this.schema = _.extend({
-      yearStart: today.getFullYear() - 100,
-      yearEnd: today.getFullYear()
+      yearStart: today.getFullYear() - 50,
+      yearEnd: today.getFullYear() + 50
     }, options.schema || {});
 
     //Cast to Date

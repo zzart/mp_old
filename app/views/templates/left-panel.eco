@@ -8,20 +8,18 @@
     <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">
                     <h4>Przeglądaj oferty</h4>
                     <ul data-role="listview" >
-                        <li><a href="/oferty/robocze" >Robocze<span class='ui-li-count'>34</span></a> </li>
-                        <li><a href="/oferty/archiwalne" >Archiwalne<span class='ui-li-count'>34</span></a> </li>
-                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class='ui-li-count'>34</span></a> </li>
-                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class='ui-li-count'>34</span></a> </li>
-                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>
-                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>
-                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>
-                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>
-                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>
-                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>
-                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>
-                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>
-                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>
-                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>
+                        <li><a href="/oferty?category=flat_rent"    >Mieszkania Wynajem</a></li>
+                        <li><a href="/oferty?category=flat_sell"    >Mieszkania Sprzedaż</a></li>
+                        <li><a href="/oferty?category=house_rent"    >Domy Wynajem</a></li>
+                        <li><a href="/oferty?category=house_sell"    >Domy Sprzedaż</a></li>
+                        <li><a href="/oferty?category=land_rent"    >Grunty Dzierżawa</a></li>
+                        <li><a href="/oferty?category=land_sell"    >Grunty Sprzedaż</a></li>
+                        <li><a href="/oferty?category=commercial_rent"    >Lokale Wynajem</a></li>
+                        <li><a href="/oferty?category=commercial_sell"    >Lokale Sprzedaż</a></li>
+                        <li><a href="/oferty?category=warehose_rent"    >Lokale użytkowe Wynajem</a></li>
+                        <li><a href="/oferty?category=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>
+                        <li><a href="/oferty?category=object_rent"   >Obiekty Wynajem</a></li>
+                        <li><a href="/oferty?category=object_sell"   >Obiekty Sprzedaż</a></li>
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
@@ -31,7 +29,7 @@
                     <ul data-role="listview">
                         <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>
                         <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>
-                        <li><a href="/oferty/dodaj?type=hose_rent"    >Domy Wynajem</a></li>
+                        <li><a href="/oferty/dodaj?type=house_rent"    >Domy Wynajem</a></li>
                         <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>
                         <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>
                         <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>
@@ -48,7 +46,12 @@
                     <h3>Etykiety</h3>
                     <ul data-role="listview" >
                         <li ><a href="" >Dodaj Etykietę</a></li>
-                        <li><a href="" >Oferty robocze</a></li>
+                        <li><a href="/oferty?status=4" >Robocze<span class='ui-li-count'>34</span></a> </li>
+                        <li><a href="/oferty?status=3" >Archiwalne<span class='ui-li-count'>34</span></a> </li>
+                        <li><a href="/oferty?status=1" >Nieaktywna<span class='ui-li-count'>34</span></a> </li>
+                        <li><a href="/oferty?status=5" >Sprzedana<span class='ui-li-count'>34</span></a> </li>
+                        <li><a href="/oferty?status=6" >Wynajęta<span class='ui-li-count'>34</span></a> </li>
+                        <li><a href="/oferty?status=7" >Umowa przedstępna<span class='ui-li-count'>34</span></a> </li>
                     </ul>
                 </div>
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">

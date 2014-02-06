@@ -68,6 +68,7 @@ module.exports = class Application extends Chaplin.Application
     mediator.models = {}
     mediator.collections = {}
     mediator.schemas = {}
+    mediator.last_query = {}
     mediator.upload_url = 'http://localhost:8080/v1/dodaj-plik'
     mediator.app_key = 'mp'
     mediator.app = '4ba2b78a-5675-42d9-8aab-f65ecf3ce9ba'

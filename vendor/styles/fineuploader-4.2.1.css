@@ -10,27 +10,18 @@
 * Repository: git://github.com/Widen/fine-uploader.git
 *
 * Licensed under GNU GPL v3, see LICENSE
-*/ 
+*/
 
 
 .qq-uploader {
-    position: relative;
-    width: 100%;
 }
 .qq-upload-button {
-    display: block;
-    width: 105px;
-    padding: 7px 0;
-    text-align: center;
-    background: #880000;
-    border-bottom: 1px solid #DDD;
-    color: #FFF;
 }
 .qq-upload-button-hover {
-    background: #CC0000;
+
 }
 .qq-upload-button-focus {
-    outline: 1px dotted #000000;
+
 }
 .qq-upload-drop-area, .qq-upload-extra-drop-area {
     position: absolute;
@@ -106,7 +97,7 @@
 
 .qq-upload-retry, .qq-upload-delete, .qq-upload-cancel,
 .qq-upload-pause, .qq-upload-continue {
-    color: #000000;
+    color: #333333;
 }
 
 .qq-upload-retryable .qq-upload-retry {
@@ -136,12 +127,12 @@
     color: #D60000;
 }
 .qq-upload-list li.qq-upload-success {
-    background-color: #5DA30C;
-    color: #FFFFFF;
+    background-color: #F3F3F3;
+    color: #333333;
 }
 .qq-upload-list li.qq-upload-fail {
     background-color: #D60000;
-    color: #FFFFFF;
+    color: #333333;
 }
 .qq-progress-bar {
     display: block;

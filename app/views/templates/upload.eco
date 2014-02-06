@@ -3,8 +3,8 @@
             <div class="qq-upload-drop-area-selector qq-upload-drop-area" qq-hide-dropzone>
                 <span>Wrzuć pliki na serwer</span>
             </div>
-            <div class="ui-btn qq-upload-button-selector qq-upload-button">
-                <div>Dodaj pliki</div>
+            <div class="qq-upload-button-selector qq-upload-button">
+                <a class='ui-btn ui-btn-b'>Dodaj pliki</a>
             </div>
             <span class="qq-drop-processing-selector qq-drop-processing">
                 <span>Przetwarzam pliki...</span>

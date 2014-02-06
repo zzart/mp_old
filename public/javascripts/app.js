@@ -137,6 +137,7 @@ module.exports = Application = (function(_super) {
     mediator.models = {};
     mediator.collections = {};
     mediator.schemas = {};
+    mediator.last_query = {};
     mediator.upload_url = 'http://localhost:8080/v1/dodaj-plik';
     mediator.app_key = 'mp';
     mediator.app = '4ba2b78a-5675-42d9-8aab-f65ecf3ce9ba';
@@ -191,11 +192,6 @@ module.exports = AgentController = (function(_super) {
   function AgentController() {
     return AgentController.__super__.constructor.apply(this, arguments);
   }
-
-  AgentController.prototype.beforeAction = function(params, route) {
-    AgentController.__super__.beforeAction.apply(this, arguments);
-    return this.publishEvent('tell_user', 'Pracuje ...');
-  };
 
   AgentController.prototype.list = function(params, route, options) {
     var _this = this;
@@ -357,6 +353,7 @@ module.exports = AuthController = (function(_super) {
     this.publishEvent('log:info', 'AuthController#beforeAction()');
     this.publishEvent('log:info', window.location.pathname);
     this.publishEvent('log:info', (_ref = mediator.models.user) != null ? _ref.toJSON() : void 0);
+    this.publishEvent('tell_user', 'Pracuje ...');
     if (_.isEmpty(mediator.models.user)) {
       mediator.redirectUrl = window.location.pathname;
       return this.redirectTo({
@@ -837,17 +834,19 @@ module.exports = IFrameController = (function(_super) {
 });
 
 ;require.register("controllers/listing-controller", function(exports, require, module) {
-var AddView, Collection, Controller, ListingController, Model, mediator,
+var Collection, Controller, ListView, ListingController, Model, View, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Controller = require('controllers/auth-controller');
 
+ListView = require('views/listing-list-view');
+
 Collection = require('models/listing-collection');
 
 Model = require('models/listing-model');
 
-AddView = require('views/listing-add-view');
+View = require('views/listing-view');
 
 mediator = require('mediator');
 
@@ -859,6 +858,34 @@ module.exports = ListingController = (function(_super) {
     return ListingController.__super__.constructor.apply(this, arguments);
   }
 
+  ListingController.prototype.list = function(params, route, options) {
+    var _this = this;
+    mediator.last_query = _.clone(options.query);
+    this.publishEvent('log:info', "in list property controller" + params + ", " + route + ", " + options);
+    mediator.collections.listings = new Collection;
+    return mediator.collections.listings.fetch({
+      data: options.query,
+      beforeSend: function() {
+        _this.publishEvent('loading_start');
+        return _this.publishEvent('tell_user', 'Ładuje oferty...');
+      },
+      success: function() {
+        _this.publishEvent('log:info', "data with " + params + " fetched ok");
+        _this.publishEvent('loading_stop');
+        return _this.view = new ListView({
+          collection: mediator.collections.listings,
+          template: 'listing_list_view',
+          filter: 'client_type',
+          region: 'content'
+        });
+      },
+      error: function() {
+        _this.publishEvent('loading_stop');
+        return _this.publishEvent('server_error');
+      }
+    });
+  };
+
   ListingController.prototype.add = function(params, route, options) {
     var form, type;
     this.publishEvent('log:info', "in add property controller");
@@ -869,7 +896,7 @@ module.exports = ListingController = (function(_super) {
     mediator.models.property = new Model;
     mediator.models.property.schema = _.clone(this.schema);
     this.publishEvent('log:info', "init view property controller");
-    this.view = new AddView({
+    this.view = new View({
       form_name: form,
       model: mediator.models.property,
       listing_type: type,
@@ -881,7 +908,28 @@ module.exports = ListingController = (function(_super) {
   };
 
   ListingController.prototype.show = function(params, route, options) {
-    return this.publishEvent('log:info', "in show property controller");
+    var categories, category, form, schema;
+    this.publishEvent('log:info', 'in listing show controller');
+    if (!_.isObject(mediator.collections.listings.get(params.id))) {
+      this.redirectTo({
+        '/oferty': '/oferty'
+      });
+    }
+    this.model = mediator.collections.listings.get(params.id);
+    categories = _.invert(localStorage.getObject('categories'));
+    category = categories[this.model.get('category')];
+    form = "" + category + "_form";
+    schema = "" + category + "_schema";
+    this.schema = localStorage.getObject(schema);
+    console.log(categories, this.schema, this.model.get('category'));
+    this.model.schema = _.clone(this.schema);
+    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
+    return this.view = new View({
+      form_name: form,
+      model: this.model,
+      can_edit: this.can_edit,
+      region: 'content'
+    });
   };
 
   return ListingController;
@@ -1535,7 +1583,7 @@ module.exports = ListingList = (function(_super) {
 
   ListingList.prototype.model = Model;
 
-  ListingList.prototype.url = 'http://localhost:8080/mp/oferty';
+  ListingList.prototype.url = 'http://localhost:8080/v1/oferty';
 
   return ListingList;
 
@@ -1560,23 +1608,39 @@ module.exports = Listing = (function(_super) {
 
   Listing.prototype.schema = {};
 
-  Listing.prototype.file_to_string = function() {
-    return 'test function';
+  Listing.prototype.get = function(attr) {
+    var value;
+    value = Backbone.Model.prototype.get.call(this, attr);
+    if (_.isFunction(value)) {
+      return value.call(this);
+    } else {
+      return value;
+    }
   };
 
-  Listing.prototype.readFile = function(file) {
-    var reader, self;
-    reader = new FileReader();
-    self = this;
-    reader.onload = (function(theFile, self) {
-      return function(e) {
-        return self.set({
-          filename: theFile.name,
-          data: e.target.result
-        });
-      };
-    })(file, this);
-    return reader.readAsDataURL(file);
+  Listing.prototype.defaults = {
+    thumbnail_func: function() {
+      var img, r, resource;
+      resource = this.get('resources');
+      if (!_.isEmpty(resource)) {
+        r = resource[0];
+        if (r.mime_type.split('/')[0] === 'image') {
+          img = new Image();
+          img.src = 'data:' + r.mime_type + ';base64,' + r.thumbnail;
+          return img.outerHTML;
+        }
+      }
+    }
+  };
+
+  Listing.prototype.toJSON = function() {
+    var data, json;
+    data = {};
+    json = Backbone.Model.prototype.toJSON.call(this);
+    _.each(json, function(value, key) {
+      return data[key] = this.get(key);
+    }, this);
+    return data;
   };
 
   return Listing;
@@ -2596,9 +2660,9 @@ module.exports = EditView = (function(_super) {
         var i, key, order, pattern, sorted, to_sort, _i, _len, _results;
         key = [];
         sorted = [];
-        pattern = /.+\:\s/;
-        $(this).children('li').find('p:last').each(function(i, str) {
-          return key.push(str.innerHTML.replace(pattern, ''));
+        pattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
+        $(this).children('li').find('a:first').each(function(i, str) {
+          return key.push(str.innerHTML.match(pattern)[0]);
         });
         to_sort = self.form.fields.resources.getValue();
         if (to_sort.length > 0) {
@@ -2705,10 +2769,12 @@ module.exports = EditView = (function(_super) {
     EditView.__super__.attach.apply(this, arguments);
     this.publishEvent('log:info', 'view: edit-view afterRender()');
     this.publishEvent('disable_buttons', (_ref = this.can_edit) != null ? _ref : False, this.edit_type, this.delete_only);
-    if (_.isObject(this.model.schema.resources)) {
-      this.init_events();
-      this.init_uploader();
-      this.init_sortable();
+    if (!this.form_name.match('rent|sell')) {
+      if (_.isObject(this.model.schema.resources)) {
+        this.init_events();
+        this.init_uploader();
+        this.init_sortable();
+      }
     }
     return this.publishEvent('jqm_refersh:render');
   };
@@ -3623,7 +3689,90 @@ module.exports = ListView = (function(_super) {
 
 });
 
-;require.register("views/listing-add-view", function(exports, require, module) {
+;require.register("views/listing-list-view", function(exports, require, module) {
+var ListingListView, View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/list-view');
+
+mediator = require('mediator');
+
+module.exports = ListingListView = (function(_super) {
+
+  __extends(ListingListView, _super);
+
+  function ListingListView() {
+    this.attach = __bind(this.attach, this);
+    return ListingListView.__super__.constructor.apply(this, arguments);
+  }
+
+  ListingListView.prototype.initialize = function(params) {
+    return ListingListView.__super__.initialize.apply(this, arguments);
+  };
+
+  ListingListView.prototype.attach = function() {
+    ListingListView.__super__.attach.apply(this, arguments);
+    return this.publishEvent('log:info', 'view: listing list view afterRender()');
+  };
+
+  return ListingListView;
+
+})(View);
+
+});
+
+;require.register("views/listing-tab-view", function(exports, require, module) {
+var View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+mediator = require('mediator');
+
+module.exports = View = (function(_super) {
+
+  __extends(View, _super);
+
+  function View() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return View.__super__.constructor.apply(this, arguments);
+  }
+
+  View.prototype.autoRender = true;
+
+  View.prototype.className = 'ui-content';
+
+  View.prototype.initialize = function(options) {
+    this.template = options.template;
+    return this.id = options.id;
+  };
+
+  View.prototype.render = function() {
+    View.__super__.render.apply(this, arguments);
+    this.publishEvent('log:info', 'tabview: tab-view render()');
+    return this.$el.append(this.template);
+  };
+
+  View.prototype.attach = function() {
+    $(this.container).find('form div:first').append(this.$el);
+    return this.publishEvent('log:info', 'tabview: tab-view afterAttach()');
+  };
+
+  return View;
+
+})(View);
+
+});
+
+;require.register("views/listing-view", function(exports, require, module) {
 var AddView, TabView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3655,8 +3804,6 @@ module.exports = AddView = (function(_super) {
 
     this.change_tab = __bind(this.change_tab, this);
 
-    this.add_file = __bind(this.add_file, this);
-
     this.initialize = __bind(this.initialize, this);
     return AddView.__super__.constructor.apply(this, arguments);
   }
@@ -3668,12 +3815,8 @@ module.exports = AddView = (function(_super) {
     this.delegate('click', "[data-role='navbar'] a", this.change_tab);
     this.delegate('change', "[name='category']", this.rerender_form);
     this.delegate('click', "#copy_address", this.copy_address);
-    this.delegate('add', this.add_file);
-    return this.rendered_tabs = [];
-  };
-
-  AddView.prototype.add_file = function() {
-    return console.log('add');
+    this.rendered_tabs = [];
+    return console.log(this.options);
   };
 
   AddView.prototype.change_tab = function(e) {
@@ -3717,7 +3860,9 @@ module.exports = AddView = (function(_super) {
             mediator.collections[_this.listing_type].add(_this.model);
           }
           _this.publishEvent('tell_user', 'Rekord zapisany');
-          return console.log(url);
+          return Chaplin.utils.redirectTo({
+            url: url != null ? url : "/oferty?" + ($.param(mediator.last_query))
+          });
         },
         error: function(model, response, options) {
           if (response.responseJSON != null) {
@@ -3934,6 +4079,11 @@ module.exports = AddView = (function(_super) {
       if (tab_id === 'tab_2') {
         this.init_openstreet();
       }
+      if (tab_id === 'tab_6') {
+        this.init_events();
+        this.init_uploader();
+        this.init_sortable();
+      }
       this.publishEvent('jqm_refersh:render');
       return this.rendered_tabs.push(tab_id);
     }
@@ -3946,55 +4096,6 @@ module.exports = AddView = (function(_super) {
   };
 
   return AddView;
-
-})(View);
-
-});
-
-;require.register("views/listing-tab-view", function(exports, require, module) {
-var View, mediator,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-View = require('views/base/view');
-
-mediator = require('mediator');
-
-module.exports = View = (function(_super) {
-
-  __extends(View, _super);
-
-  function View() {
-    this.attach = __bind(this.attach, this);
-
-    this.render = __bind(this.render, this);
-
-    this.initialize = __bind(this.initialize, this);
-    return View.__super__.constructor.apply(this, arguments);
-  }
-
-  View.prototype.autoRender = true;
-
-  View.prototype.className = 'ui-content';
-
-  View.prototype.initialize = function(options) {
-    this.template = options.template;
-    return this.id = options.id;
-  };
-
-  View.prototype.render = function() {
-    View.__super__.render.apply(this, arguments);
-    this.publishEvent('log:info', 'tabview: tab-view render()');
-    return this.$el.append(this.template);
-  };
-
-  View.prototype.attach = function() {
-    $(this.container).find('form div:first').append(this.$el);
-    return this.publishEvent('log:info', 'tabview: tab-view afterAttach()');
-  };
-
-  return View;
 
 })(View);
 
@@ -4393,7 +4494,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/agenci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Pośrednik</option>\n                    <option value="2">Administrator nieruchomości</option>\n                    <option value="3">Menadzer</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="agent-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th width="2%"> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>\n         <th data-priority="6">Admin&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/agenci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Pośrednik</option>\n                    <option value="2">Administrator nieruchomości</option>\n                    <option value="3">Menadzer</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="agent-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th width="2%"> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>\n         <th data-priority="6">Admin&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -4668,7 +4769,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/oddzialy/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj  ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th data-priority="2">Agent&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwa&nbsp;&nbsp;</th>\n         <th data-priority="2">Identyfikator&nbsp;&nbsp;</th>\n         <th data-priority="2">WWW&nbsp;&nbsp;</th>\n         <th data-priority="5">Tel&nbsp;&nbsp;</th>\n         <th data-priority="4">Email&nbsp;&nbsp;</th>\n         <th data-priority="6">Miasto&nbsp;&nbsp;</th>\n         <th data-priority="6">Nip&nbsp;&nbsp;</th>\n         <th data-priority="6">Główny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/oddzialy/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj  ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th data-priority="2">Agent&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwa&nbsp;&nbsp;</th>\n         <th data-priority="2">Identyfikator&nbsp;&nbsp;</th>\n         <th data-priority="2">WWW&nbsp;&nbsp;</th>\n         <th data-priority="5">Tel&nbsp;&nbsp;</th>\n         <th data-priority="4">Email&nbsp;&nbsp;</th>\n         <th data-priority="6">Miasto&nbsp;&nbsp;</th>\n         <th data-priority="6">Nip&nbsp;&nbsp;</th>\n         <th data-priority="6">Główny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -4756,16 +4857,16 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
-        __out.push('\n\n       <tr>\n         <td> <label> <input name="');
+        __out.push('\n\n       <tr>\n         <td><label><input name="');
         __out.push(__sanitize(item['id']));
         __out.push('" id="');
         __out.push(__sanitize(item['id']));
-        __out.push('" data-mini="true"  type="checkbox"> </label> </td>\n         <td>');
+        __out.push('" data-mini="true" type="checkbox"></label></td>\n         <td>');
         __out.push(__sanitize(item['id']));
         __out.push('</td>\n         <td>');
         __out.push(__sanitize(item['agent']));
@@ -4842,7 +4943,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">\n     <thead>\n       <tr>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -5406,7 +5507,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty/robocze" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/archiwalne" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/wynajem" >Mieszkania Wynajem<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/mieszkania/sprzedaz" >Mieszkania Sprzedaż<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty/domy/wynajem" >Domy Wynajem</a></li>\n                        <li><a href="/oferty/domy/sprzedaz" >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/grunty/wynajem" >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/grunty/sprzedaz" >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale/wynajem" >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/lokale/sprzedaz" >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/lokale?/" >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/obiekty/wynajem" >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/obiekty/sprzedaz" >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=hose_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="" >Oferty robocze</a></li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a id=\'agent-config-link\' href="" >Dane Profilu</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="" >Logo</a></li>\n                        <li ><a href="" >Watermark</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="/iframe/kw" >Księgi wieczyste</a></li>\n                        <li><a href="/iframe/geo" >Geoportal</a></li>\n                        <li><a href="/iframe/geodz">Wyszukaj działkę</a></li>\n                        <li><a href="/iframe/calendar">Kalendarz</a></li>\n                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>\n                        <!--\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        -->\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
+      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty?category=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty?category=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty?category=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty?category=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty?category=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty?category=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty?category=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty?category=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty?category=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty?category=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty?category=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty?category=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="/oferty?status=4" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=3" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=1" >Nieaktywna<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=5" >Sprzedana<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=6" >Wynajęta<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=7" >Umowa przedstępna<span class=\'ui-li-count\'>34</span></a> </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a id=\'agent-config-link\' href="" >Dane Profilu</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="" >Logo</a></li>\n                        <li ><a href="" >Watermark</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="/iframe/kw" >Księgi wieczyste</a></li>\n                        <li><a href="/iframe/geo" >Geoportal</a></li>\n                        <li><a href="/iframe/geodz">Wyszukaj działkę</a></li>\n                        <li><a href="/iframe/calendar">Kalendarz</a></li>\n                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>\n                        <!--\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        -->\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
     
     }).call(this);
     
@@ -5491,6 +5592,96 @@ module.exports = function (__obj) {
       }
     
       __out.push('\n     </tbody>\n   </table>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/listing_list_view", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var item, _i, _len, _ref;
+    
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Lokalizacja&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Data wprowadzenia&nbsp;&nbsp;</th>\n         <th data-priority="6">Rok budowy&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+    
+      _ref = this.collection;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
+        __out.push('\n\n       <tr>\n         <td><label><input name="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" id="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" data-mini="true" type="checkbox"></label></td>\n         <td>');
+        __out.push(item['thumbnail_func']);
+        __out.push('</td>\n         <td><a href=\'/oferty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['id']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['agent']));
+        __out.push('</td>\n         <td><a href=\'/oferty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['town']));
+        __out.push(',');
+        __out.push(__sanitize(item['street']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['client']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['cena']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['ilosc_pokoi']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['powierzchnia_calkowita']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['date_created']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['rok_budowy']));
+        __out.push('</td>\n       </tr>\n      ');
+      }
+    
+      __out.push('\n     </tbody>\n   </table>\n\n\n');
     
     }).call(this);
     
@@ -5734,7 +5925,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<script type="text/template" id="qq-template">\n<div class="qq-uploader-selector qq-uploader">\n            <div class="qq-upload-drop-area-selector qq-upload-drop-area" qq-hide-dropzone>\n                <span>Wrzuć pliki na serwer</span>\n            </div>\n            <div class="ui-btn qq-upload-button-selector qq-upload-button">\n                <div>Dodaj pliki</div>\n            </div>\n            <span class="qq-drop-processing-selector qq-drop-processing">\n                <span>Przetwarzam pliki...</span>\n                <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>\n            </span>\n            <ul class="qq-upload-list-selector qq-upload-list" data-role=\'listview\' data-inset=\'true\'>\n\n                <li>\n                  <div class="qq-progress-bar-container-selector">\n                      <div class="qq-progress-bar-selector qq-progress-bar"></div>\n                  </div>\n                  <span class="qq-upload-spinner-selector qq-upload-spinner"></span>\n                    <img class="qq-thumbnail-selector" qq-max-size="100" qq-server-scale>\n                  <span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>\n                  <span class="qq-upload-file-selector qq-upload-file"></span>\n                  <input class="qq-edit-filename-selector qq-edit-filename" tabindex="0" type="text">\n                  <span class="qq-upload-size-selector qq-upload-size"></span>\n                  <a class="qq-upload-cancel-selector qq-upload-cancel" href="#">Zaniechaj</a>\n                  <a class="qq-upload-retry-selector qq-upload-retry" href="#">Spróbuj ponownie</a>\n                  <a class="qq-upload-delete-selector qq-upload-delete" href="#">Usuń</a>\n                  <span class="qq-upload-status-text-selector qq-upload-status-text"></span>\n                </li>\n            </ul>\n</div>\n</script>\n');
+      __out.push('<script type="text/template" id="qq-template">\n<div class="qq-uploader-selector qq-uploader">\n            <div class="qq-upload-drop-area-selector qq-upload-drop-area" qq-hide-dropzone>\n                <span>Wrzuć pliki na serwer</span>\n            </div>\n            <div class="qq-upload-button-selector qq-upload-button">\n                <a class=\'ui-btn ui-btn-b\'>Dodaj pliki</a>\n            </div>\n            <span class="qq-drop-processing-selector qq-drop-processing">\n                <span>Przetwarzam pliki...</span>\n                <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>\n            </span>\n            <ul class="qq-upload-list-selector qq-upload-list" data-role=\'listview\' data-inset=\'true\'>\n\n                <li>\n                  <div class="qq-progress-bar-container-selector">\n                      <div class="qq-progress-bar-selector qq-progress-bar"></div>\n                  </div>\n                  <span class="qq-upload-spinner-selector qq-upload-spinner"></span>\n                    <img class="qq-thumbnail-selector" qq-max-size="100" qq-server-scale>\n                  <span class="qq-edit-filename-icon-selector qq-edit-filename-icon"></span>\n                  <span class="qq-upload-file-selector qq-upload-file"></span>\n                  <input class="qq-edit-filename-selector qq-edit-filename" tabindex="0" type="text">\n                  <span class="qq-upload-size-selector qq-upload-size"></span>\n                  <a class="qq-upload-cancel-selector qq-upload-cancel" href="#">Zaniechaj</a>\n                  <a class="qq-upload-retry-selector qq-upload-retry" href="#">Spróbuj ponownie</a>\n                  <a class="qq-upload-delete-selector qq-upload-delete" href="#">Usuń</a>\n                  <span class="qq-upload-status-text-selector qq-upload-status-text"></span>\n                </li>\n            </ul>\n</div>\n</script>\n');
     
     }).call(this);
     

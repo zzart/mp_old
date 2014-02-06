@@ -1,7 +1,7 @@
 <div class="ui-grid-a">
 	<div class="ui-block-a">
         <form>
-            <fieldset data-role="controlgroup" data-type="horizontal">
+            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">
                 <button data-icon="refresh" data-iconpos="notext" id='refresh'>Odśwież</button>
                 <a href='/klienci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>
 
@@ -31,9 +31,9 @@
 </div><!-- /grid-b -->
 
 <table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
-data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">
+data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">
      <thead>
-       <tr>
+       <tr class='th-groups'>
          <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>
          <th>ID</th>
          <th>Agent&nbsp;&nbsp;</th>

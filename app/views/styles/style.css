@@ -19,3 +19,11 @@ hr{color:#333333; border:2px; }
 .address_suggestion:hover{
     background-color:lightgrey;
 }
+.th-groups th {
+background-color: rgba(0,0,0,.1);
+border-right: 1px solid #A3A3A3;
+}
+
+#list-table th:first-child{
+width:22px;
+}

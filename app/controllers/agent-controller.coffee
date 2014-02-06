@@ -6,9 +6,6 @@ Model = require 'models/agent-model'
 mediator = require 'mediator'
 
 module.exports = class AgentController extends Controller
-    beforeAction: (params, route) ->
-        super
-        @publishEvent('tell_user', 'Pracuje ...')
 
     list:(params, route, options) ->
         @publishEvent('log:info', 'in agent list controller')

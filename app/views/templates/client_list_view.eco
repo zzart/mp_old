@@ -1,9 +1,9 @@
 <div class="ui-grid-a">
 	<div class="ui-block-a">
         <form>
-            <fieldset data-role="controlgroup" data-type="horizontal">
-                <button data-icon="refresh" data-iconpos="notext" id='refresh'>Odśwież</button>
-                <a href='/klienci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>
+            <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b'>
+                <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
+                <a href='/klienci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
 
                 <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
                 <select name="select-action" id="select-action">
@@ -31,10 +31,10 @@
 </div><!-- /grid-b -->
 
 <table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
-data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny">
+data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >
      <thead>
-       <tr>
-         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>
+       <tr class='th-groups'>
+         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>
          <th>ID</th>
          <th>Agent&nbsp;&nbsp;</th>
          <th>Imię&nbsp;&nbsp;</th>
@@ -50,7 +50,7 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
       <% for item in @collection : %>
 
        <tr>
-         <td> <label> <input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true"  type="checkbox"> </label> </td>
+         <td><label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
          <td><%= item['id'] %></td>
          <td><%= item['agent'] %></td>
          <td><a href='/klienci/<%= item['id'] %>'><%= item['first_name'] %></a></td>

@@ -101,17 +101,20 @@ module.exports = class EditView extends View
             stop: (event, ui) ->
                 key = []
                 sorted = []
-                pattern = /.+\:\s/ #for better performance storing regx in variable
-                $(@).children('li').find('p:last').each((i, str)->
+                #for better performance storing regx in variable
+                pattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
+                # migth be better /[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}/
+                $(@).children('li').find('a:first').each((i, str)->
                     # order of uuid will be our key for sorting so lets get the values
-                    key.push(str.innerHTML.replace(pattern,''))
+                    key.push(str.innerHTML.match(pattern)[0])
                 )
                 to_sort = self.form.fields.resources.getValue()
                 if to_sort.length > 0
                     for i in to_sort
                         order = key.indexOf(i.uuid) + 1 #order doesn't have 0
                         i.order = order
-                    # console.log('getValue', self.form.fields.resources.getValue())
+                        # console.log(key, i.uuid, key.indexOf(i.uuid))
+                        # console.log('getValue', self.form.fields.resources.getValue())
 
     init_uploader: =>
         self = @
@@ -206,9 +209,11 @@ module.exports = class EditView extends View
         super
         @publishEvent('log:info', 'view: edit-view afterRender()')
         @publishEvent 'disable_buttons', @can_edit ? False , @edit_type, @delete_only
-        # init resources when they are needed
-        if _.isObject(@model.schema.resources)
-            @init_events()
-            @init_uploader()
-            @init_sortable()
+        #move listing inints into listing view
+        if not @form_name.match('rent|sell')
+            # init resources when they are needed
+            if _.isObject(@model.schema.resources)
+                @init_events()
+                @init_uploader()
+                @init_sortable()
         @publishEvent 'jqm_refersh:render'
