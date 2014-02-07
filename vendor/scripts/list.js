@@ -171,16 +171,18 @@
      * Remove an item from the list
      * @param {List.Item} item
      */
-    removeItem: function(item) {
+    removeItem: function(item, index) {
       //Confirm delete
       var confirmMsg = this.schema.confirmDelete;
       if (confirmMsg && !confirm(confirmMsg)) return;
 
       //var index = index; // _.indexOf(this.items, item);
-      var index = _.indexOf(this.items, item);
+      //var index = _.indexOf(this.items, item);
       //console.log(index, this.items);
-
+      var index = index;
       //this.items[0].remove();
+      //console.log(this.items);
+      //console.log(index);
       this.items[index].remove();
       this.items.splice(index, 1);
 
@@ -281,10 +283,10 @@
   Form.editors.List.Item = Form.editors.Base.extend({
 
     events: {
-      'click [data-action="remove"]': function(event) {
-        event.preventDefault();
-        this.list.removeItem(this);
-      },
+        //'click [data-action="remove"]': function(event) {
+        //event.preventDefault();
+        //this.list.removeItem(this);
+      //},
       'keydown input[type=text]': function(event) {
         if(event.keyCode !== 13) return;
         event.preventDefault();

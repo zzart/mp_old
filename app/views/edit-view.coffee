@@ -53,8 +53,9 @@ module.exports = class EditView extends View
 
     init_events: =>
         @editor = @form.fields.resources.editor
-        @editor.on('remove', @remove_resources)
+        # @editor.on('remove', @remove_resources)
         @editor.on('add', @refresh_resource)
+        @delegate 'click', '[data-action=\'remove\']', @remove_resources_click
 
     refresh_resource: =>
         @publishEvent("log:debug", "refresh_resource")
@@ -68,7 +69,46 @@ module.exports = class EditView extends View
         catch error
             @publishEvent("log:warn", error)
 
-    remove_resources:(listEditor, itemEditor, extra) =>
+    remove_resources_click:(e) =>
+        # we need to show the privilleged user dialog
+        # and hold removing item for non privilleged user who wants to delete but shoudn't
+        self = @
+        e.preventDefault()
+        @uuid = e.target.id
+        $("#confirm").popup('open')
+        # unbind is for stopping it firing multiple times
+        $("#confirmed").unbind().click =>
+            self.remove_resources(@uuid)
+
+    remove_resources:(uuid) =>
+
+        # fineuploader doesn't support deleting files later then directly after upload
+        # so need to do this by hand
+        self = @
+        url = "http://localhost:8080/v1/pliki/#{uuid}"
+        $.ajax(
+            url: url
+            beforeSend: (xhr) ->
+                xhr.setRequestHeader('X-Auth-Token' , mediator.gen_token(url))
+            type: "DELETE"
+            success: (data, textStatus, jqXHR ) =>
+                #lets delete this item from editor
+                # console.log('success', data, textStatus, jqXHR)
+                items = self.form.fields.resources.getValue()
+                new_items = []
+                # console.log('all itmes:', items, '  removing ' , uuid)
+                for i in items
+                    if i.uuid is uuid
+                        # console.log('removed:', i, items.indexOf(i))
+                        self.form.fields.resources.editor.removeItem(i, items.indexOf(i))
+            error: (jqXHR, textStatus, errorThrown ) ->
+                self.publishEvent("tell_user", jqXHR.responseJSON.title or errorThrown)
+            #contentType: "application/json"
+            # dataType: "json"
+            # data: {"file": itemEditor.value.uuid}
+        )
+    _remove_resources:(listEditor, itemEditor, extra) =>
+
         # fineuploader doesn't support deleting files later then directly after upload
         # so need to do this by hand
         self = @
@@ -88,8 +128,8 @@ module.exports = class EditView extends View
                     if i.uuid is itemEditor.value.uuid
                         self.form.fields.resources.editor.removeItem(i, items.indexOf(i))
                         # console.log('removed:', i, items.indexOf(i))
-            error: (jqXHR, textStatus, errorThrown) ->
-                self.publishEvent("tell_user", errorThrown)
+            error: (jqXHR, textStatus, errorThrown ) ->
+                self.publishEvent("tell_user", jqXHR.responseJSON.title or errorThrown)
             #contentType: "application/json"
             # dataType: "json"
             # data: {"file": itemEditor.value.uuid}

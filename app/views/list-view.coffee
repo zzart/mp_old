@@ -55,7 +55,8 @@ module.exports = class ListView extends View
         if selected.length > 0
             if event.target.value == 'usun'
                 $("#confirm").popup('open')
-                $("#confirmed").click ->
+                # unbind is for stopping it firing multiple times
+                $("#confirmed").unbind().click ->
                     for i in selected
                         model = self.collection_hard.get($(i).attr('id'))
                         #model = mediator.collections.branches.get($(i).attr('id'))

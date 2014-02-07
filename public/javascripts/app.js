@@ -945,7 +945,7 @@ var LoginController, LoginView, Model, StructureController, mediator,
 
 StructureController = require('controllers/structure-controller');
 
-LoginView = require('views/autologin-view');
+LoginView = require('views/login-view');
 
 Model = require('models/login-model');
 
@@ -2530,7 +2530,11 @@ module.exports = EditView = (function(_super) {
 
     this.init_sortable = __bind(this.init_sortable, this);
 
+    this._remove_resources = __bind(this._remove_resources, this);
+
     this.remove_resources = __bind(this.remove_resources, this);
+
+    this.remove_resources_click = __bind(this.remove_resources_click, this);
 
     this.refresh_resource = __bind(this.refresh_resource, this);
 
@@ -2602,8 +2606,8 @@ module.exports = EditView = (function(_super) {
 
   EditView.prototype.init_events = function() {
     this.editor = this.form.fields.resources.editor;
-    this.editor.on('remove', this.remove_resources);
-    return this.editor.on('add', this.refresh_resource);
+    this.editor.on('add', this.refresh_resource);
+    return this.delegate('click', '[data-action=\'remove\']', this.remove_resources_click);
   };
 
   EditView.prototype.refresh_resource = function() {
@@ -2620,7 +2624,51 @@ module.exports = EditView = (function(_super) {
     }
   };
 
-  EditView.prototype.remove_resources = function(listEditor, itemEditor, extra) {
+  EditView.prototype.remove_resources_click = function(e) {
+    var self,
+      _this = this;
+    self = this;
+    e.preventDefault();
+    this.uuid = e.target.id;
+    $("#confirm").popup('open');
+    return $("#confirmed").unbind().click(function() {
+      return self.remove_resources(_this.uuid);
+    });
+  };
+
+  EditView.prototype.remove_resources = function(uuid) {
+    var self, url,
+      _this = this;
+    self = this;
+    url = "http://localhost:8080/v1/pliki/" + uuid;
+    return $.ajax({
+      url: url,
+      beforeSend: function(xhr) {
+        return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token(url));
+      },
+      type: "DELETE",
+      success: function(data, textStatus, jqXHR) {
+        var i, items, new_items, _i, _len, _results;
+        items = self.form.fields.resources.getValue();
+        new_items = [];
+        _results = [];
+        for (_i = 0, _len = items.length; _i < _len; _i++) {
+          i = items[_i];
+          if (i.uuid === uuid) {
+            _results.push(self.form.fields.resources.editor.removeItem(i, items.indexOf(i)));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        return self.publishEvent("tell_user", jqXHR.responseJSON.title || errorThrown);
+      }
+    });
+  };
+
+  EditView.prototype._remove_resources = function(listEditor, itemEditor, extra) {
     var self, url,
       _this = this;
     self = this;
@@ -2647,7 +2695,7 @@ module.exports = EditView = (function(_super) {
         return _results;
       },
       error: function(jqXHR, textStatus, errorThrown) {
-        return self.publishEvent("tell_user", errorThrown);
+        return self.publishEvent("tell_user", jqXHR.responseJSON.title || errorThrown);
       }
     });
   };
@@ -3589,7 +3637,7 @@ module.exports = ListView = (function(_super) {
     if (selected.length > 0) {
       if (event.target.value === 'usun') {
         $("#confirm").popup('open');
-        return $("#confirmed").click(function() {
+        return $("#confirmed").unbind().click(function() {
           var i, model, _i, _len,
             _this = this;
           for (_i = 0, _len = selected.length; _i < _len; _i++) {
