@@ -8,40 +8,51 @@ mediator =  require 'mediator'
 
 module.exports = class ListingController extends Controller
     list:(params, route, options) ->
-        mediator.last_query = _.clone(options.query)
         @publishEvent('log:info', "in list property controller#{params}, #{route}, #{options}" )
+        mediator.last_query = _.clone(options.query)
+        listing_type = options.query.category
         mediator.collections.listings = new Collection
-        # console.log(mediator.collections.clients)
         mediator.collections.listings.fetch
             data: options.query
             beforeSend: =>
-                @publishEvent 'loading_start'
                 @publishEvent 'tell_user', 'Ładuje oferty...'
             success: =>
                 @publishEvent('log:info', "data with #{params} fetched ok" )
-                @publishEvent 'loading_stop'
-                @view = new ListView {collection:mediator.collections.listings, template:'listing_list_view' ,filter:'client_type',  region:'content'}
+                @view = new ListView {
+                    collection:mediator.collections.listings
+                    template: "#{listing_type}_list_view"
+                    filter:'listing_type'
+                    region:'content'
+                    listing_type: listing_type
+                }
             error: =>
-                @publishEvent 'loading_stop'
                 @publishEvent 'server_error'
 
 
     add:(params, route, options) ->
         @publishEvent('log:info', "in add property controller" )
         console.log(params, route, options)
-        type = options.query.type
-        form = "#{type}_form"
-        @schema =localStorage.getObject("#{type}_schema")
-        mediator.models.property = new Model
-        mediator.models.property.schema = _.clone(@schema)
+        listing_type = options.query.type
+        form = "#{listing_type}_form"
+        @schema =localStorage.getObject("#{listing_type}_schema")
+        mediator.models.listing = new Model
+        mediator.models.listing.schema = _.clone(@schema)
         @publishEvent('log:info', "init view property controller" )
-        @view = new View {form_name:form, model:mediator.models.property, listing_type: type , can_edit:true, edit_type:'add', region:'content'}
+        @view = new View {
+            form_name: form,
+            model:mediator.models.listing
+            listing_type: listing_type
+            can_edit:true
+            edit_type: 'add'
+            region: 'content'
+        }
         @publishEvent('log:info', "after init view property controller" )
 
 
     show:(params, route, options) ->
         @publishEvent('log:info', 'in listing show controller')
-        @redirectTo {'/oferty'} unless _.isObject(mediator.collections.listings.get(params.id))
+        url = "/oferty?#{$.param(mediator.last_query)}"
+        @redirectTo {url} unless _.isObject(mediator.collections.listings.get(params.id))
         @model = mediator.collections.listings.get(params.id)
         categories =_.invert(localStorage.getObject('categories'))
         category = categories[@model.get('category')]
@@ -51,5 +62,10 @@ module.exports = class ListingController extends Controller
         console.log(categories, @schema, @model.get('category'))
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
-        @view = new View {form_name:form, model:@model, can_edit:@can_edit,  region:'content' }
+        @view = new View {
+            form_name:form
+            model:@model
+            can_edit:@can_edit
+            region:'content'
+        }
 

@@ -7,6 +7,7 @@ module.exports = class Login extends Chaplin.Model
         for key, val of @.get('forms')
             localStorage.setObject(key, val)
         localStorage.setObject('categories', @.get('categories'))
+        localStorage.setObject('choices', @.get('choices'))
         @.set({is_logged:true})
 
 

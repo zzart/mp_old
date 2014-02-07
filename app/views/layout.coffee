@@ -126,6 +126,7 @@ module.exports = class Layout extends Chaplin.Layout
                 self.publishEvent('jqm_finished_rendering')
             )
         )
+        $.mobile.loading('hide')
         # $ ->
         #     $("#content-region").enhanceWithin()
 
@@ -156,6 +157,7 @@ module.exports = class Layout extends Chaplin.Layout
     jqm_page_refersh: =>
         @log.info('layout: event jqm_page_refresh caugth')
         $("#page").enhanceWithin()
+        $.mobile.loading('hide')
         #manually doing page refresh straight from DOM
     jqm_footer_refersh: =>
         #manually doing page refresh straight from DOM

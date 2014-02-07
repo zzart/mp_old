@@ -9,7 +9,8 @@ module.exports = class AuthController extends StructureController
         @publishEvent('log:info', 'AuthController#beforeAction()')
         @publishEvent('log:info',  window.location.pathname)
         @publishEvent('log:info',  mediator.models.user?.toJSON())
-        @publishEvent('tell_user', 'Pracuje ...')
+        # @publishEvent('tell_user', 'Pracuje ...')
+        $.mobile.loading('show')
 
         if _.isEmpty(mediator.models.user)
             mediator.redirectUrl = window.location.pathname

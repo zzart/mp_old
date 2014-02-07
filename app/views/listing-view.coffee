@@ -11,7 +11,8 @@ module.exports = class AddView extends View
         @delegate 'change', "[name='category']", @rerender_form
         @delegate 'click', "#copy_address", @copy_address
         @rendered_tabs = []
-        console.log(@options)
+        @categories = localStorage.getObject('categories')
+        # console.log(@options)
 
 
     change_tab: (e)=>
@@ -22,14 +23,13 @@ module.exports = class AddView extends View
         @render_subview(tab_id)
 
     rerender_form: (e) =>
-        categories = localStorage.getObject('categories')
         selected_id = parseInt(e.target.value)
         current_form_name = @form_name.substring(0, @form_name.length - 5)
-        current_category_id = categories[current_form_name]
+        current_category_id = @categories[current_form_name]
         # console.log(e, current_category_id, current_form_name, parseInt(e.target.value))
         if current_category_id isnt selected_id
             # flip categories dict and construct ie. flat_sell_schema
-            cat = _.invert(categories)
+            cat = _.invert(@categories)
             @form_name = "#{cat[selected_id]}_form"
             @model.schema = localStorage.getObject("#{cat[selected_id]}_schema")
             @rendered_tabs = []
@@ -48,9 +48,9 @@ module.exports = class AddView extends View
             @model.save({},{
                 success:(event) =>
                     wait: true
-                    if mediator.collections[@listing_type]?
+                    if mediator.collections.listings?
                         # add it to collection so we don't need to use server ...
-                        mediator.collections[@listing_type].add(@model)
+                        mediator.collections.listings.add(@model)
                     @publishEvent 'tell_user', 'Rekord zapisany'
                     Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.last_query)}"}
                 error:(model, response, options) =>
@@ -61,6 +61,23 @@ module.exports = class AddView extends View
             })
         else
             @publishEvent 'tell_user', 'Błąd w formularzu!'
+
+
+    delete_action: =>
+        super
+        @model.destroy
+            success: (event) =>
+                # type = _.invert(localStorage.getObject('category'))[@model.get('category')]
+                mediator.collections.listings.remove(@model)
+                @publishEvent 'tell_user', 'Rekord został usunięty'
+                Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.last_query)}"}
+            error:(model, response, options) =>
+                if response.responseJSON?
+                    Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                else
+                    Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
+
+
     copy_address: (event) ->
         @publishEvent('log:info', 'copy address event')
         event.preventDefault()
@@ -257,6 +274,12 @@ module.exports = class AddView extends View
                 @init_events()
                 @init_uploader()
                 @init_sortable()
+            if tab_id is 'tab_1'
+                # lets set category whatever the form might be
+                current_form_name = @form_name.substring(0, @form_name.length - 5)
+                current_category_id = @categories[current_form_name]
+                $("[name='category']").val(current_category_id)
+
             @publishEvent 'jqm_refersh:render'
             @rendered_tabs.push(tab_id)
 

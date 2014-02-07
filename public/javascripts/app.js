@@ -353,7 +353,7 @@ module.exports = AuthController = (function(_super) {
     this.publishEvent('log:info', 'AuthController#beforeAction()');
     this.publishEvent('log:info', window.location.pathname);
     this.publishEvent('log:info', (_ref = mediator.models.user) != null ? _ref.toJSON() : void 0);
-    this.publishEvent('tell_user', 'Pracuje ...');
+    $.mobile.loading('show');
     if (_.isEmpty(mediator.models.user)) {
       mediator.redirectUrl = window.location.pathname;
       return this.redirectTo({
@@ -859,47 +859,47 @@ module.exports = ListingController = (function(_super) {
   }
 
   ListingController.prototype.list = function(params, route, options) {
-    var _this = this;
-    mediator.last_query = _.clone(options.query);
+    var listing_type,
+      _this = this;
     this.publishEvent('log:info', "in list property controller" + params + ", " + route + ", " + options);
+    mediator.last_query = _.clone(options.query);
+    listing_type = options.query.category;
     mediator.collections.listings = new Collection;
     return mediator.collections.listings.fetch({
       data: options.query,
       beforeSend: function() {
-        _this.publishEvent('loading_start');
         return _this.publishEvent('tell_user', 'Ładuje oferty...');
       },
       success: function() {
         _this.publishEvent('log:info', "data with " + params + " fetched ok");
-        _this.publishEvent('loading_stop');
         return _this.view = new ListView({
           collection: mediator.collections.listings,
-          template: 'listing_list_view',
-          filter: 'client_type',
-          region: 'content'
+          template: "" + listing_type + "_list_view",
+          filter: 'listing_type',
+          region: 'content',
+          listing_type: listing_type
         });
       },
       error: function() {
-        _this.publishEvent('loading_stop');
         return _this.publishEvent('server_error');
       }
     });
   };
 
   ListingController.prototype.add = function(params, route, options) {
-    var form, type;
+    var form, listing_type;
     this.publishEvent('log:info', "in add property controller");
     console.log(params, route, options);
-    type = options.query.type;
-    form = "" + type + "_form";
-    this.schema = localStorage.getObject("" + type + "_schema");
-    mediator.models.property = new Model;
-    mediator.models.property.schema = _.clone(this.schema);
+    listing_type = options.query.type;
+    form = "" + listing_type + "_form";
+    this.schema = localStorage.getObject("" + listing_type + "_schema");
+    mediator.models.listing = new Model;
+    mediator.models.listing.schema = _.clone(this.schema);
     this.publishEvent('log:info', "init view property controller");
     this.view = new View({
       form_name: form,
-      model: mediator.models.property,
-      listing_type: type,
+      model: mediator.models.listing,
+      listing_type: listing_type,
       can_edit: true,
       edit_type: 'add',
       region: 'content'
@@ -908,11 +908,12 @@ module.exports = ListingController = (function(_super) {
   };
 
   ListingController.prototype.show = function(params, route, options) {
-    var categories, category, form, schema;
+    var categories, category, form, schema, url;
     this.publishEvent('log:info', 'in listing show controller');
+    url = "/oferty?" + ($.param(mediator.last_query));
     if (!_.isObject(mediator.collections.listings.get(params.id))) {
       this.redirectTo({
-        '/oferty': '/oferty'
+        url: url
       });
     }
     this.model = mediator.collections.listings.get(params.id);
@@ -945,7 +946,7 @@ var LoginController, LoginView, Model, StructureController, mediator,
 
 StructureController = require('controllers/structure-controller');
 
-LoginView = require('views/login-view');
+LoginView = require('views/autologin-view');
 
 Model = require('models/login-model');
 
@@ -1680,6 +1681,7 @@ module.exports = Login = (function(_super) {
       localStorage.setObject(key, val);
     }
     localStorage.setObject('categories', this.get('categories'));
+    localStorage.setObject('choices', this.get('choices'));
     return this.set({
       is_logged: true
     });
@@ -3416,12 +3418,13 @@ module.exports = Layout = (function(_super) {
     f2 = function(callback) {
       return callback();
     };
-    return f1(function() {
+    f1(function() {
       $("#content-region").enhanceWithin();
       return f2(function() {
         return self.publishEvent('jqm_finished_rendering');
       });
     });
+    return $.mobile.loading('hide');
   };
 
   Layout.prototype.jqm_refersh_alone = function() {
@@ -3453,7 +3456,8 @@ module.exports = Layout = (function(_super) {
 
   Layout.prototype.jqm_page_refersh = function() {
     this.log.info('layout: event jqm_page_refresh caugth');
-    return $("#page").enhanceWithin();
+    $("#page").enhanceWithin();
+    return $.mobile.loading('hide');
   };
 
   Layout.prototype.jqm_footer_refersh = function() {
@@ -3607,7 +3611,6 @@ module.exports = ListView = (function(_super) {
     this.filter = this.params.filter;
     this.collection_hard = this.params.collection;
     this.collection = _.clone(this.params.collection);
-    console.log(this.collection);
     this.template = require("views/templates/" + this.params.template);
     this.delegate('change', '#select-action', this.select_action);
     this.delegate('change', '#all', this.select_all_action);
@@ -3846,6 +3849,8 @@ module.exports = AddView = (function(_super) {
 
     this.init_openstreet = __bind(this.init_openstreet, this);
 
+    this.delete_action = __bind(this.delete_action, this);
+
     this.save_action = __bind(this.save_action, this);
 
     this.rerender_form = __bind(this.rerender_form, this);
@@ -3864,7 +3869,7 @@ module.exports = AddView = (function(_super) {
     this.delegate('change', "[name='category']", this.rerender_form);
     this.delegate('click', "#copy_address", this.copy_address);
     this.rendered_tabs = [];
-    return console.log(this.options);
+    return this.categories = localStorage.getObject('categories');
   };
 
   AddView.prototype.change_tab = function(e) {
@@ -3876,13 +3881,12 @@ module.exports = AddView = (function(_super) {
   };
 
   AddView.prototype.rerender_form = function(e) {
-    var cat, categories, current_category_id, current_form_name, selected_id;
-    categories = localStorage.getObject('categories');
+    var cat, current_category_id, current_form_name, selected_id;
     selected_id = parseInt(e.target.value);
     current_form_name = this.form_name.substring(0, this.form_name.length - 5);
-    current_category_id = categories[current_form_name];
+    current_category_id = this.categories[current_form_name];
     if (current_category_id !== selected_id) {
-      cat = _.invert(categories);
+      cat = _.invert(this.categories);
       this.form_name = "" + cat[selected_id] + "_form";
       this.model.schema = localStorage.getObject("" + cat[selected_id] + "_schema");
       this.rendered_tabs = [];
@@ -3904,8 +3908,8 @@ module.exports = AddView = (function(_super) {
           ({
             wait: true
           });
-          if (mediator.collections[_this.listing_type] != null) {
-            mediator.collections[_this.listing_type].add(_this.model);
+          if (mediator.collections.listings != null) {
+            mediator.collections.listings.add(_this.model);
           }
           _this.publishEvent('tell_user', 'Rekord zapisany');
           return Chaplin.utils.redirectTo({
@@ -3923,6 +3927,27 @@ module.exports = AddView = (function(_super) {
     } else {
       return this.publishEvent('tell_user', 'Błąd w formularzu!');
     }
+  };
+
+  AddView.prototype.delete_action = function() {
+    var _this = this;
+    AddView.__super__.delete_action.apply(this, arguments);
+    return this.model.destroy({
+      success: function(event) {
+        mediator.collections.listings.remove(_this.model);
+        _this.publishEvent('tell_user', 'Rekord został usunięty');
+        return Chaplin.utils.redirectTo({
+          url: typeof url !== "undefined" && url !== null ? url : "/oferty?" + ($.param(mediator.last_query))
+        });
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
   };
 
   AddView.prototype.copy_address = function(event) {
@@ -4109,7 +4134,7 @@ module.exports = AddView = (function(_super) {
   };
 
   AddView.prototype.render_subview = function(tab_id) {
-    var $temp;
+    var $temp, current_category_id, current_form_name;
     if (tab_id == null) {
       tab_id = 'tab_1';
     }
@@ -4131,6 +4156,11 @@ module.exports = AddView = (function(_super) {
         this.init_events();
         this.init_uploader();
         this.init_sortable();
+      }
+      if (tab_id === 'tab_1') {
+        current_form_name = this.form_name.substring(0, this.form_name.length - 5);
+        current_category_id = this.categories[current_form_name];
+        $("[name='category']").val(current_category_id);
       }
       this.publishEvent('jqm_refersh:render');
       return this.rendered_tabs.push(tab_id);
@@ -5086,6 +5116,96 @@ module.exports = function (__obj) {
 }
 });
 
+;require.register("views/templates/flat_rent_list_view", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var item, _i, _len, _ref;
+    
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Lokalizacja&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Data wprowadzenia&nbsp;&nbsp;</th>\n         <th data-priority="6">Rok budowy&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+    
+      _ref = this.collection;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
+        __out.push('\n\n       <tr>\n         <td><label><input name="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" id="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" data-mini="true" type="checkbox"></label></td>\n         <td>');
+        __out.push(item['thumbnail_func']);
+        __out.push('</td>\n         <td><a href=\'/oferty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['id']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['agent']));
+        __out.push('</td>\n         <td><a href=\'/oferty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['town']));
+        __out.push(',');
+        __out.push(__sanitize(item['street']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['client']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['cena']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['ilosc_pokoi']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['powierzchnia_calkowita']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['date_created']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['rok_budowy']));
+        __out.push('</td>\n       </tr>\n      ');
+      }
+    
+      __out.push('\n     </tbody>\n   </table>\n\n\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
 ;require.register("views/templates/footer_base", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
@@ -5640,96 +5760,6 @@ module.exports = function (__obj) {
       }
     
       __out.push('\n     </tbody>\n   </table>\n');
-    
-    }).call(this);
-    
-  }).call(__obj);
-  __obj.safe = __objSafe, __obj.escape = __escape;
-  return __out.join('');
-}
-});
-
-;require.register("views/templates/listing_list_view", function(exports, require, module) {
-module.exports = function (__obj) {
-  if (!__obj) __obj = {};
-  var __out = [], __capture = function(callback) {
-    var out = __out, result;
-    __out = [];
-    callback.call(this);
-    result = __out.join('');
-    __out = out;
-    return __safe(result);
-  }, __sanitize = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else if (typeof value !== 'undefined' && value != null) {
-      return __escape(value);
-    } else {
-      return '';
-    }
-  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
-  __safe = __obj.safe = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else {
-      if (!(typeof value !== 'undefined' && value != null)) value = '';
-      var result = new String(value);
-      result.ecoSafe = true;
-      return result;
-    }
-  };
-  if (!__escape) {
-    __escape = __obj.escape = function(value) {
-      return ('' + value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    };
-  }
-  (function() {
-    (function() {
-      var item, _i, _len, _ref;
-    
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Lokalizacja&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Data wprowadzenia&nbsp;&nbsp;</th>\n         <th data-priority="6">Rok budowy&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
-    
-      _ref = this.collection;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        item = _ref[_i];
-        __out.push('\n\n       <tr>\n         <td><label><input name="');
-        __out.push(__sanitize(item['id']));
-        __out.push('" id="');
-        __out.push(__sanitize(item['id']));
-        __out.push('" data-mini="true" type="checkbox"></label></td>\n         <td>');
-        __out.push(item['thumbnail_func']);
-        __out.push('</td>\n         <td><a href=\'/oferty/');
-        __out.push(__sanitize(item['id']));
-        __out.push('\'>');
-        __out.push(__sanitize(item['id']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['agent']));
-        __out.push('</td>\n         <td><a href=\'/oferty/');
-        __out.push(__sanitize(item['id']));
-        __out.push('\'>');
-        __out.push(__sanitize(item['town']));
-        __out.push(',');
-        __out.push(__sanitize(item['street']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['client']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['cena']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['ilosc_pokoi']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['powierzchnia_calkowita']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['date_created']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['rok_budowy']));
-        __out.push('</td>\n       </tr>\n      ');
-      }
-    
-      __out.push('\n     </tbody>\n   </table>\n\n\n');
     
     }).call(this);
     

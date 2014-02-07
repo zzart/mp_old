@@ -14,7 +14,7 @@ module.exports = class ListView extends View
         @filter = @params.filter
         @collection_hard = @params.collection
         @collection = _.clone(@params.collection)
-        console.log(@collection)
+        # console.log(@collection)
         @template = require "views/templates/#{@params.template}"
         @delegate 'change', '#select-action', @select_action
         @delegate 'change', '#all', @select_all_action
