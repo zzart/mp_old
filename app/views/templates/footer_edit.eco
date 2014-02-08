@@ -2,6 +2,6 @@
         <ul>
             <li><button id="delete-button" class="ui-btn ui-btn-icon-top ui-icon-delete">Usuń</button></li>
             <li><button id="save-button" class="ui-btn ui-btn-icon-top ui-icon-check" >Zapisz</button></li>
-            <li><button id="save-and-add-button" class="ui-btn ui-btn-icon-top ui-icon-forward">Zapisz i dodaj następny</button></li>
+            <li><button id="back-button" class="ui-btn ui-btn-icon-top ui-icon-back">Wróć</button></li>
         </ul>
     </div><!-- /navbar -->

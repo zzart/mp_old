@@ -18,7 +18,13 @@ module.exports = class ClientListController extends Controller
             success: =>
                 @publishEvent('log:info', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
-                @view = new ListView {collection:mediator.collections.clients, template:'client_list_view' ,filter:'client_type',  region:'content'}
+                @view = new ListView {
+                    collection:mediator.collections.clients
+                    template:'client_list_view'
+                    filter:'client_type'
+                    region:'content'
+                    controller: 'client_controller'
+                }
             error: =>
                 @publishEvent 'loading_stop'
                 @publishEvent 'server_error'

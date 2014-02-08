@@ -33,3 +33,9 @@ module.exports = class BonEditView extends View
                 else
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
+    attach: =>
+        super
+        @publishEvent('log:info', 'view: bon-view afterRender()')
+        # remove back_button
+        # disable_button fires twice but what do i care ;)
+        @publishEvent 'disable_buttons', @can_edit ? false , @edit_type, false, true

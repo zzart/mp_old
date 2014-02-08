@@ -17,6 +17,27 @@ module.exports = class Listing extends Chaplin.Model
                     img.src = 'data:' + r.mime_type + ';base64,' + r.thumbnail
                     img.outerHTML
 
+        date_created_func: ->
+            @get('date_created').substr?(0,10)
+        date_modyfied_func: ->
+            @get('date_modyfied').substr?(0,10)
+        waluta_func: ->
+            localStorage.getObject('choices')["#{@get('waluta')}"]
+        agent_func: ->
+            localStorage.getObject('agents')["#{@get('agent')}"]
+        client_func: ->
+            localStorage.getObject('clients')["#{@get('client')}"]
+
+        status_func: ->
+            switch @get('status')
+                 when 0 then 'nieaktywna'
+                 when 1 then 'aktywna'
+                 when 2 then 'archiwalna'
+                 when 3 then 'robocza'
+                 when 4 then 'sprzedana'
+                 when 5 then 'wynajęta'
+                 when 6 then 'umowa przedwstępna'
+
     toJSON: ->
         data = {}
         json = Backbone.Model::toJSON.call(this)

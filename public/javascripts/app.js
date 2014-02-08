@@ -138,7 +138,8 @@ module.exports = Application = (function(_super) {
     mediator.collections = {};
     mediator.schemas = {};
     mediator.last_query = {};
-    mediator.upload_url = 'http://localhost:8080/v1/dodaj-plik';
+    mediator.server_url = 'http://localhost:8080/';
+    mediator.upload_url = "" + mediator.server_url + "v1/pliki";
     mediator.app_key = 'mp';
     mediator.app = '4ba2b78a-5675-42d9-8aab-f65ecf3ce9ba';
     mediator.can_edit = function(is_admin, author_id, user_id) {
@@ -210,7 +211,8 @@ module.exports = AgentController = (function(_super) {
           collection: mediator.collections.agents,
           template: 'agent_list_view',
           filter: 'agent_type',
-          region: 'content'
+          region: 'content',
+          controller: 'agent_controller'
         });
       },
       error: function() {
@@ -523,7 +525,8 @@ module.exports = BranchController = (function(_super) {
         return _this.view = new ListView({
           collection: mediator.collections.branches,
           template: 'branch_list_view',
-          region: 'content'
+          region: 'content',
+          controller: 'branch_controller'
         });
       },
       error: function() {
@@ -615,7 +618,8 @@ module.exports = ClientListController = (function(_super) {
           collection: mediator.collections.clients,
           template: 'client_list_view',
           filter: 'client_type',
-          region: 'content'
+          region: 'content',
+          controller: 'client_controller'
         });
       },
       error: function() {
@@ -875,9 +879,10 @@ module.exports = ListingController = (function(_super) {
         return _this.view = new ListView({
           collection: mediator.collections.listings,
           template: "" + listing_type + "_list_view",
-          filter: 'listing_type',
+          filter: 'status',
           region: 'content',
-          listing_type: listing_type
+          listing_type: listing_type,
+          controller: 'listing_controller'
         });
       },
       error: function() {
@@ -1631,6 +1636,41 @@ module.exports = Listing = (function(_super) {
           return img.outerHTML;
         }
       }
+    },
+    date_created_func: function() {
+      var _base;
+      return typeof (_base = this.get('date_created')).substr === "function" ? _base.substr(0, 10) : void 0;
+    },
+    date_modyfied_func: function() {
+      var _base;
+      return typeof (_base = this.get('date_modyfied')).substr === "function" ? _base.substr(0, 10) : void 0;
+    },
+    waluta_func: function() {
+      return localStorage.getObject('choices')["" + (this.get('waluta'))];
+    },
+    agent_func: function() {
+      return localStorage.getObject('agents')["" + (this.get('agent'))];
+    },
+    client_func: function() {
+      return localStorage.getObject('clients')["" + (this.get('client'))];
+    },
+    status_func: function() {
+      switch (this.get('status')) {
+        case 0:
+          return 'nieaktywna';
+        case 1:
+          return 'aktywna';
+        case 2:
+          return 'archiwalna';
+        case 3:
+          return 'robocza';
+        case 4:
+          return 'sprzedana';
+        case 5:
+          return 'wynajęta';
+        case 6:
+          return 'umowa przedwstępna';
+      }
     }
   };
 
@@ -1682,6 +1722,8 @@ module.exports = Login = (function(_super) {
     }
     localStorage.setObject('categories', this.get('categories'));
     localStorage.setObject('choices', this.get('choices'));
+    localStorage.setObject('agents', this.get('agents'));
+    localStorage.setObject('clients', this.get('clients'));
     return this.set({
       is_logged: true
     });
@@ -1813,6 +1855,8 @@ module.exports = View = (function(_super) {
   function View() {
     this.attach = __bind(this.attach, this);
 
+    this.back_action = __bind(this.back_action, this);
+
     this.delete_action = __bind(this.delete_action, this);
 
     this.save_action = __bind(this.save_action, this);
@@ -1871,6 +1915,13 @@ module.exports = View = (function(_super) {
           return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
         }
       }
+    });
+  };
+
+  View.prototype.back_action = function() {
+    View.__super__.back_action.apply(this, arguments);
+    return Chaplin.utils.redirectTo({
+      url: '/agenci'
     });
   };
 
@@ -2050,6 +2101,8 @@ module.exports = BonEditView = (function(_super) {
   __extends(BonEditView, _super);
 
   function BonEditView() {
+    this.attach = __bind(this.attach, this);
+
     this.delete_action = __bind(this.delete_action, this);
 
     this.save_action = __bind(this.save_action, this);
@@ -2101,6 +2154,13 @@ module.exports = BonEditView = (function(_super) {
         }
       }
     });
+  };
+
+  BonEditView.prototype.attach = function() {
+    var _ref;
+    BonEditView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'view: bon-view afterRender()');
+    return this.publishEvent('disable_buttons', (_ref = this.can_edit) != null ? _ref : false, this.edit_type, false, true);
   };
 
   return BonEditView;
@@ -2158,6 +2218,8 @@ module.exports = BranchView = (function(_super) {
   __extends(BranchView, _super);
 
   function BranchView() {
+    this.back_action = __bind(this.back_action, this);
+
     this.delete_action = __bind(this.delete_action, this);
 
     this.save_action = __bind(this.save_action, this);
@@ -2218,6 +2280,13 @@ module.exports = BranchView = (function(_super) {
           return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
         }
       }
+    });
+  };
+
+  BranchView.prototype.back_action = function() {
+    BranchView.__super__.back_action.apply(this, arguments);
+    return Chaplin.utils.redirectTo({
+      url: '/oddzialy'
     });
   };
 
@@ -2310,6 +2379,8 @@ module.exports = ClientView = (function(_super) {
   __extends(ClientView, _super);
 
   function ClientView() {
+    this.back_action = __bind(this.back_action, this);
+
     this.delete_action = __bind(this.delete_action, this);
 
     this.initialize = __bind(this.initialize, this);
@@ -2341,6 +2412,13 @@ module.exports = ClientView = (function(_super) {
     });
   };
 
+  ClientView.prototype.back_action = function() {
+    ClientView.__super__.back_action.apply(this, arguments);
+    return Chaplin.utils.redirectTo({
+      url: '/klienci-wspolni'
+    });
+  };
+
   return ClientView;
 
 })(View);
@@ -2362,6 +2440,8 @@ module.exports = ClientAddView = (function(_super) {
   __extends(ClientAddView, _super);
 
   function ClientAddView() {
+    this.back_action = __bind(this.back_action, this);
+
     this.attach = __bind(this.attach, this);
 
     this.delete_action = __bind(this.delete_action, this);
@@ -2447,6 +2527,13 @@ module.exports = ClientAddView = (function(_super) {
     return this.publishEvent('log:info', 'view: clientadd afterRender()');
   };
 
+  ClientAddView.prototype.back_action = function() {
+    ClientAddView.__super__.back_action.apply(this, arguments);
+    return Chaplin.utils.redirectTo({
+      url: '/klienci'
+    });
+  };
+
   return ClientAddView;
 
 })(View);
@@ -2520,7 +2607,7 @@ module.exports = EditView = (function(_super) {
 
     this.get_form = __bind(this.get_form, this);
 
-    this.save_and_add_action = __bind(this.save_and_add_action, this);
+    this.back_action = __bind(this.back_action, this);
 
     this.save_action = __bind(this.save_action, this);
 
@@ -2531,8 +2618,6 @@ module.exports = EditView = (function(_super) {
     this.init_uploader = __bind(this.init_uploader, this);
 
     this.init_sortable = __bind(this.init_sortable, this);
-
-    this._remove_resources = __bind(this._remove_resources, this);
 
     this.remove_resources = __bind(this.remove_resources, this);
 
@@ -2576,7 +2661,7 @@ module.exports = EditView = (function(_super) {
     this.subscribeEvent('delete:clicked', this.delete_action);
     this.subscribeEvent('popupbeforeposition', this.popup_position);
     this.subscribeEvent('save:clicked', this.save_action);
-    this.subscribeEvent('save_and_add:clicked', this.save_and_add_action);
+    this.subscribeEvent('back:clicked', this.back_action);
     this.delegate('click', 'a.form-help', this.form_help);
     this.delegate('click', '[data-role=\'navbar\']:first li', this.refresh_resource);
     return this.delegate('click', "[name='resources'] li a:first-child", this.resource_preview);
@@ -2594,12 +2679,12 @@ module.exports = EditView = (function(_super) {
     this.publishEvent("log:info", "" + uuid + "," + preview + ", " + e);
     img = new Image();
     if (preview === "true") {
-      img.src = "http://localhost:8080/v1/pliki/" + uuid + "/" + (mediator.models.user.get('company_name'));
+      img.src = "" + mediator.upload_url + "/" + uuid + "/" + (mediator.models.user.get('company_name'));
     } else {
       img.src = "images/file.png";
     }
     button = "<a href='#' data-rel='back' class='ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right'>Zamknij</a>";
-    save_button = "<a href='http://localhost:8080/v1/pliki/" + uuid + "/" + (mediator.models.user.get('company_name')) + "?download=true' class='ui-btn ui-btn-inline'>Zapisz na dysku</a>";
+    save_button = "<a href='" + mediator.upload_url + "/" + uuid + "/" + (mediator.models.user.get('company_name')) + "?download=true' class='ui-btn ui-btn-inline'>Zapisz na dysku</a>";
     element = "" + button + img.outerHTML + "<br />" + save_button;
     return setTimeout(function() {
       return $('#resource_preview').html(element).popup('open');
@@ -2642,7 +2727,7 @@ module.exports = EditView = (function(_super) {
     var self, url,
       _this = this;
     self = this;
-    url = "http://localhost:8080/v1/pliki/" + uuid;
+    url = "" + mediator.upload_url + "/" + uuid;
     return $.ajax({
       url: url,
       beforeSend: function(xhr) {
@@ -2657,38 +2742,6 @@ module.exports = EditView = (function(_super) {
         for (_i = 0, _len = items.length; _i < _len; _i++) {
           i = items[_i];
           if (i.uuid === uuid) {
-            _results.push(self.form.fields.resources.editor.removeItem(i, items.indexOf(i)));
-          } else {
-            _results.push(void 0);
-          }
-        }
-        return _results;
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-        return self.publishEvent("tell_user", jqXHR.responseJSON.title || errorThrown);
-      }
-    });
-  };
-
-  EditView.prototype._remove_resources = function(listEditor, itemEditor, extra) {
-    var self, url,
-      _this = this;
-    self = this;
-    url = "http://localhost:8080/v1/pliki/" + itemEditor.value.uuid;
-    return $.ajax({
-      url: url,
-      beforeSend: function(xhr) {
-        return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token(url));
-      },
-      type: "DELETE",
-      success: function(data, textStatus, jqXHR) {
-        var i, items, new_items, _i, _len, _results;
-        items = self.form.fields.resources.getValue();
-        new_items = [];
-        _results = [];
-        for (_i = 0, _len = items.length; _i < _len; _i++) {
-          i = items[_i];
-          if (i.uuid === itemEditor.value.uuid) {
             _results.push(self.form.fields.resources.editor.removeItem(i, items.indexOf(i)));
           } else {
             _results.push(void 0);
@@ -2735,9 +2788,9 @@ module.exports = EditView = (function(_super) {
     return this.uploader = new qq.FineUploader({
       element: $("#upload")[0],
       request: {
-        endpoint: 'http://localhost:8080/v1/pliki',
+        endpoint: "" + mediator.upload_url,
         customHeaders: {
-          'X-Auth-Token': mediator.gen_token('http://localhost:8080/v1/pliki')
+          'X-Auth-Token': mediator.gen_token("" + mediator.upload_url)
         }
       },
       callbacks: {
@@ -2785,8 +2838,8 @@ module.exports = EditView = (function(_super) {
     return this.publishEvent('log:info', 'save_action  caught');
   };
 
-  EditView.prototype.save_and_add_action = function() {
-    return this.publishEvent('log:info', 'save_and_add_action  caught');
+  EditView.prototype.back_action = function(event) {
+    return this.publishEvent('log:info', 'back_action  caught');
   };
 
   EditView.prototype.get_form = function() {
@@ -2818,7 +2871,7 @@ module.exports = EditView = (function(_super) {
     var _ref;
     EditView.__super__.attach.apply(this, arguments);
     this.publishEvent('log:info', 'view: edit-view afterRender()');
-    this.publishEvent('disable_buttons', (_ref = this.can_edit) != null ? _ref : False, this.edit_type, this.delete_only);
+    this.publishEvent('disable_buttons', (_ref = this.can_edit) != null ? _ref : false, this.edit_type, this.delete_only);
     if (!this.form_name.match('rent|sell')) {
       if (_.isObject(this.model.schema.resources)) {
         this.init_events();
@@ -2852,7 +2905,7 @@ module.exports = FooterView = (function(_super) {
   function FooterView() {
     this.attach = __bind(this.attach, this);
 
-    this.save_and_add = __bind(this.save_and_add, this);
+    this.back = __bind(this.back, this);
 
     this["delete"] = __bind(this["delete"], this);
 
@@ -2876,7 +2929,7 @@ module.exports = FooterView = (function(_super) {
     FooterView.__super__.initialize.apply(this, arguments);
     this.delegate('click', '#delete-button', this["delete"]);
     this.delegate('click', '#save-button', this.save);
-    return this.delegate('click', '#save-and-add-button', this.save_and_add);
+    return this.delegate('click', '#back-button', this.back);
   };
 
   FooterView.prototype.save = function(event) {
@@ -2889,9 +2942,9 @@ module.exports = FooterView = (function(_super) {
     return this.publishEvent('delete:clicked');
   };
 
-  FooterView.prototype.save_and_add = function(event) {
+  FooterView.prototype.back = function(event) {
     event.preventDefault();
-    return this.publishEvent('save_and_add:clicked');
+    return this.publishEvent('back:clicked');
   };
 
   FooterView.prototype.attach = function() {
@@ -3359,7 +3412,7 @@ module.exports = Layout = (function(_super) {
     }
   };
 
-  Layout.prototype.disable_buttons = function(can_edit, edit_type, delete_only) {
+  Layout.prototype.disable_buttons = function(can_edit, edit_type, delete_only, no_back) {
     this.log.info('form buttons disable caught');
     if (edit_type === 'add') {
       $("#delete-button").attr('disabled', true);
@@ -3367,11 +3420,12 @@ module.exports = Layout = (function(_super) {
     if (!can_edit) {
       $("#delete-button").attr('disabled', true);
       $("#save-button").attr('disabled', true);
-      $("#save-and-add-button").attr('disabled', true);
     }
     if (delete_only) {
       $("#save-button").attr('disabled', true);
-      return $("#save-and-add-button").attr('disabled', true);
+    }
+    if (no_back) {
+      return $("#back-button").attr('disabled', true);
     }
   };
 
@@ -3585,6 +3639,8 @@ module.exports = ListView = (function(_super) {
 
     this.refresh_action = __bind(this.refresh_action, this);
 
+    this.filter_apply = __bind(this.filter_apply, this);
+
     this.filter_action = __bind(this.filter_action, this);
 
     this.select_action = __bind(this.select_action, this);
@@ -3606,17 +3662,25 @@ module.exports = ListView = (function(_super) {
   ListView.prototype.className = 'ui-content';
 
   ListView.prototype.initialize = function(params) {
+    var _ref;
     ListView.__super__.initialize.apply(this, arguments);
     this.params = params;
     this.filter = this.params.filter;
     this.collection_hard = this.params.collection;
     this.collection = _.clone(this.params.collection);
+    this.listing_type = (_ref = this.params.listing_type) != null ? _ref : false;
+    this.controller = this.params.controller;
+    if (_.isNull(localStorage.getObject(this.controller))) {
+      localStorage.setObject(this.controller, {});
+    }
     this.template = require("views/templates/" + this.params.template);
     this.delegate('change', '#select-action', this.select_action);
     this.delegate('change', '#all', this.select_all_action);
     this.delegate('click', '#refresh', this.refresh_action);
     this.delegate('change', '#select-filter', this.filter_action);
-    return this.publishEvent('log:debug', this.params);
+    this.delegate('change', '#flip-checkbox', this.filter_action);
+    this.publishEvent('log:debug', this.params);
+    return window.collection = this.collection_hard;
   };
 
   ListView.prototype.select_all_action = function() {
@@ -3674,16 +3738,33 @@ module.exports = ListView = (function(_super) {
   };
 
   ListView.prototype.filter_action = function(event) {
-    var list_of_models;
+    var obj;
     this.publishEvent('log:debug', event.target.value);
-    this.publishEvent('log:debug', this.filter);
-    this.filter_obj = {};
-    this.filter_obj[this.filter] = parseInt(event.target.value);
+    this.filter = event.target.dataset.filter;
     if (_.isEmpty(event.target.value)) {
-      this.collection = _.clone(this.collection_hard);
+      obj = localStorage.getObject(this.controller);
+      obj[this.filter] = '';
+      localStorage.setObject(this.controller, obj);
     } else {
-      list_of_models = this.collection_hard.where(this.filter_obj);
+      obj = localStorage.getObject(this.controller);
+      obj[this.filter] = parseInt(event.target.value);
+      localStorage.setObject(this.controller, obj);
+    }
+    return this.filter_apply();
+  };
+
+  ListView.prototype.filter_apply = function() {
+    var list_of_models, obj;
+    this.publishEvent('log:debug', 'filter apply');
+    obj = localStorage.getObject(this.controller);
+    if (obj[this.filter] !== false) {
+      console.log(obj);
+      this.publishEvent('log:debug', 'filter apply');
+      list_of_models = this.collection_hard.where(obj);
       this.collection.reset(list_of_models);
+    } else {
+      this.publishEvent('log:debug', 'filter reset');
+      this.collection = _.clone(this.collection_hard);
     }
     return this.render();
   };
@@ -3710,7 +3791,8 @@ module.exports = ListView = (function(_super) {
 
   ListView.prototype.getTemplateData = function() {
     return {
-      collection: this.collection.toJSON()
+      collection: this.collection.toJSON(),
+      listing_type: this.listing_type
     };
   };
 
@@ -3849,6 +3931,8 @@ module.exports = AddView = (function(_super) {
 
     this.init_openstreet = __bind(this.init_openstreet, this);
 
+    this.back_action = __bind(this.back_action, this);
+
     this.delete_action = __bind(this.delete_action, this);
 
     this.save_action = __bind(this.save_action, this);
@@ -3947,6 +4031,13 @@ module.exports = AddView = (function(_super) {
           return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
         }
       }
+    });
+  };
+
+  AddView.prototype.back_action = function() {
+    AddView.__super__.back_action.apply(this, arguments);
+    return Chaplin.utils.redirectTo({
+      url: "/oferty?" + ($.param(mediator.last_query))
     });
   };
 
@@ -5158,12 +5249,16 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Lokalizacja&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Data wprowadzenia&nbsp;&nbsp;</th>\n         <th data-priority="6">Rok budowy&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/oferty/dodaj?type=');
+    
+      __out.push(__sanitize(this.listing_type));
+    
+      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter" data-filter=\'status\'>\n                    <option selected disabled>Status</option>\n                    <option value="">Wszystkie</option>\n                    <option value="1">Aktywne</option>\n                    <option value="0">Nieaktywne</option>\n                    <option value="2">Archiwalne</option>\n                    <option value="3">Robocze</option>\n                    <option value="4">Sprzedane</option>\n                    <option value="5">Wynajęte</option>\n                    <option value="6">Umowa przedstępna</option>\n                </select>\n\n\n\n\n\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Lokalizacja&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Data wprowadzenia&nbsp;&nbsp;</th>\n         <th data-priority="6">Data modyfikacji&nbsp;&nbsp;</th>\n         <th data-priority="6">Status&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
-        __out.push('\n\n       <tr>\n         <td><label><input name="');
+        __out.push('\n       <tr>\n         <td><label><input name="');
         __out.push(__sanitize(item['id']));
         __out.push('" id="');
         __out.push(__sanitize(item['id']));
@@ -5172,31 +5267,48 @@ module.exports = function (__obj) {
         __out.push('</td>\n         <td><a href=\'/oferty/');
         __out.push(__sanitize(item['id']));
         __out.push('\'>');
-        __out.push(__sanitize(item['id']));
+        __out.push(__sanitize(item['remote_id']));
         __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['agent']));
+        __out.push(__sanitize(item['agent_func']));
         __out.push('</td>\n         <td><a href=\'/oferty/');
         __out.push(__sanitize(item['id']));
-        __out.push('\'>');
-        __out.push(__sanitize(item['town']));
-        __out.push(',');
-        __out.push(__sanitize(item['street']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['client']));
+        __out.push('\'>\n            ');
+        if (item['town']) {
+          __out.push('\n                ');
+          __out.push(__sanitize(item['town']));
+          __out.push('\n            ');
+        }
+        __out.push('\n            ');
+        if (item['street']) {
+          __out.push('\n                ,');
+          __out.push(__sanitize(item['street']));
+          __out.push('\n            ');
+        }
+        __out.push('\n            ');
+        if (item['street_district']) {
+          __out.push('\n                ,');
+          __out.push(__sanitize(item['street_district']));
+          __out.push('\n            ');
+        }
+        __out.push('\n            </td>\n         <td>');
+        __out.push(__sanitize(item['client_func']));
         __out.push('</td>\n         <td>');
         __out.push(__sanitize(item['cena']));
+        __out.push(__sanitize(item['waluta_func']));
         __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['ilosc_pokoi']));
+        __out.push(__sanitize(item['liczba_pokoi']));
         __out.push('</td>\n         <td>');
         __out.push(__sanitize(item['powierzchnia_calkowita']));
+        __out.push(' m2</td>\n         <td>');
+        __out.push(__sanitize(item['date_created_func']));
         __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['date_created']));
+        __out.push(__sanitize(item['date_modyfied_func']));
         __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['rok_budowy']));
+        __out.push(__sanitize(item['status_func']));
         __out.push('</td>\n       </tr>\n      ');
       }
     
-      __out.push('\n     </tbody>\n   </table>\n\n\n');
+      __out.push('\n\n     </tbody>\n   </table>\n\n\n');
     
     }).call(this);
     
@@ -5298,7 +5410,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push(' <div data-role="navbar">\n        <ul>\n            <li><button id="delete-button" class="ui-btn ui-btn-icon-top ui-icon-delete">Usuń</button></li>\n            <li><button id="save-button" class="ui-btn ui-btn-icon-top ui-icon-check" >Zapisz</button></li>\n            <li><button id="save-and-add-button" class="ui-btn ui-btn-icon-top ui-icon-forward">Zapisz i dodaj następny</button></li>\n        </ul>\n    </div><!-- /navbar -->\n');
+      __out.push(' <div data-role="navbar">\n        <ul>\n            <li><button id="delete-button" class="ui-btn ui-btn-icon-top ui-icon-delete">Usuń</button></li>\n            <li><button id="save-button" class="ui-btn ui-btn-icon-top ui-icon-check" >Zapisz</button></li>\n            <li><button id="back-button" class="ui-btn ui-btn-icon-top ui-icon-back">Wróć</button></li>\n        </ul>\n    </div><!-- /navbar -->\n');
     
     }).call(this);
     

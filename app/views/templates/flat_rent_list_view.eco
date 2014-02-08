@@ -3,7 +3,7 @@
         <form>
             <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b'>
                 <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
-                <a href='/klienci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
+                <a href='/oferty/dodaj?type=<%= @listing_type %>' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
 
                 <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
                 <select name="select-action" id="select-action">
@@ -12,15 +12,24 @@
                     <option value="drukuj" disabled>Drukuj</option>
                     <option value="eksport" disabled>Eksport do pliku</option>
                 </select>
+
                 <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
-                <select name="select-filter" id="select-filter">
-                    <option selected disabled>Filtr</option>
-                    <option value="">Wszyscy</option>
-                    <option value="1">Kupujący</option>
-                    <option value="2">Sprzedający</option>
-                    <option value="3">Najemca</option>
-                    <option value="4">Wynajmujący</option>
+                <select name="select-filter" id="select-filter" data-filter='status'>
+                    <option selected disabled>Status</option>
+                    <option value="">Wszystkie</option>
+                    <option value="1">Aktywne</option>
+                    <option value="0">Nieaktywne</option>
+                    <option value="2">Archiwalne</option>
+                    <option value="3">Robocze</option>
+                    <option value="4">Sprzedane</option>
+                    <option value="5">Wynajęte</option>
+                    <option value="6">Umowa przedstępna</option>
                 </select>
+
+
+
+
+
             </fieldset>
         </form>
     </div>
@@ -35,8 +44,8 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
      <thead>
        <tr class='th-groups'>
          <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>
-         <th>ID</th>
          <th>Zdjęcie&nbsp;&nbsp;</th>
+         <th>ID</th>
          <th>Agent&nbsp;&nbsp;</th>
          <th>Lokalizacja&nbsp;&nbsp;</th>
          <th data-priority="2">Klient&nbsp;&nbsp;</th>
@@ -44,26 +53,38 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
          <th data-priority="4">Pok.&nbsp;&nbsp;</th>
          <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>
          <th data-priority="6">Data wprowadzenia&nbsp;&nbsp;</th>
-         <th data-priority="6">Rok budowy&nbsp;&nbsp;</th>
+         <th data-priority="6">Data modyfikacji&nbsp;&nbsp;</th>
+         <th data-priority="6">Status&nbsp;&nbsp;</th>
        </tr>
      </thead>
      <tbody>
       <% for item in @collection : %>
-
        <tr>
          <td><label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
          <td><%- item['thumbnail_func'] %></td>
-         <td><a href='/oferty/<%= item['id'] %>'><%= item['id'] %></td>
-         <td><%= item['agent'] %></td>
-         <td><a href='/oferty/<%= item['id'] %>'><%= item['town'] %>,<%= item['street'] %></td>
-         <td><%= item['client'] %></td>
-         <td><%= item['cena'] %></td>
-         <td><%= item['ilosc_pokoi'] %></td>
-         <td><%= item['powierzchnia_calkowita'] %></td>
-         <td><%= item['date_created'] %></td>
-         <td><%= item['rok_budowy'] %></td>
+         <td><a href='/oferty/<%= item['id'] %>'><%= item['remote_id'] %></td>
+         <td><%= item['agent_func'] %></td>
+         <td><a href='/oferty/<%= item['id'] %>'>
+            <% if item['town']: %>
+                <%= item['town'] %>
+            <% end %>
+            <% if item['street']: %>
+                ,<%= item['street'] %>
+            <% end %>
+            <% if item['street_district']: %>
+                ,<%= item['street_district'] %>
+            <% end %>
+            </td>
+         <td><%= item['client_func'] %></td>
+         <td><%= item['cena'] %><%= item['waluta_func'] %></td>
+         <td><%= item['liczba_pokoi'] %></td>
+         <td><%= item['powierzchnia_calkowita'] %> m2</td>
+         <td><%= item['date_created_func'] %></td>
+         <td><%= item['date_modyfied_func'] %></td>
+         <td><%= item['status_func'] %></td>
        </tr>
       <% end %>
+
      </tbody>
    </table>
 

@@ -21,7 +21,7 @@ module.exports = class EditView extends View
         @subscribeEvent('delete:clicked', @delete_action)
         @subscribeEvent('popupbeforeposition', @popup_position)
         @subscribeEvent('save:clicked', @save_action)
-        @subscribeEvent('save_and_add:clicked', @save_and_add_action)
+        @subscribeEvent('back:clicked', @back_action)
         @delegate 'click', 'a.form-help', @form_help
         @delegate 'click', '[data-role=\'navbar\']:first li', @refresh_resource
         # @delegate('DOMSubtreeModified','#resource_list', @refresh_resource )
@@ -39,13 +39,13 @@ module.exports = class EditView extends View
 
         img = new Image()
         if preview is "true"
-            img.src = "http://localhost:8080/v1/pliki/#{uuid}/#{mediator.models.user.get('company_name')}"
+            img.src = "#{mediator.upload_url}/#{uuid}/#{mediator.models.user.get('company_name')}"
         else
             img.src = "images/file.png" # localhost:3333
             # img.height = '100'
             # img.width = '100'
         button = "<a href='#' data-rel='back' class='ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right'>Zamknij</a>"
-        save_button = "<a href='http://localhost:8080/v1/pliki/#{uuid}/#{mediator.models.user.get('company_name')}?download=true' class='ui-btn ui-btn-inline'>Zapisz na dysku</a>"
+        save_button = "<a href='#{mediator.upload_url}/#{uuid}/#{mediator.models.user.get('company_name')}?download=true' class='ui-btn ui-btn-inline'>Zapisz na dysku</a>"
         element = "#{button}#{img.outerHTML}<br />#{save_button}"
         setTimeout(->
             $('#resource_preview').html(element).popup('open')
@@ -85,7 +85,7 @@ module.exports = class EditView extends View
         # fineuploader doesn't support deleting files later then directly after upload
         # so need to do this by hand
         self = @
-        url = "http://localhost:8080/v1/pliki/#{uuid}"
+        url = "#{mediator.upload_url}/#{uuid}"
         $.ajax(
             url: url
             beforeSend: (xhr) ->
@@ -101,33 +101,6 @@ module.exports = class EditView extends View
                     if i.uuid is uuid
                         # console.log('removed:', i, items.indexOf(i))
                         self.form.fields.resources.editor.removeItem(i, items.indexOf(i))
-            error: (jqXHR, textStatus, errorThrown ) ->
-                self.publishEvent("tell_user", jqXHR.responseJSON.title or errorThrown)
-            #contentType: "application/json"
-            # dataType: "json"
-            # data: {"file": itemEditor.value.uuid}
-        )
-    _remove_resources:(listEditor, itemEditor, extra) =>
-
-        # fineuploader doesn't support deleting files later then directly after upload
-        # so need to do this by hand
-        self = @
-        url = "http://localhost:8080/v1/pliki/#{itemEditor.value.uuid}"
-        $.ajax(
-            url: url
-            beforeSend: (xhr) ->
-                xhr.setRequestHeader('X-Auth-Token' , mediator.gen_token(url))
-            type: "DELETE"
-            success: (data, textStatus, jqXHR ) =>
-                #lets delete this item from editor
-                # console.log('success', data, textStatus, jqXHR)
-                items = self.form.fields.resources.getValue()
-                new_items = []
-                # console.log('all itmes:', items, '  removing ' , itemEditor.value.uuid)
-                for i in items
-                    if i.uuid is itemEditor.value.uuid
-                        self.form.fields.resources.editor.removeItem(i, items.indexOf(i))
-                        # console.log('removed:', i, items.indexOf(i))
             error: (jqXHR, textStatus, errorThrown ) ->
                 self.publishEvent("tell_user", jqXHR.responseJSON.title or errorThrown)
             #contentType: "application/json"
@@ -166,8 +139,8 @@ module.exports = class EditView extends View
             element: $("#upload")[0]
             request:
                 # endpoint: mediator.upload_url
-                endpoint: 'http://localhost:8080/v1/pliki'
-                customHeaders: {'X-Auth-Token':mediator.gen_token('http://localhost:8080/v1/pliki')}
+                endpoint: "#{mediator.upload_url}"
+                customHeaders: {'X-Auth-Token':mediator.gen_token("#{mediator.upload_url}")}
                 #params: {h: hash}
             callbacks:
                 onSubmit: (e) ->
@@ -212,8 +185,8 @@ module.exports = class EditView extends View
         @publishEvent('log:info', 'delete  caught')
     save_action: (url) =>
         @publishEvent('log:info', 'save_action  caught')
-    save_and_add_action: =>
-        @publishEvent('log:info', 'save_and_add_action  caught')
+    back_action: (event) =>
+        @publishEvent('log:info', 'back_action  caught')
 
     get_form: =>
         @publishEvent('log:info',"form name: #{@form_name}")
@@ -248,7 +221,7 @@ module.exports = class EditView extends View
     attach: =>
         super
         @publishEvent('log:info', 'view: edit-view afterRender()')
-        @publishEvent 'disable_buttons', @can_edit ? False , @edit_type, @delete_only
+        @publishEvent 'disable_buttons', @can_edit ? false , @edit_type, @delete_only
         #move listing inints into listing view
         if not @form_name.match('rent|sell')
             # init resources when they are needed
@@ -257,3 +230,39 @@ module.exports = class EditView extends View
                 @init_uploader()
                 @init_sortable()
         @publishEvent 'jqm_refersh:render'
+
+
+
+
+
+
+
+
+
+        # _remove_resources:(listEditor, itemEditor, extra) =>
+
+        #     # fineuploader doesn't support deleting files later then directly after upload
+        #     # so need to do this by hand
+        #     self = @
+        #     url = "http://localhost:8080/v1/pliki/#{itemEditor.value.uuid}"
+        #     $.ajax(
+        #         url: url
+        #         beforeSend: (xhr) ->
+        #             xhr.setRequestHeader('X-Auth-Token' , mediator.gen_token(url))
+        #         type: "DELETE"
+        #         success: (data, textStatus, jqXHR ) =>
+        #             #lets delete this item from editor
+        #             # console.log('success', data, textStatus, jqXHR)
+        #             items = self.form.fields.resources.getValue()
+        #             new_items = []
+        #             # console.log('all itmes:', items, '  removing ' , itemEditor.value.uuid)
+        #             for i in items
+        #                 if i.uuid is itemEditor.value.uuid
+        #                     self.form.fields.resources.editor.removeItem(i, items.indexOf(i))
+        #                     # console.log('removed:', i, items.indexOf(i))
+        #         error: (jqXHR, textStatus, errorThrown ) ->
+        #             self.publishEvent("tell_user", jqXHR.responseJSON.title or errorThrown)
+        #         #contentType: "application/json"
+        #         # dataType: "json"
+        #         # data: {"file": itemEditor.value.uuid}
+        #     )

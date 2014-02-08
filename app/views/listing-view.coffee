@@ -77,6 +77,9 @@ module.exports = class AddView extends View
                 else
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
+    back_action: =>
+        super
+        Chaplin.utils.redirectTo {url: "/oferty?#{$.param(mediator.last_query)}"}
 
     copy_address: (event) ->
         @publishEvent('log:info', 'copy address event')

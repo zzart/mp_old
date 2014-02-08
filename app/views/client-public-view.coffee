@@ -18,3 +18,6 @@ module.exports = class ClientView extends View
                 else
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
+    back_action: =>
+        super
+        Chaplin.utils.redirectTo {url: '/klienci-wspolni'}

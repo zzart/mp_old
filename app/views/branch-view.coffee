@@ -38,3 +38,7 @@ module.exports = class BranchView extends View
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
                 else
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
+
+    back_action: =>
+        super
+        Chaplin.utils.redirectTo {url: '/oddzialy'}

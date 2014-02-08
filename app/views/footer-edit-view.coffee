@@ -11,7 +11,7 @@ module.exports = class FooterView extends View
         super
         @delegate 'click', '#delete-button', @delete
         @delegate 'click', '#save-button', @save
-        @delegate 'click', '#save-and-add-button', @save_and_add
+        @delegate 'click', '#back-button', @back
 
     save: (event) =>
         event.preventDefault()
@@ -19,9 +19,9 @@ module.exports = class FooterView extends View
     delete: (event) =>
         event.preventDefault()
         @publishEvent 'delete:clicked'
-    save_and_add: (event) =>
+    back: (event) =>
         event.preventDefault()
-        @publishEvent 'save_and_add:clicked'
+        @publishEvent 'back:clicked'
 
     attach: =>
         super

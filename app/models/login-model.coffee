@@ -8,6 +8,8 @@ module.exports = class Login extends Chaplin.Model
             localStorage.setObject(key, val)
         localStorage.setObject('categories', @.get('categories'))
         localStorage.setObject('choices', @.get('choices'))
+        localStorage.setObject('agents', @.get('agents'))
+        localStorage.setObject('clients', @.get('clients'))
         @.set({is_logged:true})
 
 

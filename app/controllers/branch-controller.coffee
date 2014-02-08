@@ -18,7 +18,12 @@ module.exports = class BranchController extends Controller
             success: =>
                 @publishEvent('log:info', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
-                @view = new ListView {collection:mediator.collections.branches, template:'branch_list_view' , region:'content'}
+                @view = new ListView {
+                    collection:mediator.collections.branches
+                    template:'branch_list_view'
+                    region:'content'
+                    controller: 'branch_controller'
+                }
             error: =>
                 @publishEvent 'loading_stop'
                 @publishEvent 'server_error'

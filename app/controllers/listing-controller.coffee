@@ -21,9 +21,10 @@ module.exports = class ListingController extends Controller
                 @view = new ListView {
                     collection:mediator.collections.listings
                     template: "#{listing_type}_list_view"
-                    filter:'listing_type'
+                    filter:'status'
                     region:'content'
                     listing_type: listing_type
+                    controller: 'listing_controller'
                 }
             error: =>
                 @publishEvent 'server_error'

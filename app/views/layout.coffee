@@ -72,17 +72,18 @@ module.exports = class Layout extends Chaplin.Layout
             $("form [data-role='slider']").slider({ disabled: true })
             $("form [data-role='controlgroup'] select").selectmenu( "disable" )
 
-    disable_buttons:(can_edit, edit_type, delete_only) =>
+    disable_buttons:(can_edit, edit_type, delete_only, no_back) =>
         @log.info('form buttons disable caught')
         if edit_type is 'add'
             $("#delete-button").attr('disabled', true)
         if not can_edit
             $("#delete-button").attr('disabled', true)
             $("#save-button").attr('disabled', true)
-            $("#save-and-add-button").attr('disabled', true)
+            # $("#back-button").attr('disabled', true)
         if delete_only
             $("#save-button").attr('disabled', true)
-            $("#save-and-add-button").attr('disabled', true)
+        if no_back
+            $("#back-button").attr('disabled', true)
 
     log_debug:(option) =>
         @log.debug(option)
