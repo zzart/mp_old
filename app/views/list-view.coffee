@@ -13,6 +13,7 @@ module.exports = class ListView extends View
         @params = params
         @filter = @params.filter
         @collection_hard = @params.collection
+        # @collection = @params.collection
         @collection = _.clone(@params.collection)
         @listing_type = @params.listing_type ? false
         @controller = @params.controller
@@ -23,6 +24,7 @@ module.exports = class ListView extends View
         @delegate 'change', '#select-action', @select_action
         @delegate 'change', '#all', @select_all_action
         @delegate 'click',  '#refresh', @refresh_action
+        @delegate 'change', "[data-query]", @query_action
         #@delegate 'click',  ".ui-table-columntoggle-btn", @column_action
         @delegate 'change', '#select-filter', @filter_action
         @delegate 'change', '#flip-checkbox', @filter_action
@@ -41,6 +43,8 @@ module.exports = class ListView extends View
         #    @publishEvent 'table_refresh'
         window.collection = @collection_hard
 
+    query_action: (event) =>
+        @publishEvent("log:info", "query_action called")
 
     select_all_action: =>
         selected = $('#list-table>thead input:checkbox ').prop('checked')
@@ -119,13 +123,11 @@ module.exports = class ListView extends View
         @render()
 
 
-
-
-
     refresh_action: (event) =>
         event.preventDefault()
         @publishEvent('log:debug', 'refresh')
         @collection_hard.fetch
+            data: @collection_hard.query or {}
             success: =>
                 @publishEvent 'tell_user', 'Odświeżam listę elementów'
                 @collection = _.clone(@collection_hard)
@@ -136,9 +138,18 @@ module.exports = class ListView extends View
                 else
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
+    selects_refresh: =>
+        if @collection.query
+            for k,v of @collection.query
+                $("[data-query=\'#{k}\']").val(v)
+                $("[data-query=\'#{k}\']").selectmenu('refresh')
+
     getTemplateData: =>
         collection: @collection.toJSON()
         listing_type: @listing_type
+        agents: localStorage.getObject('agents')
+        clients: localStorage.getObject('clients')
+        branches: localStorage.getObject('branches')
 
 
     attach: =>
@@ -150,6 +161,7 @@ module.exports = class ListView extends View
             $("#list-table").tablesorter({sortList:[[4,0]], headers:{0:{'sorter':false}, 1:{'sorter':false}}})
         @publishEvent 'jqm_refersh:render'
         @publishEvent 'table_refresh'
+        @selects_refresh()
 
 
 

@@ -12,8 +12,9 @@ module.exports = class ListingController extends Controller
         mediator.last_query = _.clone(options.query)
         listing_type = options.query.category
         mediator.collections.listings = new Collection
+        mediator.collections.listings.query_add(options.query)
         mediator.collections.listings.fetch
-            data: options.query
+            data: mediator.collections.listings.query
             beforeSend: =>
                 @publishEvent 'tell_user', 'Ładuje oferty...'
             success: =>

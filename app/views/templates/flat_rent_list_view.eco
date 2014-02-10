@@ -1,6 +1,5 @@
-<div class="ui-grid-a">
+<div class="ui-grid-c">
 	<div class="ui-block-a">
-        <form>
             <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b'>
                 <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
                 <a href='/oferty/dodaj?type=<%= @listing_type %>' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
@@ -13,8 +12,16 @@
                     <option value="eksport" disabled>Eksport do pliku</option>
                 </select>
 
-                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
-                <select name="select-filter" id="select-filter" data-filter='status'>
+            </fieldset>
+    </div>
+
+	<div class="ui-block-b">
+
+
+            <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b' >
+
+                <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+                <select name="status-query" id="status-query" data-query='status'>
                     <option selected disabled>Status</option>
                     <option value="">Wszystkie</option>
                     <option value="1">Aktywne</option>
@@ -23,18 +30,62 @@
                     <option value="3">Robocze</option>
                     <option value="4">Sprzedane</option>
                     <option value="5">Wynajęte</option>
-                    <option value="6">Umowa przedstępna</option>
+                    <option value="6">Umowa przedwstępna</option>
                 </select>
 
-
-
-
-
+                <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+                <select name="agent-query" id="agent-query" data-query='agent'>
+                    <option selected disabled>Agent</option>
+                    <option value="">Wszyscy</option>
+                    <% for key , val of @agents : %>
+                    <option value="<%= key %>"><%= val %></option>
+                    <% end %>
+                </select>
+                <label for="client-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+                <select name="client-query" id="client-query" data-query='client'>
+                    <option selected disabled>Klient</option>
+                    <option value="">Wszyscy</option>
+                    <% for key , val of @clients : %>
+                    <option value="<%= key %>"><%= val %></option>
+                    <% end %>
+                </select>
+                <label for="branch-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+                <select name="branch-query" id="branch-query" data-query='branch'>
+                    <option selected disabled>Oddział</option>
+                    <option value="">Wszystkie</option>
+                    <% for key , val of @branches : %>
+                    <option value="<%= key %>"><%= val %></option>
+                    <% end %>
+                </select>
             </fieldset>
-        </form>
+
     </div>
 
-	<div class="ui-block-b">
+	<div class="ui-block-c">
+
+            <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b'>
+
+                <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
+                <a href='/oferty/dodaj?type=<%= @listing_type %>' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
+
+                <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+                <select name="status-query" id="status-query" data-query='status'>
+                    <option selected disabled>Status</option>
+                    <option value="">Wszystkie</option>
+                    <option value="1">Aktywne</option>
+                    <option value="0">Nieaktywne</option>
+                    <option value="2">Archiwalne</option>
+                    <option value="3">Robocze</option>
+                    <option value="4">Sprzedane</option>
+                    <option value="5">Wynajęte</option>
+                    <option value="6">Umowa przedwstępna</option>
+                </select>
+
+            </fieldset>
+
+	</div>
+
+	<div class="ui-block-d">
          <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />
 	</div>
 </div><!-- /grid-b -->

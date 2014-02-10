@@ -52,7 +52,7 @@ module.exports = class AddView extends View
                         # add it to collection so we don't need to use server ...
                         mediator.collections.listings.add(@model)
                     @publishEvent 'tell_user', 'Rekord zapisany'
-                    Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.last_query)}"}
+                    Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -70,7 +70,7 @@ module.exports = class AddView extends View
                 # type = _.invert(localStorage.getObject('category'))[@model.get('category')]
                 mediator.collections.listings.remove(@model)
                 @publishEvent 'tell_user', 'Rekord został usunięty'
-                Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.last_query)}"}
+                Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -79,7 +79,7 @@ module.exports = class AddView extends View
 
     back_action: =>
         super
-        Chaplin.utils.redirectTo {url: "/oferty?#{$.param(mediator.last_query)}"}
+        Chaplin.utils.redirectTo {url: "/oferty?#{$.param(mediator.collections.listings.query)}"}
 
     copy_address: (event) ->
         @publishEvent('log:info', 'copy address event')

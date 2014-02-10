@@ -869,8 +869,9 @@ module.exports = ListingController = (function(_super) {
     mediator.last_query = _.clone(options.query);
     listing_type = options.query.category;
     mediator.collections.listings = new Collection;
+    mediator.collections.listings.query_add(options.query);
     return mediator.collections.listings.fetch({
-      data: options.query,
+      data: mediator.collections.listings.query,
       beforeSend: function() {
         return _this.publishEvent('tell_user', 'Ładuje oferty...');
       },
@@ -1573,11 +1574,13 @@ module.exports = ClientList = (function(_super) {
 });
 
 ;require.register("models/listing-collection", function(exports, require, module) {
-var ListingList, Model,
+var ListingList, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Model = require('models/listing-model');
+
+mediator = require('mediator');
 
 module.exports = ListingList = (function(_super) {
 
@@ -1587,9 +1590,30 @@ module.exports = ListingList = (function(_super) {
     return ListingList.__super__.constructor.apply(this, arguments);
   }
 
+  ListingList.prototype.initialize = function() {
+    this.query = {};
+    return this.query_add(this.query_defaults());
+  };
+
   ListingList.prototype.model = Model;
 
   ListingList.prototype.url = 'http://localhost:8080/v1/oferty';
+
+  ListingList.prototype.query_defaults = function() {
+    return {
+      branch: mediator.models.user.get('branch_id'),
+      agent: mediator.models.user.get('id'),
+      status: 1
+    };
+  };
+
+  ListingList.prototype.query_add = function(new_obj) {
+    return _.extend(this.query, new_obj);
+  };
+
+  ListingList.prototype.query_remove = function(key) {
+    return this.query = _.omit(this.query, key);
+  };
 
   return ListingList;
 
@@ -1723,6 +1747,7 @@ module.exports = Login = (function(_super) {
     localStorage.setObject('categories', this.get('categories'));
     localStorage.setObject('choices', this.get('choices'));
     localStorage.setObject('agents', this.get('agents'));
+    localStorage.setObject('branches', this.get('branches'));
     localStorage.setObject('clients', this.get('clients'));
     return this.set({
       is_logged: true
@@ -1730,27 +1755,6 @@ module.exports = Login = (function(_super) {
   };
 
   return Login;
-
-})(Chaplin.Model);
-
-});
-
-;require.register("models/offer-model", function(exports, require, module) {
-var Chaplin, Offer,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Chaplin = require('chaplin');
-
-module.exports = Offer = (function(_super) {
-
-  __extends(Offer, _super);
-
-  function Offer() {
-    return Offer.__super__.constructor.apply(this, arguments);
-  }
-
-  return Offer;
 
 })(Chaplin.Model);
 
@@ -3637,6 +3641,8 @@ module.exports = ListView = (function(_super) {
 
     this.getTemplateData = __bind(this.getTemplateData, this);
 
+    this.selects_refresh = __bind(this.selects_refresh, this);
+
     this.refresh_action = __bind(this.refresh_action, this);
 
     this.filter_apply = __bind(this.filter_apply, this);
@@ -3646,6 +3652,8 @@ module.exports = ListView = (function(_super) {
     this.select_action = __bind(this.select_action, this);
 
     this.select_all_action = __bind(this.select_all_action, this);
+
+    this.query_action = __bind(this.query_action, this);
     return ListView.__super__.constructor.apply(this, arguments);
   }
 
@@ -3677,10 +3685,15 @@ module.exports = ListView = (function(_super) {
     this.delegate('change', '#select-action', this.select_action);
     this.delegate('change', '#all', this.select_all_action);
     this.delegate('click', '#refresh', this.refresh_action);
+    this.delegate('change', "[data-query]", this.query_action);
     this.delegate('change', '#select-filter', this.filter_action);
     this.delegate('change', '#flip-checkbox', this.filter_action);
     this.publishEvent('log:debug', this.params);
     return window.collection = this.collection_hard;
+  };
+
+  ListView.prototype.query_action = function(event) {
+    return this.publishEvent("log:info", "query_action called");
   };
 
   ListView.prototype.select_all_action = function() {
@@ -3774,6 +3787,7 @@ module.exports = ListView = (function(_super) {
     event.preventDefault();
     this.publishEvent('log:debug', 'refresh');
     return this.collection_hard.fetch({
+      data: this.collection_hard.query || {},
       success: function() {
         _this.publishEvent('tell_user', 'Odświeżam listę elementów');
         _this.collection = _.clone(_this.collection_hard);
@@ -3789,10 +3803,27 @@ module.exports = ListView = (function(_super) {
     });
   };
 
+  ListView.prototype.selects_refresh = function() {
+    var k, v, _ref, _results;
+    if (this.collection.query) {
+      _ref = this.collection.query;
+      _results = [];
+      for (k in _ref) {
+        v = _ref[k];
+        $("[data-query=\'" + k + "\']").val(v);
+        _results.push($("[data-query=\'" + k + "\']").selectmenu('refresh'));
+      }
+      return _results;
+    }
+  };
+
   ListView.prototype.getTemplateData = function() {
     return {
       collection: this.collection.toJSON(),
-      listing_type: this.listing_type
+      listing_type: this.listing_type,
+      agents: localStorage.getObject('agents'),
+      clients: localStorage.getObject('clients'),
+      branches: localStorage.getObject('branches')
     };
   };
 
@@ -3813,7 +3844,8 @@ module.exports = ListView = (function(_super) {
       });
     }
     this.publishEvent('jqm_refersh:render');
-    return this.publishEvent('table_refresh');
+    this.publishEvent('table_refresh');
+    return this.selects_refresh();
   };
 
   return ListView;
@@ -3838,11 +3870,43 @@ module.exports = ListingListView = (function(_super) {
 
   function ListingListView() {
     this.attach = __bind(this.attach, this);
+
+    this.query_action = __bind(this.query_action, this);
     return ListingListView.__super__.constructor.apply(this, arguments);
   }
 
   ListingListView.prototype.initialize = function(params) {
     return ListingListView.__super__.initialize.apply(this, arguments);
+  };
+
+  ListingListView.prototype.query_action = function(event) {
+    var query,
+      _this = this;
+    ListingListView.__super__.query_action.apply(this, arguments);
+    if (_.isEmpty(event.target.value)) {
+      this.publishEvent("log:info", "removing key " + event.target.dataset.query);
+      this.collection_hard.query_remove("" + event.target.dataset.query);
+    } else {
+      query = {};
+      query[event.target.dataset.query] = event.target.value;
+      this.collection_hard.query_add(query);
+    }
+    this.publishEvent("log:info", "" + event.target.value + "," + (typeof event.target.value));
+    this.publishEvent("log:info", "" + query + "," + mediator.collections.listings.query);
+    return this.collection_hard.fetch({
+      data: this.collection_hard.query,
+      beforeSend: function() {
+        return _this.publishEvent('tell_user', 'Ładuje oferty...');
+      },
+      success: function() {
+        _this.collection = _.clone(_this.collection_hard);
+        _this.render();
+        return _this.selects_refresh();
+      },
+      error: function() {
+        return _this.publishEvent('server_error');
+      }
+    });
   };
 
   ListingListView.prototype.attach = function() {
@@ -3997,7 +4061,7 @@ module.exports = AddView = (function(_super) {
           }
           _this.publishEvent('tell_user', 'Rekord zapisany');
           return Chaplin.utils.redirectTo({
-            url: url != null ? url : "/oferty?" + ($.param(mediator.last_query))
+            url: url != null ? url : "/oferty?" + ($.param(mediator.collections.listings.query))
           });
         },
         error: function(model, response, options) {
@@ -4021,7 +4085,7 @@ module.exports = AddView = (function(_super) {
         mediator.collections.listings.remove(_this.model);
         _this.publishEvent('tell_user', 'Rekord został usunięty');
         return Chaplin.utils.redirectTo({
-          url: typeof url !== "undefined" && url !== null ? url : "/oferty?" + ($.param(mediator.last_query))
+          url: typeof url !== "undefined" && url !== null ? url : "/oferty?" + ($.param(mediator.collections.listings.query))
         });
       },
       error: function(model, response, options) {
@@ -4037,7 +4101,7 @@ module.exports = AddView = (function(_super) {
   AddView.prototype.back_action = function() {
     AddView.__super__.back_action.apply(this, arguments);
     return Chaplin.utils.redirectTo({
-      url: "/oferty?" + ($.param(mediator.last_query))
+      url: "/oferty?" + ($.param(mediator.collections.listings.query))
     });
   };
 
@@ -5247,17 +5311,57 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      var item, _i, _len, _ref;
+      var item, key, val, _i, _len, _ref, _ref1, _ref2, _ref3;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/oferty/dodaj?type=');
+      __out.push('<div class="ui-grid-c">\n\t<div class="ui-block-a">\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/oferty/dodaj?type=');
     
       __out.push(__sanitize(this.listing_type));
     
-      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter" data-filter=\'status\'>\n                    <option selected disabled>Status</option>\n                    <option value="">Wszystkie</option>\n                    <option value="1">Aktywne</option>\n                    <option value="0">Nieaktywne</option>\n                    <option value="2">Archiwalne</option>\n                    <option value="3">Robocze</option>\n                    <option value="4">Sprzedane</option>\n                    <option value="5">Wynajęte</option>\n                    <option value="6">Umowa przedstępna</option>\n                </select>\n\n\n\n\n\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Lokalizacja&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Data wprowadzenia&nbsp;&nbsp;</th>\n         <th data-priority="6">Data modyfikacji&nbsp;&nbsp;</th>\n         <th data-priority="6">Status&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n\n            </fieldset>\n    </div>\n\n\t<div class="ui-block-b">\n\n\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\' >\n\n                <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="status-query" id="status-query" data-query=\'status\'>\n                    <option selected disabled>Status</option>\n                    <option value="">Wszystkie</option>\n                    <option value="1">Aktywne</option>\n                    <option value="0">Nieaktywne</option>\n                    <option value="2">Archiwalne</option>\n                    <option value="3">Robocze</option>\n                    <option value="4">Sprzedane</option>\n                    <option value="5">Wynajęte</option>\n                    <option value="6">Umowa przedwstępna</option>\n                </select>\n\n                <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="agent-query" id="agent-query" data-query=\'agent\'>\n                    <option selected disabled>Agent</option>\n                    <option value="">Wszyscy</option>\n                    ');
     
-      _ref = this.collection;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        item = _ref[_i];
+      _ref = this.agents;
+      for (key in _ref) {
+        val = _ref[key];
+        __out.push('\n                    <option value="');
+        __out.push(__sanitize(key));
+        __out.push('">');
+        __out.push(__sanitize(val));
+        __out.push('</option>\n                    ');
+      }
+    
+      __out.push('\n                </select>\n                <label for="client-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="client-query" id="client-query" data-query=\'client\'>\n                    <option selected disabled>Klient</option>\n                    <option value="">Wszyscy</option>\n                    ');
+    
+      _ref1 = this.clients;
+      for (key in _ref1) {
+        val = _ref1[key];
+        __out.push('\n                    <option value="');
+        __out.push(__sanitize(key));
+        __out.push('">');
+        __out.push(__sanitize(val));
+        __out.push('</option>\n                    ');
+      }
+    
+      __out.push('\n                </select>\n                <label for="branch-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="branch-query" id="branch-query" data-query=\'branch\'>\n                    <option selected disabled>Oddział</option>\n                    <option value="">Wszystkie</option>\n                    ');
+    
+      _ref2 = this.branches;
+      for (key in _ref2) {
+        val = _ref2[key];
+        __out.push('\n                    <option value="');
+        __out.push(__sanitize(key));
+        __out.push('">');
+        __out.push(__sanitize(val));
+        __out.push('</option>\n                    ');
+      }
+    
+      __out.push('\n                </select>\n            </fieldset>\n\n    </div>\n\n\t<div class="ui-block-c">\n\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/oferty/dodaj?type=');
+    
+      __out.push(__sanitize(this.listing_type));
+    
+      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="status-query" id="status-query" data-query=\'status\'>\n                    <option selected disabled>Status</option>\n                    <option value="">Wszystkie</option>\n                    <option value="1">Aktywne</option>\n                    <option value="0">Nieaktywne</option>\n                    <option value="2">Archiwalne</option>\n                    <option value="3">Robocze</option>\n                    <option value="4">Sprzedane</option>\n                    <option value="5">Wynajęte</option>\n                    <option value="6">Umowa przedwstępna</option>\n                </select>\n\n            </fieldset>\n\n\t</div>\n\n\t<div class="ui-block-d">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Lokalizacja&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Data wprowadzenia&nbsp;&nbsp;</th>\n         <th data-priority="6">Data modyfikacji&nbsp;&nbsp;</th>\n         <th data-priority="6">Status&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+    
+      _ref3 = this.collection;
+      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+        item = _ref3[_i];
         __out.push('\n       <tr>\n         <td><label><input name="');
         __out.push(__sanitize(item['id']));
         __out.push('" id="');
