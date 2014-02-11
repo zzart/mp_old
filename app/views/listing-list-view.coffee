@@ -28,7 +28,7 @@ module.exports = class ListingListView extends View
                 @collection = _.clone(@collection_hard)
                 @render()
                 # lets keep the items selected
-                @selects_refresh()
+                #@selects_refresh()
 
             error: =>
                 @publishEvent 'server_error'

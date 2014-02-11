@@ -11,7 +11,7 @@ module.exports = class ListView extends View
         super
         # send url data from controler
         @params = params
-        @filter = @params.filter
+        @filter = {}
         @collection_hard = @params.collection
         # @collection = @params.collection
         @collection = _.clone(@params.collection)
@@ -26,8 +26,7 @@ module.exports = class ListView extends View
         @delegate 'click',  '#refresh', @refresh_action
         @delegate 'change', "[data-query]", @query_action
         #@delegate 'click',  ".ui-table-columntoggle-btn", @column_action
-        @delegate 'change', '#select-filter', @filter_action
-        @delegate 'change', '#flip-checkbox', @filter_action
+        @delegate 'change', "[data-filter]", @filter_action
         #@delegate 'tablecreate' , @table_create
         @delegate 'click',  "[href='#list-table-popup']", @open_column_popup
 
@@ -98,25 +97,52 @@ module.exports = class ListView extends View
             clean_after_action(selected)
 
     filter_action: (event) =>
+        event.preventDefault()
+        event.stopPropagation()
+        event.stopImmediatePropagation()
+        console.log('klik', event.which, event.type, event)
+        # always start with fresh collection
+        @collection = _.clone(@collection_hard)
         # needs data-filter attribute on select emelemt
         # we can apply one or more filters
-        @publishEvent('log:debug', event.target.value)
-        @filter = event.target.dataset.filter
-        if _.isEmpty(event.target.value)
-            # reset filter object
-            obj = localStorage.getObject(@controller)
-            obj[@filter] = ''
-            localStorage.setObject(@controller, obj)
+        key = event.target.dataset.filter
+        id = event.target.id
+        @undelegate 'change', "##{id}", @filter_action
+        #for booleans
+        if event.target.type == 'checkbox'
+            @publishEvent("log:info", event.target.type )
+            value = event.target.checked
+        else if event.target.type == 'select-one'
+            @publishEvent("log:info", event.target.type )
+            value = parseInt(event.target.value)
         else
-            obj = localStorage.getObject(@controller)
-            obj[@filter] = parseInt(event.target.value)
-            localStorage.setObject(@controller, obj)
-        @filter_apply()
+            value = event.target.value
+
+        if _.isNaN(value)
+            @filter = _.omit(@filter, key)
+            @publishEvent("log:info", "omiting #{key}" )
+            console.log(@filter)
+        else
+            @filter[key] = value
+
+        @publishEvent('log:debug', key)
+        @publishEvent('log:debug', value)
+
+        console.log(@filter)
+        if _.isEmpty(@filter)
+            @render()
+            return
+        else
+            list_of_models = @collection_hard.where(@filter)
+            @collection.reset(list_of_models)
+            #$("input[type='radio'] ##{id}" ).prop( "checked", value ).checkboxradio( "refresh" )
+            #$("input[type='checkbox'] ##{id}" ).prop( "checked", value ).checkboxradio( "refresh" )
+            @render()
+
 
     filter_apply: =>
-        @publishEvent('log:debug', 'filter apply')
-        obj = localStorage.getObject(@controller)
 
+        @publishEvent('log:debug', 'filter apply')
         #TODO: doesn't work for multiple filter objects
         if obj[@filter] isnt false
             console.log(obj)

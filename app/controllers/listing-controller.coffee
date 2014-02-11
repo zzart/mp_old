@@ -21,7 +21,7 @@ module.exports = class ListingController extends Controller
                 @publishEvent('log:info', "data with #{params} fetched ok" )
                 @view = new ListView {
                     collection:mediator.collections.listings
-                    template: "#{listing_type}_list_view"
+                    template: "listing_list_view"
                     filter:'status'
                     region:'content'
                     listing_type: listing_type

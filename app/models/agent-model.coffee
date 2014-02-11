@@ -14,9 +14,11 @@ module.exports = class Agent extends Chaplin.Model
         agent_type_func: ->
             switch @get('agent_type')
                  when 0 then 'pośrednik'
-                 when 1 then 'admin'
+                 when 1 then 'admin. nieruch.'
                  when 2 then 'menadzer'
                  when 3 then 'IT'
+        branch_func: ->
+            if @get('branch') then localStorage.getObject('branches')["#{@get('branch')}"]
 
     toJSON: ->
         data = {}

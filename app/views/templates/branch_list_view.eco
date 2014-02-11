@@ -1,6 +1,4 @@
-<div class="ui-grid-a">
-	<div class="ui-block-a">
-        <form>
+<div>
             <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">
                 <button data-icon="refresh" data-iconpos="notext" id='refresh'>Odśwież</button>
                 <a href='/oddzialy/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>
@@ -11,13 +9,7 @@
                     <option value="usun">Usuń</option>
                 </select>
             </fieldset>
-        </form>
-    </div>
-
-	<div class="ui-block-b">
-         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj  ... " />
-	</div>
-</div><!-- /grid-b -->
+</div>
 
 <table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
 data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">
@@ -25,7 +17,6 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
        <tr class='th-groups'>
          <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>
          <th>ID</th>
-         <th data-priority="2">Agent&nbsp;&nbsp;</th>
          <th data-priority="2">Nazwa&nbsp;&nbsp;</th>
          <th data-priority="2">Identyfikator&nbsp;&nbsp;</th>
          <th data-priority="2">WWW&nbsp;&nbsp;</th>
@@ -41,7 +32,6 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
        <tr>
          <td> <label> <input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true"  type="checkbox"> </label> </td>
          <td><%= item['id'] %></td>
-         <td><%= item['agent'] %></td>
          <td><a href='/oddzialy/<%= item['id'] %>'><%= item['name'] %></a></td>
          <td><a href='/oddzialy/<%= item['id'] %>'><%= item['slug'] %></a></td>
          <td><%= item['website'] %></td>

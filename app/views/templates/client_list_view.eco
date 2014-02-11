@@ -1,6 +1,4 @@
-<div class="ui-grid-a">
-	<div class="ui-block-a">
-        <form>
+	<div >
             <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b'>
                 <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
                 <a href='/klienci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
@@ -13,7 +11,7 @@
                     <option value="eksport" disabled>Eksport do pliku</option>
                 </select>
                 <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
-                <select name="select-filter" id="select-filter">
+                <select name="select-filter" id="select-filter" data-filter='client_type'>
                     <option selected disabled>Filtr</option>
                     <option value="">Wszyscy</option>
                     <option value="1">Kupujący</option>
@@ -22,13 +20,8 @@
                     <option value="4">Wynajmujący</option>
                 </select>
             </fieldset>
-        </form>
     </div>
 
-	<div class="ui-block-b">
-         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />
-	</div>
-</div><!-- /grid-b -->
 
 <table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
 data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >
@@ -44,6 +37,7 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
          <th data-priority="5">Firma&nbsp;&nbsp;</th>
          <th data-priority="6">Adres&nbsp;&nbsp;</th>
          <th data-priority="6">Budżet&nbsp;&nbsp;</th>
+         <th data-priority="6">Typ&nbsp;&nbsp;</th>
        </tr>
      </thead>
      <tbody>
@@ -60,6 +54,7 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
          <td><%= item['company_name'] %></td>
          <td><%= item['address'] %></td>
          <td><%= item['budget'] %></td>
+         <td><%= item['client_type_func'] %></td>
        </tr>
       <% end %>
      </tbody>

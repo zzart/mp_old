@@ -879,7 +879,7 @@ module.exports = ListingController = (function(_super) {
         _this.publishEvent('log:info', "data with " + params + " fetched ok");
         return _this.view = new ListView({
           collection: mediator.collections.listings,
-          template: "" + listing_type + "_list_view",
+          template: "listing_list_view",
           filter: 'status',
           region: 'content',
           listing_type: listing_type,
@@ -1263,11 +1263,16 @@ module.exports = Agent = (function(_super) {
         case 0:
           return 'pośrednik';
         case 1:
-          return 'admin';
+          return 'admin. nieruch.';
         case 2:
           return 'menadzer';
         case 3:
           return 'IT';
+      }
+    },
+    branch_func: function() {
+      if (this.get('branch')) {
+        return localStorage.getObject('branches')["" + (this.get('branch'))];
       }
     }
   };
@@ -1677,6 +1682,16 @@ module.exports = Listing = (function(_super) {
     },
     client_func: function() {
       return localStorage.getObject('clients')["" + (this.get('client'))];
+    },
+    rynek_func: function() {
+      return localStorage.getObject('choices')["" + (this.get('rynek'))];
+    },
+    wylacznosc_func: function() {
+      if (this.get('wylacznosc')) {
+        return 'tak';
+      } else {
+        return 'nie';
+      }
     },
     status_func: function() {
       switch (this.get('status')) {
@@ -3677,7 +3692,7 @@ module.exports = ListView = (function(_super) {
     var _ref;
     ListView.__super__.initialize.apply(this, arguments);
     this.params = params;
-    this.filter = this.params.filter;
+    this.filter = {};
     this.collection_hard = this.params.collection;
     this.collection = _.clone(this.params.collection);
     this.listing_type = (_ref = this.params.listing_type) != null ? _ref : false;
@@ -3690,8 +3705,7 @@ module.exports = ListView = (function(_super) {
     this.delegate('change', '#all', this.select_all_action);
     this.delegate('click', '#refresh', this.refresh_action);
     this.delegate('change', "[data-query]", this.query_action);
-    this.delegate('change', '#select-filter', this.filter_action);
-    this.delegate('change', '#flip-checkbox', this.filter_action);
+    this.delegate('change', "[data-filter]", this.filter_action);
     this.delegate('click', "[href='#list-table-popup']", this.open_column_popup);
     this.publishEvent('log:debug', this.params);
     return window.collection = this.collection_hard;
@@ -3762,25 +3776,46 @@ module.exports = ListView = (function(_super) {
   };
 
   ListView.prototype.filter_action = function(event) {
-    var obj;
-    this.publishEvent('log:debug', event.target.value);
-    this.filter = event.target.dataset.filter;
-    if (_.isEmpty(event.target.value)) {
-      obj = localStorage.getObject(this.controller);
-      obj[this.filter] = '';
-      localStorage.setObject(this.controller, obj);
+    var id, key, list_of_models, value;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    console.log('klik', event.which, event.type, event);
+    this.collection = _.clone(this.collection_hard);
+    key = event.target.dataset.filter;
+    id = event.target.id;
+    this.undelegate('change', "#" + id, this.filter_action);
+    if (event.target.type === 'checkbox') {
+      this.publishEvent("log:info", event.target.type);
+      value = event.target.checked;
+    } else if (event.target.type === 'select-one') {
+      this.publishEvent("log:info", event.target.type);
+      value = parseInt(event.target.value);
     } else {
-      obj = localStorage.getObject(this.controller);
-      obj[this.filter] = parseInt(event.target.value);
-      localStorage.setObject(this.controller, obj);
+      value = event.target.value;
     }
-    return this.filter_apply();
+    if (_.isNaN(value)) {
+      this.filter = _.omit(this.filter, key);
+      this.publishEvent("log:info", "omiting " + key);
+      console.log(this.filter);
+    } else {
+      this.filter[key] = value;
+    }
+    this.publishEvent('log:debug', key);
+    this.publishEvent('log:debug', value);
+    console.log(this.filter);
+    if (_.isEmpty(this.filter)) {
+      this.render();
+    } else {
+      list_of_models = this.collection_hard.where(this.filter);
+      this.collection.reset(list_of_models);
+      return this.render();
+    }
   };
 
   ListView.prototype.filter_apply = function() {
-    var list_of_models, obj;
+    var list_of_models;
     this.publishEvent('log:debug', 'filter apply');
-    obj = localStorage.getObject(this.controller);
     if (obj[this.filter] !== false) {
       console.log(obj);
       this.publishEvent('log:debug', 'filter apply');
@@ -3917,8 +3952,7 @@ module.exports = ListingListView = (function(_super) {
       },
       success: function() {
         _this.collection = _.clone(_this.collection_hard);
-        _this.render();
-        return _this.selects_refresh();
+        return _this.render();
       },
       error: function() {
         return _this.publishEvent('server_error');
@@ -4742,13 +4776,25 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      var item, _i, _len, _ref;
+      var item, key, val, _i, _len, _ref, _ref1;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/agenci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Pośrednik</option>\n                    <option value="2">Administrator nieruchomości</option>\n                    <option value="3">Menadzer</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="agent-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th width="2%"> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>\n         <th data-priority="6">Admin&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<div >\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/agenci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter" data-filter=\'agent_type\'>\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="0">Pośrednik</option>\n                    <option value="1">Administrator nieruchomości</option>\n                    <option value="2">Menadzer</option>\n                    <option value="3">Wsparcie IT</option>\n                </select>\n                <label for="branch-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="branch-filter" id="branch-filter" data-filter=\'branch\'>\n                    <option selected disabled>Oddział</option>\n                    <option value="">Wszystkie</option>\n                    ');
     
-      _ref = this.collection;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        item = _ref[_i];
+      _ref = this.branches;
+      for (key in _ref) {
+        val = _ref[key];
+        __out.push('\n                    <option value="');
+        __out.push(__sanitize(key));
+        __out.push('">');
+        __out.push(__sanitize(val));
+        __out.push('</option>\n                    ');
+      }
+    
+      __out.push('\n                </select>\n            </fieldset>\n    </div>\n\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th width="2%"> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="4">Aktywny&nbsp;&nbsp;</th>\n         <th data-priority="6">Admin&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+    
+      _ref1 = this.collection;
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        item = _ref1[_i];
         __out.push('\n\n       <tr>\n         <td width="2%"> <label> <input name="');
         __out.push(__sanitize(item['id']));
         __out.push('" id="');
@@ -4758,7 +4804,7 @@ module.exports = function (__obj) {
         __out.push('\'>');
         __out.push(__sanitize(item['id']));
         __out.push('</a></td>\n         <td>');
-        __out.push(__sanitize(item['branch']));
+        __out.push(__sanitize(item['branch_func']));
         __out.push('</td>\n         <td><a href=\'/agenci/');
         __out.push(__sanitize(item['id']));
         __out.push('\'>');
@@ -4767,9 +4813,11 @@ module.exports = function (__obj) {
         __out.push(__sanitize(item['id']));
         __out.push('\'>');
         __out.push(__sanitize(item['surname']));
-        __out.push('</a></td>\n         <td>');
+        __out.push('</a></td>\n         <td><a href=\'/agenci/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
         __out.push(__sanitize(item['username']));
-        __out.push('</td>\n         <td>');
+        __out.push('</a></td>\n         <td>');
         __out.push(__sanitize(item['email']));
         __out.push('</td>\n         <td>');
         __out.push(__sanitize(item['phone']));
@@ -5019,7 +5067,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/oddzialy/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj  ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th data-priority="2">Agent&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwa&nbsp;&nbsp;</th>\n         <th data-priority="2">Identyfikator&nbsp;&nbsp;</th>\n         <th data-priority="2">WWW&nbsp;&nbsp;</th>\n         <th data-priority="5">Tel&nbsp;&nbsp;</th>\n         <th data-priority="4">Email&nbsp;&nbsp;</th>\n         <th data-priority="6">Miasto&nbsp;&nbsp;</th>\n         <th data-priority="6">Nip&nbsp;&nbsp;</th>\n         <th data-priority="6">Główny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<div>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/oddzialy/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n            </fieldset>\n</div>\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th data-priority="2">Nazwa&nbsp;&nbsp;</th>\n         <th data-priority="2">Identyfikator&nbsp;&nbsp;</th>\n         <th data-priority="2">WWW&nbsp;&nbsp;</th>\n         <th data-priority="5">Tel&nbsp;&nbsp;</th>\n         <th data-priority="4">Email&nbsp;&nbsp;</th>\n         <th data-priority="6">Miasto&nbsp;&nbsp;</th>\n         <th data-priority="6">Nip&nbsp;&nbsp;</th>\n         <th data-priority="6">Główny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -5030,8 +5078,6 @@ module.exports = function (__obj) {
         __out.push(__sanitize(item['id']));
         __out.push('" data-mini="true"  type="checkbox"> </label> </td>\n         <td>');
         __out.push(__sanitize(item['id']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['agent']));
         __out.push('</td>\n         <td><a href=\'/oddzialy/');
         __out.push(__sanitize(item['id']));
         __out.push('\'>');
@@ -5107,7 +5153,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div class="ui-grid-a">\n\t<div class="ui-block-a">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n        </form>\n    </div>\n\n\t<div class="ui-block-b">\n         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />\n\t</div>\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('\t<div >\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter" data-filter=\'client_type\'>\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n    </div>\n\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -5138,6 +5184,8 @@ module.exports = function (__obj) {
         __out.push(__sanitize(item['address']));
         __out.push('</td>\n         <td>');
         __out.push(__sanitize(item['budget']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['client_type_func']));
         __out.push('</td>\n       </tr>\n      ');
       }
     
@@ -5279,157 +5327,6 @@ module.exports = function (__obj) {
     (function() {
     
       __out.push('    <div data-role="header" data-theme="a">\n    <h1>Potwierdz usuwanie</h1>\n    </div>\n    <div role="main" class="ui-content">\n        <h3 class="ui-title">Napewno chcesz usunąć te elementy?</h3>\n    <p>Ta akcja jest nieodwracalna.</p>\n        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Powrót</a>\n        <a href="#" id=\'confirmed\' class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">Potwierdz</a>\n    </div>\n');
-    
-    }).call(this);
-    
-  }).call(__obj);
-  __obj.safe = __objSafe, __obj.escape = __escape;
-  return __out.join('');
-}
-});
-
-;require.register("views/templates/flat_rent_list_view", function(exports, require, module) {
-module.exports = function (__obj) {
-  if (!__obj) __obj = {};
-  var __out = [], __capture = function(callback) {
-    var out = __out, result;
-    __out = [];
-    callback.call(this);
-    result = __out.join('');
-    __out = out;
-    return __safe(result);
-  }, __sanitize = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else if (typeof value !== 'undefined' && value != null) {
-      return __escape(value);
-    } else {
-      return '';
-    }
-  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
-  __safe = __obj.safe = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else {
-      if (!(typeof value !== 'undefined' && value != null)) value = '';
-      var result = new String(value);
-      result.ecoSafe = true;
-      return result;
-    }
-  };
-  if (!__escape) {
-    __escape = __obj.escape = function(value) {
-      return ('' + value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    };
-  }
-  (function() {
-    (function() {
-      var item, key, val, _i, _len, _ref, _ref1, _ref2, _ref3;
-    
-      __out.push('            <div>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/oferty/dodaj?type=');
-    
-      __out.push(__sanitize(this.listing_type));
-    
-      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n\n\n                <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="status-query" id="status-query" data-query=\'status\'>\n                    <option selected disabled>Status</option>\n                    <option value="">Wszystkie</option>\n                    <option value="1">Aktywne</option>\n                    <option value="0">Nieaktywne</option>\n                    <option value="2">Archiwalne</option>\n                    <option value="3">Robocze</option>\n                    <option value="4">Sprzedane</option>\n                    <option value="5">Wynajęte</option>\n                    <option value="6">Umowa przedwstępna</option>\n                </select>\n\n                <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="agent-query" id="agent-query" data-query=\'agent\'>\n                    <option selected disabled>Agent</option>\n                    <option value="">Wszyscy</option>\n                    ');
-    
-      _ref = this.agents;
-      for (key in _ref) {
-        val = _ref[key];
-        __out.push('\n                    <option value="');
-        __out.push(__sanitize(key));
-        __out.push('">');
-        __out.push(__sanitize(val));
-        __out.push('</option>\n                    ');
-      }
-    
-      __out.push('\n                </select>\n                <label for="client-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="client-query" id="client-query" data-query=\'client\'>\n                    <option selected disabled>Klient</option>\n                    <option value="">Wszyscy</option>\n                    ');
-    
-      _ref1 = this.clients;
-      for (key in _ref1) {
-        val = _ref1[key];
-        __out.push('\n                    <option value="');
-        __out.push(__sanitize(key));
-        __out.push('">');
-        __out.push(__sanitize(val));
-        __out.push('</option>\n                    ');
-      }
-    
-      __out.push('\n                </select>\n                <label for="branch-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="branch-query" id="branch-query" data-query=\'branch\'>\n                    <option selected disabled>Oddział</option>\n                    <option value="">Wszystkie</option>\n                    ');
-    
-      _ref2 = this.branches;
-      for (key in _ref2) {
-        val = _ref2[key];
-        __out.push('\n                    <option value="');
-        __out.push(__sanitize(key));
-        __out.push('">');
-        __out.push(__sanitize(val));
-        __out.push('</option>\n                    ');
-      }
-    
-      __out.push('\n                </select>\n\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/oferty/dodaj?type=');
-    
-      __out.push(__sanitize(this.listing_type));
-    
-      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="status-query" id="status-query" data-query=\'status\'>\n                    <option selected disabled>Status</option>\n                    <option value="">Wszystkie</option>\n                    <option value="1">Aktywne</option>\n                    <option value="0">Nieaktywne</option>\n                    <option value="2">Archiwalne</option>\n                    <option value="3">Robocze</option>\n                    <option value="4">Sprzedane</option>\n                    <option value="5">Wynajęte</option>\n                    <option value="6">Umowa przedwstępna</option>\n                </select>\n\n\n            </fieldset>\n\n            </div>\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Lokalizacja&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Data wprowadzenia&nbsp;&nbsp;</th>\n         <th data-priority="6">Data modyfikacji&nbsp;&nbsp;</th>\n         <th data-priority="6">Status&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
-    
-      _ref3 = this.collection;
-      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
-        item = _ref3[_i];
-        __out.push('\n       <tr>\n         <td><label><input name="');
-        __out.push(__sanitize(item['id']));
-        __out.push('" id="');
-        __out.push(__sanitize(item['id']));
-        __out.push('" data-mini="true" type="checkbox"></label></td>\n         <td>');
-        __out.push(item['thumbnail_func']);
-        __out.push('</td>\n         <td><a href=\'/oferty/');
-        __out.push(__sanitize(item['id']));
-        __out.push('\'>');
-        __out.push(__sanitize(item['remote_id']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['agent_func']));
-        __out.push('</td>\n         <td><a href=\'/oferty/');
-        __out.push(__sanitize(item['id']));
-        __out.push('\'>\n            ');
-        if (item['town']) {
-          __out.push('\n                ');
-          __out.push(__sanitize(item['town']));
-          __out.push('\n            ');
-        }
-        __out.push('\n            ');
-        if (item['street']) {
-          __out.push('\n                ,');
-          __out.push(__sanitize(item['street']));
-          __out.push('\n            ');
-        }
-        __out.push('\n            ');
-        if (item['street_district']) {
-          __out.push('\n                ,');
-          __out.push(__sanitize(item['street_district']));
-          __out.push('\n            ');
-        }
-        __out.push('\n            </td>\n         <td>');
-        __out.push(__sanitize(item['client_func']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['cena']));
-        __out.push(__sanitize(item['waluta_func']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['liczba_pokoi']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['powierzchnia_calkowita']));
-        __out.push(' m2</td>\n         <td>');
-        __out.push(__sanitize(item['date_created_func']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['date_modyfied_func']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['status_func']));
-        __out.push('</td>\n       </tr>\n      ');
-      }
-    
-      __out.push('\n\n     </tbody>\n   </table>\n\n\n');
     
     }).call(this);
     
@@ -5993,6 +5890,169 @@ module.exports = function (__obj) {
       }
     
       __out.push('\n     </tbody>\n   </table>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/listing_list_view", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var item, key, val, _i, _len, _ref, _ref1, _ref2, _ref3;
+    
+      __out.push('            <div>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/oferty/dodaj?type=');
+    
+      __out.push(__sanitize(this.listing_type));
+    
+      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n\n\n                <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="status-query" id="status-query" data-query=\'status\'>\n                    <option selected disabled>Status</option>\n                    <option value="">Wszystkie</option>\n                    <option value="1">Aktywne</option>\n                    <option value="0">Nieaktywne</option>\n                    <option value="2">Archiwalne</option>\n                    <option value="3">Robocze</option>\n                    <option value="4">Sprzedane</option>\n                    <option value="5">Wynajęte</option>\n                    <option value="6">Umowa przedwstępna</option>\n                </select>\n\n                <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="agent-query" id="agent-query" data-query=\'agent\'>\n                    <option selected disabled>Agent</option>\n                    <option value="">Wszyscy</option>\n                    ');
+    
+      _ref = this.agents;
+      for (key in _ref) {
+        val = _ref[key];
+        __out.push('\n                    <option value="');
+        __out.push(__sanitize(key));
+        __out.push('">');
+        __out.push(__sanitize(val));
+        __out.push('</option>\n                    ');
+      }
+    
+      __out.push('\n                </select>\n                <label for="client-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="client-query" id="client-query" data-query=\'client\'>\n                    <option selected disabled>Klient</option>\n                    <option value="">Wszyscy</option>\n                    ');
+    
+      _ref1 = this.clients;
+      for (key in _ref1) {
+        val = _ref1[key];
+        __out.push('\n                    <option value="');
+        __out.push(__sanitize(key));
+        __out.push('">');
+        __out.push(__sanitize(val));
+        __out.push('</option>\n                    ');
+      }
+    
+      __out.push('\n                </select>\n                <label for="branch-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="branch-query" id="branch-query" data-query=\'branch\'>\n                    <option selected disabled>Oddział</option>\n                    <option value="">Wszystkie</option>\n                    ');
+    
+      _ref2 = this.branches;
+      for (key in _ref2) {
+        val = _ref2[key];
+        __out.push('\n                    <option value="');
+        __out.push(__sanitize(key));
+        __out.push('">');
+        __out.push(__sanitize(val));
+        __out.push('</option>\n                    ');
+      }
+    
+      __out.push('\n                </select>\n\n                   <input name="wylacznosc" id="wylacznosc" type="checkbox" data-filter=\'wylacznosc\'>\n                       <label for="wylacznosc">Wyłączność</label>\n\n                <input name="radio-choice-b" id="radio-choice-c" value="pierwotny"  type="radio" data-filter=\'rynek_func\'>\n                <label for="radio-choice-c">Pierwotny</label>\n                <input name="radio-choice-b" id="radio-choice-d" value="wtórny" type="radio" data-filter=\'rynek_func\'>\n                <label for="radio-choice-d">Wtórny</label>\n\n            </fieldset>\n\n\n\n\n            </div>\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Agres&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Wprowadzenie&nbsp;&nbsp;</th>\n         <th data-priority="6">Modyfikacja&nbsp;&nbsp;</th>\n         <th data-priority="7">Piętro&nbsp;&nbsp;</th>\n         <th data-priority="6">Status&nbsp;&nbsp;</th>\n         <th data-priority="6">Rynek&nbsp;&nbsp;</th>\n         <th data-priority="6">Wyłączność&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+    
+      _ref3 = this.collection;
+      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+        item = _ref3[_i];
+        __out.push('\n       <tr>\n         <td><label><input name="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" id="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" data-mini="true" type="checkbox"></label></td>\n         <td>');
+        __out.push(item['thumbnail_func']);
+        __out.push('</td>\n         <td><a href=\'/oferty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['remote_id']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['agent_func']));
+        __out.push('</td>\n         <td><a href=\'/oferty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>\n            ');
+        if (item['town']) {
+          __out.push('\n                ');
+          __out.push(__sanitize(item['town']));
+          __out.push('\n            ');
+        }
+        __out.push('\n            ');
+        if (item['street']) {
+          __out.push('\n                ,');
+          __out.push(__sanitize(item['street']));
+          __out.push('\n            ');
+        }
+        __out.push('\n            ');
+        if (item['number']) {
+          __out.push('\n                &nbsp;');
+          __out.push(__sanitize(item['number']));
+          __out.push('\n            ');
+        }
+        __out.push('\n            ');
+        if (item['street_district']) {
+          __out.push('\n                ,');
+          __out.push(__sanitize(item['street_district']));
+          __out.push('\n            ');
+        }
+        __out.push('\n            </td>\n         <td>');
+        __out.push(__sanitize(item['client_func']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['cena']));
+        __out.push(__sanitize(item['waluta_func']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['liczba_pokoi']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['powierzchnia_calkowita']));
+        __out.push(' m2</td>\n         <td>');
+        __out.push(__sanitize(item['date_created_func']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['date_modyfied_func']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['pietro']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['status_func']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['rynek_func']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['wylacznosc_func']));
+        __out.push('</td>\n         <td style="display:none;" >');
+        __out.push(__sanitize(item['tytul']));
+        __out.push('</td>\n         <td style="display:none;" >');
+        __out.push(__sanitize(item['opis']));
+        __out.push('</td>\n       </tr>\n      ');
+      }
+    
+      __out.push('\n\n     </tbody>\n   </table>\n\n\n');
     
     }).call(this);
     
