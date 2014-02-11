@@ -29,6 +29,7 @@ module.exports = class ListView extends View
         @delegate 'change', '#select-filter', @filter_action
         @delegate 'change', '#flip-checkbox', @filter_action
         #@delegate 'tablecreate' , @table_create
+        @delegate 'click',  "[href='#list-table-popup']", @open_column_popup
 
         @publishEvent('log:debug', @params)
         #init_events: =>
@@ -42,6 +43,11 @@ module.exports = class ListView extends View
         #table_create: (event) =>
         #    @publishEvent 'table_refresh'
         window.collection = @collection_hard
+
+    open_column_popup:(event) =>
+        @publishEvent("log:info", "coumn toggle popup")
+        event.preventDefault()
+        $('#list-table-popup').popup('open')
 
     query_action: (event) =>
         @publishEvent("log:info", "query_action called")
@@ -151,6 +157,11 @@ module.exports = class ListView extends View
         clients: localStorage.getObject('clients')
         branches: localStorage.getObject('branches')
 
+    render: =>
+        super
+        #remove any previously created table column toggle popups ( important for new rendering )
+        $("#list-table-popup").remove()
+        $("#list-table-popup-popup").remove()
 
     attach: =>
         super

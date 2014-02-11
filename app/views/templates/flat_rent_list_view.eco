@@ -1,5 +1,4 @@
-<div class="ui-grid-c">
-	<div class="ui-block-a">
+            <div>
             <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b'>
                 <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
                 <a href='/oferty/dodaj?type=<%= @listing_type %>' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
@@ -12,13 +11,6 @@
                     <option value="eksport" disabled>Eksport do pliku</option>
                 </select>
 
-            </fieldset>
-    </div>
-
-	<div class="ui-block-b">
-
-
-            <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b' >
 
                 <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
                 <select name="status-query" id="status-query" data-query='status'>
@@ -57,13 +49,6 @@
                     <option value="<%= key %>"><%= val %></option>
                     <% end %>
                 </select>
-            </fieldset>
-
-    </div>
-
-	<div class="ui-block-c">
-
-            <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b'>
 
                 <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
                 <a href='/oferty/dodaj?type=<%= @listing_type %>' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
@@ -81,17 +66,13 @@
                     <option value="6">Umowa przedwstępna</option>
                 </select>
 
+
             </fieldset>
 
-	</div>
-
-	<div class="ui-block-d">
-         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ofert ... " />
-	</div>
-</div><!-- /grid-b -->
+            </div>
 
 <table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
-data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >
+data-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >
      <thead>
        <tr class='th-groups'>
          <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>
