@@ -16,6 +16,7 @@ module.exports = class EditView extends View
         @edit_type = @params.edit_type
         @listing_type = @params.listing_type ? false
         @delete_only = @params.delete_only ? false
+        @upload_multiple = true
         @publishEvent('log:debug', "form_name:#{@form_name}, can_edit:#{@can_edit}, listing_type:#{@listing_type}, delete_only:#{@delete_only} ")
         # events
         @subscribeEvent('delete:clicked', @delete_action)
@@ -58,6 +59,17 @@ module.exports = class EditView extends View
         @delegate 'click', '[data-action=\'remove\']', @remove_resources_click
 
     refresh_resource: =>
+        # set button to disabled if we allowing only one upload per element
+        @publishEvent("log:info",  _.isEmpty(window.form.fields.resources.editor.getValue()))
+        if @upload_multiple is false and not _.isEmpty(window.form.fields.resources.editor.getValue())
+            @publishEvent("log:info", "one upload allowed  - removing button ")
+            $("#upload a:first").addClass('ui-state-disabled')
+            $("#upload input").css('display', 'none')
+        else # make sure we back to normal
+            @publishEvent("log:info", "upload allowed  - reseting button")
+            $("#upload a:first").removeClass('ui-state-disabled')
+            $("#upload input").css('display', 'inline')
+
         @publishEvent("log:debug", "refresh_resource")
         $ul = $("#resource_list")
         $li = $("#resource_list li")
@@ -101,6 +113,7 @@ module.exports = class EditView extends View
                     if i.uuid is uuid
                         # console.log('removed:', i, items.indexOf(i))
                         self.form.fields.resources.editor.removeItem(i, items.indexOf(i))
+                self.refresh_resource()
             error: (jqXHR, textStatus, errorThrown ) ->
                 self.publishEvent("tell_user", jqXHR.responseJSON.title or errorThrown)
             #contentType: "application/json"
@@ -130,6 +143,7 @@ module.exports = class EditView extends View
                         # console.log('getValue', self.form.fields.resources.getValue())
 
     init_uploader: =>
+
         self = @
         @$el.append(upload_template)
         #$("#upload").fineUploader
@@ -137,6 +151,7 @@ module.exports = class EditView extends View
             #button: $("#uploader_button")[0]
             #debug: true
             element: $("#upload")[0]
+            multiple: self.upload_multiple
             request:
                 # endpoint: mediator.upload_url
                 endpoint: "#{mediator.upload_url}"

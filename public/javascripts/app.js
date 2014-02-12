@@ -261,6 +261,7 @@ module.exports = AgentController = (function(_super) {
   AgentController.prototype.show = function(params, route, options) {
     var _this = this;
     this.publishEvent('log:info', 'in agent show controller');
+    console.log(params, route, options);
     return mediator.models.user.fetch({
       success: function() {
         var _ref;
@@ -744,6 +745,99 @@ module.exports = ClientPublicController = (function(_super) {
 
 });
 
+;require.register("controllers/graphic-controller", function(exports, require, module) {
+var Collection, Controller, GraphicController, ListView, Model, View, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Controller = require('controllers/auth-controller');
+
+ListView = require('views/graphic-list-view');
+
+View = require('views/graphic-view');
+
+Collection = require('models/graphic-collection');
+
+Model = require('models/graphic-model');
+
+mediator = require('mediator');
+
+module.exports = GraphicController = (function(_super) {
+
+  __extends(GraphicController, _super);
+
+  function GraphicController() {
+    return GraphicController.__super__.constructor.apply(this, arguments);
+  }
+
+  GraphicController.prototype.list = function(params, route, options) {
+    var _this = this;
+    this.publishEvent('log:info', 'in client list controller');
+    mediator.collections.clients = new Collection;
+    return mediator.collections.clients.fetch({
+      data: params,
+      beforeSend: function() {
+        _this.publishEvent('loading_start');
+        return _this.publishEvent('tell_user', 'Ładuje listę klientów ...');
+      },
+      success: function() {
+        _this.publishEvent('log:info', "data with " + params + " fetched ok");
+        _this.publishEvent('loading_stop');
+        return _this.view = new ListView({
+          collection: mediator.collections.clients,
+          template: 'client_list_view',
+          filter: 'client_type',
+          region: 'content',
+          controller: 'client_controller'
+        });
+      },
+      error: function() {
+        _this.publishEvent('loading_stop');
+        return _this.publishEvent('server_error');
+      }
+    });
+  };
+
+  GraphicController.prototype.add = function(params, route, options) {
+    this.publishEvent('log:info', 'in clientadd controller');
+    mediator.models.graphic = new Model;
+    this.schema = localStorage.getObject('graphic_schema');
+    this.model = mediator.models.graphic;
+    this.model.schema = _.clone(this.schema);
+    return this.view = new View({
+      form_name: 'graphic_form',
+      model: this.model,
+      can_edit: true,
+      edit_type: 'add',
+      region: 'content'
+    });
+  };
+
+  GraphicController.prototype.show = function(params, route, options) {
+    this.publishEvent('log:info', 'in client show controller');
+    if (!_.isObject(mediator.collections.clients.get(params.id))) {
+      this.redirectTo({
+        '/klienci': '/klienci'
+      });
+    }
+    this.schema = localStorage.getObject('client_schema');
+    this.model = mediator.collections.clients.get(params.id);
+    this.model.schema = _.clone(this.schema);
+    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
+    return this.view = new ClientView({
+      form_name: 'client_form',
+      model: this.model,
+      can_edit: this.can_edit,
+      region: 'content'
+    });
+  };
+
+  return GraphicController;
+
+})(Controller);
+
+});
+
 ;require.register("controllers/header-controller", function(exports, require, module) {
 var Controller, HeaderController, HeaderView,
   __hasProp = {}.hasOwnProperty,
@@ -1093,8 +1187,8 @@ module.exports = StructureController = (function(_super) {
     this.compose('header', Header, {
       region: 'header'
     });
-    edit_footer = ['listing#add', 'listing#show', 'client#add', 'client#show', 'client-public#show', 'branch#add', 'branch#show', 'agent#add', 'agent#show', 'bon#show'];
-    list_footer = ['listing#list', 'client#list', 'client-public#list', 'branch#list', 'agent#list', 'bon#list'];
+    edit_footer = ['listing#add', 'listing#show', 'client#add', 'client#show', 'client-public#show', 'branch#add', 'branch#show', 'agent#add', 'agent#show', 'bon#show', 'graphic#add', 'graphic#show'];
+    list_footer = ['listing#list', 'client#list', 'client-public#list', 'branch#list', 'agent#list', 'bon#list', 'graphic#list'];
     if (_ref = route.name, __indexOf.call(edit_footer, _ref) >= 0) {
       this.compose('footer-nav', NavFooter, {
         region: 'footer'
@@ -1578,6 +1672,88 @@ module.exports = ClientList = (function(_super) {
 
 });
 
+;require.register("models/graphic-collection", function(exports, require, module) {
+var GraphicList, Model,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Model = require('models/graphic-model');
+
+module.exports = GraphicList = (function(_super) {
+
+  __extends(GraphicList, _super);
+
+  function GraphicList() {
+    return GraphicList.__super__.constructor.apply(this, arguments);
+  }
+
+  GraphicList.prototype.model = Model;
+
+  GraphicList.prototype.url = 'http://localhost:8080/v1/grafiki';
+
+  return GraphicList;
+
+})(Chaplin.Collection);
+
+});
+
+;require.register("models/graphic-model", function(exports, require, module) {
+var Graphic, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+mediator = require('mediator');
+
+module.exports = Graphic = (function(_super) {
+
+  __extends(Graphic, _super);
+
+  function Graphic() {
+    return Graphic.__super__.constructor.apply(this, arguments);
+  }
+
+  Graphic.prototype.urlRoot = 'http://localhost:8080/v1/grafiki';
+
+  Graphic.prototype.schema = {};
+
+  Graphic.prototype.get = function(attr) {
+    var value;
+    value = Backbone.Model.prototype.get.call(this, attr);
+    if (_.isFunction(value)) {
+      return value.call(this);
+    } else {
+      return value;
+    }
+  };
+
+  Graphic.prototype.defaults = {
+    is_active: '1',
+    opacity: 20,
+    is_active_func: function() {
+      if (this.get('is_active')) {
+        return 'tak';
+      } else {
+        return 'nie';
+      }
+    }
+  };
+
+  Graphic.prototype.toJSON = function() {
+    var data, json;
+    data = {};
+    json = Backbone.Model.prototype.toJSON.call(this);
+    _.each(json, function(value, key) {
+      return data[key] = this.get(key);
+    }, this);
+    return data;
+  };
+
+  return Graphic;
+
+})(Chaplin.Model);
+
+});
+
 ;require.register("models/listing-collection", function(exports, require, module) {
 var ListingList, Model, mediator,
   __hasProp = {}.hasOwnProperty,
@@ -1818,7 +1994,10 @@ module.exports = function(match) {
   match('oferty/dodaj', 'listing#add');
   match('oferty', 'listing#list');
   match('oferty/:id', 'listing#show');
-  return match('iframe/:template', 'iframe#show');
+  match('iframe/:template', 'iframe#show');
+  match('grafiki/', 'graphic#list');
+  match('grafiki/dodaj', 'graphic#add');
+  return match('grafiki/:id', 'graphic#show');
 };
 
 });
@@ -1899,9 +2078,17 @@ module.exports = View = (function(_super) {
       return this.model.save({}, {
         success: function(event) {
           _this.publishEvent('tell_user', 'Agent zapisany');
-          return Chaplin.utils.redirectTo({
-            url: '/agenci'
-          });
+          if (_this.model.id === mediator.models.user.get('id') && (_this.model.get(['username']) !== mediator.models.user.get('username') || _this.model.get(['password']) !== mediator.models.user.get('user_pass'))) {
+            _this.publishEvent("log:info", "password/username changed relogin required");
+            mediator.models.user.clear();
+            return Chaplin.utils.redirectTo({
+              url: '/login'
+            });
+          } else {
+            return Chaplin.utils.redirectTo({
+              url: '/agenci'
+            });
+          }
         },
         error: function(model, response, options) {
           if (response.responseJSON != null) {
@@ -2676,6 +2863,7 @@ module.exports = EditView = (function(_super) {
     this.edit_type = this.params.edit_type;
     this.listing_type = (_ref = this.params.listing_type) != null ? _ref : false;
     this.delete_only = (_ref1 = this.params.delete_only) != null ? _ref1 : false;
+    this.upload_multiple = true;
     this.publishEvent('log:debug', "form_name:" + this.form_name + ", can_edit:" + this.can_edit + ", listing_type:" + this.listing_type + ", delete_only:" + this.delete_only + " ");
     this.subscribeEvent('delete:clicked', this.delete_action);
     this.subscribeEvent('popupbeforeposition', this.popup_position);
@@ -2718,6 +2906,16 @@ module.exports = EditView = (function(_super) {
 
   EditView.prototype.refresh_resource = function() {
     var $li, $ul;
+    this.publishEvent("log:info", _.isEmpty(window.form.fields.resources.editor.getValue()));
+    if (this.upload_multiple === false && !_.isEmpty(window.form.fields.resources.editor.getValue())) {
+      this.publishEvent("log:info", "one upload allowed  - removing button ");
+      $("#upload a:first").addClass('ui-state-disabled');
+      $("#upload input").css('display', 'none');
+    } else {
+      this.publishEvent("log:info", "upload allowed  - reseting button");
+      $("#upload a:first").removeClass('ui-state-disabled');
+      $("#upload input").css('display', 'inline');
+    }
     this.publishEvent("log:debug", "refresh_resource");
     $ul = $("#resource_list");
     $li = $("#resource_list li");
@@ -2754,19 +2952,16 @@ module.exports = EditView = (function(_super) {
       },
       type: "DELETE",
       success: function(data, textStatus, jqXHR) {
-        var i, items, new_items, _i, _len, _results;
+        var i, items, new_items, _i, _len;
         items = self.form.fields.resources.getValue();
         new_items = [];
-        _results = [];
         for (_i = 0, _len = items.length; _i < _len; _i++) {
           i = items[_i];
           if (i.uuid === uuid) {
-            _results.push(self.form.fields.resources.editor.removeItem(i, items.indexOf(i)));
-          } else {
-            _results.push(void 0);
+            self.form.fields.resources.editor.removeItem(i, items.indexOf(i));
           }
         }
-        return _results;
+        return self.refresh_resource();
       },
       error: function(jqXHR, textStatus, errorThrown) {
         return self.publishEvent("tell_user", jqXHR.responseJSON.title || errorThrown);
@@ -2806,6 +3001,7 @@ module.exports = EditView = (function(_super) {
     this.$el.append(upload_template);
     return this.uploader = new qq.FineUploader({
       element: $("#upload")[0],
+      multiple: self.upload_multiple,
       request: {
         endpoint: "" + mediator.upload_url,
         customHeaders: {
@@ -3059,6 +3255,149 @@ module.exports = FooterView = (function(_super) {
   };
 
   return FooterView;
+
+})(View);
+
+});
+
+;require.register("views/graphic-list-view", function(exports, require, module) {
+var GraphicListView, View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/graphic-view');
+
+mediator = require('mediator');
+
+module.exports = GraphicListView = (function(_super) {
+
+  __extends(GraphicListView, _super);
+
+  function GraphicListView() {
+    this.attach = __bind(this.attach, this);
+    return GraphicListView.__super__.constructor.apply(this, arguments);
+  }
+
+  GraphicListView.prototype.initialize = function(params) {
+    return GraphicListView.__super__.initialize.apply(this, arguments);
+  };
+
+  GraphicListView.prototype.attach = function() {
+    GraphicListView.__super__.attach.apply(this, arguments);
+    return this.publishEvent('log:info', 'view: client list view afterRender()');
+  };
+
+  return GraphicListView;
+
+})(View);
+
+});
+
+;require.register("views/graphic-view", function(exports, require, module) {
+var ClientAddView, View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/edit-view');
+
+mediator = require('mediator');
+
+module.exports = ClientAddView = (function(_super) {
+
+  __extends(ClientAddView, _super);
+
+  function ClientAddView() {
+    this.back_action = __bind(this.back_action, this);
+
+    this.attach = __bind(this.attach, this);
+
+    this.delete_action = __bind(this.delete_action, this);
+
+    this.refresh_form = __bind(this.refresh_form, this);
+
+    this.save_action = __bind(this.save_action, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return ClientAddView.__super__.constructor.apply(this, arguments);
+  }
+
+  ClientAddView.prototype.initialize = function(options) {
+    ClientAddView.__super__.initialize.apply(this, arguments);
+    return this.upload_multiple = false;
+  };
+
+  ClientAddView.prototype.save_action = function(url) {
+    var _this = this;
+    ClientAddView.__super__.save_action.apply(this, arguments);
+    this.publishEvent('log:info', 'commmit form');
+    if (_.isUndefined(this.form.commit({
+      validate: true
+    }))) {
+      return this.model.save({}, {
+        success: function(event) {
+          if (mediator.collections.clients != null) {
+            mediator.collections.clients.add(_this.model);
+          }
+          _this.publishEvent('tell_user', 'Klient zapisany');
+          return Chaplin.utils.redirectTo({
+            url: url != null ? url : '/klienci'
+          });
+        },
+        error: function(model, response, options) {
+          if (response.responseJSON != null) {
+            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+          } else {
+            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+          }
+        }
+      });
+    } else {
+      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+    }
+  };
+
+  ClientAddView.prototype.refresh_form = function() {
+    return Chaplin.utils.redirectTo({
+      url: '/klienci/dodaj'
+    });
+  };
+
+  ClientAddView.prototype.delete_action = function() {
+    var _this = this;
+    ClientAddView.__super__.delete_action.apply(this, arguments);
+    return this.model.destroy({
+      success: function(event) {
+        mediator.collections.clients.remove(_this.model);
+        _this.publishEvent('tell_user', 'Klient został usunięty');
+        return Chaplin.utils.redirectTo({
+          url: '/klienci'
+        });
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  ClientAddView.prototype.attach = function() {
+    ClientAddView.__super__.attach.apply(this, arguments);
+    return this.publishEvent('log:info', 'view: clientadd afterRender()');
+  };
+
+  ClientAddView.prototype.back_action = function() {
+    ClientAddView.__super__.back_action.apply(this, arguments);
+    return Chaplin.utils.redirectTo({
+      url: '/grafiki'
+    });
+  };
+
+  return ClientAddView;
 
 })(View);
 
@@ -5805,7 +6144,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty?category=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty?category=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty?category=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty?category=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty?category=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty?category=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty?category=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty?category=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty?category=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty?category=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty?category=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty?category=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="/oferty?status=4" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=3" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=1" >Nieaktywna<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=5" >Sprzedana<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=6" >Wynajęta<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=7" >Umowa przedstępna<span class=\'ui-li-count\'>34</span></a> </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a id=\'agent-config-link\' href="" >Dane Profilu</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="" >Logo</a></li>\n                        <li ><a href="" >Watermark</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="/iframe/kw" >Księgi wieczyste</a></li>\n                        <li><a href="/iframe/geo" >Geoportal</a></li>\n                        <li><a href="/iframe/geodz">Wyszukaj działkę</a></li>\n                        <li><a href="/iframe/calendar">Kalendarz</a></li>\n                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>\n                        <!--\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        -->\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
+      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty?category=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty?category=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty?category=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty?category=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty?category=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty?category=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty?category=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty?category=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty?category=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty?category=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty?category=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty?category=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="/oferty?status=4" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=3" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=1" >Nieaktywna<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=5" >Sprzedana<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=6" >Wynajęta<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=7" >Umowa przedstępna<span class=\'ui-li-count\'>34</span></a> </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a id=\'agent-config-link\' href="" >Dane Profilu</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="/grafiki/dodaj" >Logo/Znaki wodne</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="/iframe/kw" >Księgi wieczyste</a></li>\n                        <li><a href="/iframe/geo" >Geoportal</a></li>\n                        <li><a href="/iframe/geodz">Wyszukaj działkę</a></li>\n                        <li><a href="/iframe/calendar">Kalendarz</a></li>\n                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>\n                        <!--\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        -->\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
     
     }).call(this);
     

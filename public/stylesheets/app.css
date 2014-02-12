@@ -227,6 +227,9 @@ border-right: 1px solid #A3A3A3;
 #list-table th:first-child{
 width:22px;
 }
+#upload .ui-input-text{
+border-style:none;
+}
 
 
 /*# sourceMappingURL=app.css.map*/

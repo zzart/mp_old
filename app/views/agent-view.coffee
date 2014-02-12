@@ -13,7 +13,15 @@ module.exports = class View extends View
             @model.save({},{
                 success:(event) =>
                     @publishEvent 'tell_user', 'Agent zapisany'
-                    Chaplin.utils.redirectTo {url: '/agenci'}
+                    # hasChanged doesn't work since we setting values again after save
+                    if @model.id == mediator.models.user.get('id') and (
+                        @model.get(['username']) isnt mediator.models.user.get('username') or
+                        @model.get(['password']) isnt mediator.models.user.get('user_pass') )
+                        @publishEvent("log:info", "password/username changed relogin required")
+                        mediator.models.user.clear()
+                        Chaplin.utils.redirectTo {url: '/login'}
+                    else
+                        Chaplin.utils.redirectTo {url: '/agenci'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']

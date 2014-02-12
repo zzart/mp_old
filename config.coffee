@@ -30,9 +30,9 @@ exports.config =
           'vendor/scripts/backbone-forms.js',
           'vendor/scripts/bootstrap.js',
           'vendor/scripts/backbone.bootstrap-modal.js',
+          'vendor/scripts/mp-editors.js',
           'vendor/scripts/default-forms-template.js',
           'vendor/scripts/list.js',
-          'vendor/scripts/mp-editors.js',
           'vendor/scripts/jquery.tablesorter.min.js',
           'vendor/scripts/hmac-sha256.js',
           'vendor/scripts/enc-base64-min.js'

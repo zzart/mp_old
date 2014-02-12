@@ -59,6 +59,7 @@ module.exports = class AgentController extends Controller
 
     show:(params, route, options) ->
         @publishEvent('log:info', 'in agent show controller')
+        console.log(params, route, options)
         #in case someone added branch or user we need updated schema from server!
         mediator.models.user.fetch
             success: =>
