@@ -14,7 +14,7 @@ module.exports = class BranchView extends View
                     if mediator.collections.branches?
                         # add it to collection so we don't need to use server ...
                         mediator.collections.branches.add(@model)
-                    @publishEvent 'tell_user', 'Oddział zapisany'
+                    @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
                     Chaplin.utils.redirectTo {url: '/oddzialy'}
                 error:(model, response, options) =>
                     if response.responseJSON?
@@ -31,7 +31,7 @@ module.exports = class BranchView extends View
         @model.destroy
             success: (event) =>
                 mediator.collections.branches.remove(@model)
-                @publishEvent 'tell_user', 'Oddział został usunięty'
+                @publishEvent 'tell_user', 'Rekord został usunięty'
                 Chaplin.utils.redirectTo {url: '/oddzialy'}
             error:(model, response, options) =>
                 if response.responseJSON?

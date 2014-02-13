@@ -7,6 +7,7 @@ ListFooter = require 'views/footer-list-view'
 LeftPanelView = require 'views/left-panel-view'
 InfoView = require 'views/info-view'
 ConfirmView = require 'views/confirm-view'
+ViewedView = require 'views/viewed-view'
 
 module.exports = class StructureController extends Controller
     beforeAction: (params, route) ->
@@ -45,6 +46,7 @@ module.exports = class StructureController extends Controller
             @compose 'footer', Footer, region:'footer'
         @compose 'panel-left', LeftPanelView
         @compose 'info', InfoView, region:'info'
+        @compose 'viewed', ViewedView, region:'viewed'
         @compose 'confirm', ConfirmView, region:'confirm'
         #init panel after init jqm
         @publishEvent 'structureController:render'

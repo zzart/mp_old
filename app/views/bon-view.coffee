@@ -11,7 +11,7 @@ module.exports = class BonEditView extends View
         if _.isUndefined(@form.commit({validate:true}))
             @model.save({},{
                 success:(event) =>
-                    @publishEvent 'tell_user', 'Dane biura zostały zapisane'
+                    @publishEvent 'tell_user', "Dane biura zostały zmienione #{@model.get_url()} zapisany"
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -26,7 +26,7 @@ module.exports = class BonEditView extends View
         @model.destroy
             success: (event) =>
                 # we will never succeed....
-                @publishEvent('log:info', 'dyspozycja usunięcia konta przyjęta' )
+                @publishEvent('log:info', 'Dyspozycja usunięcia konta przyjęta. Skontaktujemy się z państwem w celu potwierdzenia.' )
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']

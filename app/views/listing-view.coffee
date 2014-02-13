@@ -51,7 +51,7 @@ module.exports = class AddView extends View
                     if mediator.collections.listings?
                         # add it to collection so we don't need to use server ...
                         mediator.collections.listings.add(@model)
-                    @publishEvent 'tell_user', 'Rekord zapisany'
+                    @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
                     Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
                 error:(model, response, options) =>
                     if response.responseJSON?

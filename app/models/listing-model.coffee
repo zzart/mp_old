@@ -49,6 +49,10 @@ module.exports = class Listing extends Chaplin.Model
             data[key] = @get(key)
         , this)
         data
+
+    module_name: ['oferta', 'oferty']
+    get_url: ->
+        return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
         # agent_type_func: ->
         #     switch @get('agent_type')
         #          when 0 then 'pośrednik'

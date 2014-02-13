@@ -9,7 +9,6 @@ module.exports = class ClientAddView extends View
         super
         @save_action('/klienci/dodaj')
 
-
     save_action: (url) =>
         super
         @publishEvent('log:info','commmit form')
@@ -20,7 +19,7 @@ module.exports = class ClientAddView extends View
                     if mediator.collections.clients?
                         # add it to collection so we don't need to use server ...
                         mediator.collections.clients.add(@model)
-                    @publishEvent 'tell_user', 'Klient zapisany'
+                    @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
                     Chaplin.utils.redirectTo {url: url ? '/klienci'}
                 error:(model, response, options) =>
                     if response.responseJSON?
@@ -40,7 +39,7 @@ module.exports = class ClientAddView extends View
         @model.destroy
             success: (event) =>
                 mediator.collections.clients.remove(@model)
-                @publishEvent 'tell_user', 'Klient został usunięty'
+                @publishEvent 'tell_user', 'Rekord został usunięty'
                 Chaplin.utils.redirectTo {url: '/klienci'}
             error:(model, response, options) =>
                 if response.responseJSON?

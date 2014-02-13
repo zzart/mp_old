@@ -34,3 +34,6 @@ module.exports = class Client extends Chaplin.Model
         @publishEvent('modelchanged', 'client')
     onRemove: ->
         console.log('--> model remove')
+    module_name: ['klient', 'klienci']
+    get_url: ->
+        return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"

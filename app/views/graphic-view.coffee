@@ -16,7 +16,7 @@ module.exports = class GraphicView extends View
                     if mediator.collections.graphics?
                         # add it to collection so we don't need to use server ...
                         mediator.collections.graphics.add(@model)
-                    @publishEvent 'tell_user', 'Element zapisany'
+                    @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
                     Chaplin.utils.redirectTo {url: url ? '/grafiki'}
                 error:(model, response, options) =>
                     if response.responseJSON?
@@ -35,7 +35,7 @@ module.exports = class GraphicView extends View
         @model.destroy
             success: (event) =>
                 mediator.collections.graphics.remove(@model)
-                @publishEvent 'tell_user', 'Element został usunięty'
+                @publishEvent 'tell_user', "Rekord został usunięty"
                 Chaplin.utils.redirectTo {url: '/grafiki'}
             error:(model, response, options) =>
                 if response.responseJSON?
@@ -50,6 +50,7 @@ module.exports = class GraphicView extends View
     attach: =>
         super
         @publishEvent('log:info', 'view: graphic afterRender()')
+        # so list items (resources) can be refreshed on time
         _.delay(@refresh_resource,10)
 
 

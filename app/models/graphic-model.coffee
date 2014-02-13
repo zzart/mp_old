@@ -38,6 +38,10 @@ module.exports = class Graphic extends Chaplin.Model
         , this)
         data
 
+    module_name: ['grafika', 'grafiki']
+    get_url: ->
+        return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
+
     # initialize: ->
     #     @on('change:surname', @onChange)
     #     @on('add', @onAdd)

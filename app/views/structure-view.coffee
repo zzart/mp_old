@@ -16,6 +16,7 @@ module.exports = class StructureView extends View
         'footer': '#footer-region'
         'header': '#header-region'
         'info': '#info-region'
+        'viewed': '#viewed-region'
         'login': '#login-region'
         'confirm': '#confirm-region'
 

@@ -138,6 +138,8 @@ module.exports = Application = (function(_super) {
     mediator.collections = {};
     mediator.schemas = {};
     mediator.last_query = {};
+    mediator.info = [];
+    mediator.viewed = [];
     mediator.server_url = 'http://localhost:8080/';
     mediator.upload_url = "" + mediator.server_url + "v1/pliki";
     mediator.app_key = 'mp';
@@ -292,6 +294,7 @@ module.exports = AgentController = (function(_super) {
               }
               _this.schema = localStorage.getObject('agent_schema');
               _this.model.schema = _.clone(_this.schema);
+              _this.publishEvent('tell_viewed', _this.model.get_url());
               return _this.view = new EditView({
                 form_name: 'agent_form',
                 model: _this.model,
@@ -315,6 +318,7 @@ module.exports = AgentController = (function(_super) {
           _this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
           _this.schema = localStorage.getObject('agent_schema');
           _this.model.schema = _.clone(_this.schema);
+          _this.publishEvent('tell_viewed', _this.model.get_url());
           return _this.view = new EditView({
             form_name: 'agent_form',
             model: _this.model,
@@ -563,6 +567,7 @@ module.exports = BranchController = (function(_super) {
     this.schema = localStorage.getObject('branch_schema');
     this.model.schema = _.clone(this.schema);
     this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
+    this.publishEvent('tell_viewed', this.model.get_url());
     return this.view = new View({
       form_name: 'branch_form',
       model: this.model,
@@ -654,6 +659,7 @@ module.exports = ClientListController = (function(_super) {
     this.model = mediator.collections.clients.get(params.id);
     this.model.schema = _.clone(this.schema);
     this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
+    this.publishEvent('tell_viewed', this.model.get_url());
     return this.view = new ClientView({
       form_name: 'client_form',
       model: this.model,
@@ -820,6 +826,7 @@ module.exports = GraphicController = (function(_super) {
     this.model = mediator.collections.graphics.get(params.id);
     this.model.schema = _.clone(this.schema);
     this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
+    this.publishEvent('tell_viewed', this.model.get_url());
     return this.view = new View({
       form_name: 'graphic_form',
       model: this.model,
@@ -1021,6 +1028,7 @@ module.exports = ListingController = (function(_super) {
     console.log(categories, this.schema, this.model.get('category'));
     this.model.schema = _.clone(this.schema);
     this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
+    this.publishEvent('tell_viewed', this.model.get_url());
     return this.view = new View({
       form_name: form,
       model: this.model,
@@ -1145,7 +1153,7 @@ module.exports = RefreshController = (function(_super) {
 });
 
 ;require.register("controllers/structure-controller", function(exports, require, module) {
-var ConfirmView, Controller, Footer, Header, InfoView, LeftPanelView, ListFooter, NavFooter, StructureController, StructureView,
+var ConfirmView, Controller, Footer, Header, InfoView, LeftPanelView, ListFooter, NavFooter, StructureController, StructureView, ViewedView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -1167,6 +1175,8 @@ LeftPanelView = require('views/left-panel-view');
 InfoView = require('views/info-view');
 
 ConfirmView = require('views/confirm-view');
+
+ViewedView = require('views/viewed-view');
 
 module.exports = StructureController = (function(_super) {
 
@@ -1201,6 +1211,9 @@ module.exports = StructureController = (function(_super) {
     this.compose('panel-left', LeftPanelView);
     this.compose('info', InfoView, {
       region: 'info'
+    });
+    this.compose('viewed', ViewedView, {
+      region: 'viewed'
     });
     this.compose('confirm', ConfirmView, {
       region: 'confirm'
@@ -1377,6 +1390,12 @@ module.exports = Agent = (function(_super) {
     return data;
   };
 
+  Agent.prototype.module_name = ['agent', 'agenci'];
+
+  Agent.prototype.get_url = function() {
+    return "<a href=\'/" + this.module_name[1] + "/" + (this.get('id')) + "\'>" + (this.module_name[0].toUpperCase()) + " #" + (this.get('id')) + "</a>";
+  };
+
   return Agent;
 
 })(Chaplin.Model);
@@ -1447,6 +1466,32 @@ module.exports = Bon = (function(_super) {
   Bon.prototype.urlRoot = 'http://localhost:8080/v1/biura';
 
   Bon.prototype.schema = {};
+
+  Bon.prototype.get = function(attr) {
+    var value;
+    value = Backbone.Model.prototype.get.call(this, attr);
+    if (_.isFunction(value)) {
+      return value.call(this);
+    } else {
+      return value;
+    }
+  };
+
+  Bon.prototype.toJSON = function() {
+    var data, json;
+    data = {};
+    json = Backbone.Model.prototype.toJSON.call(this);
+    _.each(json, function(value, key) {
+      return data[key] = this.get(key);
+    }, this);
+    return data;
+  };
+
+  Bon.prototype.module_name = ['biuro', 'biura'];
+
+  Bon.prototype.get_url = function() {
+    return "<a href=\'/" + this.module_name[1] + "/" + (this.get('id')) + "\'>" + (this.module_name[0].toUpperCase()) + " #" + (this.get('id')) + "</a>";
+  };
 
   return Bon;
 
@@ -1526,6 +1571,12 @@ module.exports = Branch = (function(_super) {
       return data[key] = this.get(key);
     }, this);
     return data;
+  };
+
+  Branch.prototype.module_name = ['oddział', 'oddzialy'];
+
+  Branch.prototype.get_url = function() {
+    return "<a href=\'/" + this.module_name[1] + "/" + (this.get('id')) + "\'>" + (this.module_name[0].toUpperCase()) + " #" + (this.get('id')) + "</a>";
   };
 
   return Branch;
@@ -1635,6 +1686,12 @@ module.exports = Client = (function(_super) {
 
   Client.prototype.onRemove = function() {
     return console.log('--> model remove');
+  };
+
+  Client.prototype.module_name = ['klient', 'klienci'];
+
+  Client.prototype.get_url = function() {
+    return "<a href=\'/" + this.module_name[1] + "/" + (this.get('id')) + "\'>" + (this.module_name[0].toUpperCase()) + " #" + (this.get('id')) + "</a>";
   };
 
   return Client;
@@ -1779,6 +1836,12 @@ module.exports = Graphic = (function(_super) {
       return data[key] = this.get(key);
     }, this);
     return data;
+  };
+
+  Graphic.prototype.module_name = ['grafika', 'grafiki'];
+
+  Graphic.prototype.get_url = function() {
+    return "<a href=\'/" + this.module_name[1] + "/" + (this.get('id')) + "\'>" + (this.module_name[0].toUpperCase()) + " #" + (this.get('id')) + "</a>";
   };
 
   return Graphic;
@@ -1930,6 +1993,12 @@ module.exports = Listing = (function(_super) {
       return data[key] = this.get(key);
     }, this);
     return data;
+  };
+
+  Listing.prototype.module_name = ['oferta', 'oferty'];
+
+  Listing.prototype.get_url = function() {
+    return "<a href=\'/" + this.module_name[1] + "/" + (this.get('id')) + "\'>" + (this.module_name[0].toUpperCase()) + " #" + (this.get('id')) + "</a>";
   };
 
   return Listing;
@@ -2110,7 +2179,7 @@ module.exports = View = (function(_super) {
     }))) {
       return this.model.save({}, {
         success: function(event) {
-          _this.publishEvent('tell_user', 'Agent zapisany');
+          _this.publishEvent('tell_user', "Rekord " + (_this.model.get_url()) + " zapisany");
           if (_this.model.id === mediator.models.user.get('id') && (_this.model.get(['username']) !== mediator.models.user.get('username') || _this.model.get(['password']) !== mediator.models.user.get('user_pass'))) {
             _this.publishEvent("log:info", "password/username changed relogin required");
             mediator.models.user.clear();
@@ -2142,7 +2211,7 @@ module.exports = View = (function(_super) {
     return this.model.destroy({
       success: function(event) {
         mediator.collections.agents.remove(_this.model);
-        _this.publishEvent('tell_user', 'Agent został usunięty');
+        _this.publishEvent('tell_user', "Rekord został usunięty");
         return Chaplin.utils.redirectTo({
           url: '/agenci'
         });
@@ -2249,6 +2318,7 @@ module.exports = LoginView = (function(_super) {
         $('#first-name-placeholder').text(_this.model.get('first_name') || _this.model.get('username'));
         $('#bon-config-link').attr('href', "/biura/" + (_this.model.get('company_id')));
         $('#agent-config-link').attr('href', "/agenci/" + (_this.model.get('id')));
+        _this.publishEvent('tell_user', "Logowanie zakończone.");
         return Chaplin.utils.redirectTo({
           url: ''
         });
@@ -2363,7 +2433,7 @@ module.exports = BonEditView = (function(_super) {
     }))) {
       return this.model.save({}, {
         success: function(event) {
-          return _this.publishEvent('tell_user', 'Dane biura zostały zapisane');
+          return _this.publishEvent('tell_user', "Dane biura zostały zmienione " + (_this.model.get_url()) + " zapisany");
         },
         error: function(model, response, options) {
           if (response.responseJSON != null) {
@@ -2383,7 +2453,7 @@ module.exports = BonEditView = (function(_super) {
     BonEditView.__super__.delete_action.apply(this, arguments);
     return this.model.destroy({
       success: function(event) {
-        return _this.publishEvent('log:info', 'dyspozycja usunięcia konta przyjęta');
+        return _this.publishEvent('log:info', 'Dyspozycja usunięcia konta przyjęta. Skontaktujemy się z państwem w celu potwierdzenia.');
       },
       error: function(model, response, options) {
         if (response.responseJSON != null) {
@@ -2483,7 +2553,7 @@ module.exports = BranchView = (function(_super) {
           if (mediator.collections.branches != null) {
             mediator.collections.branches.add(_this.model);
           }
-          _this.publishEvent('tell_user', 'Oddział zapisany');
+          _this.publishEvent('tell_user', "Rekord " + (_this.model.get_url()) + " zapisany");
           return Chaplin.utils.redirectTo({
             url: '/oddzialy'
           });
@@ -2507,7 +2577,7 @@ module.exports = BranchView = (function(_super) {
     return this.model.destroy({
       success: function(event) {
         mediator.collections.branches.remove(_this.model);
-        _this.publishEvent('tell_user', 'Oddział został usunięty');
+        _this.publishEvent('tell_user', 'Rekord został usunięty');
         return Chaplin.utils.redirectTo({
           url: '/oddzialy'
         });
@@ -2636,7 +2706,7 @@ module.exports = ClientView = (function(_super) {
     return this.model.destroy({
       success: function(event) {
         mediator.collections.clients_public.remove(_this.model);
-        _this.publishEvent('tell_user', 'Klient został usunięty');
+        _this.publishEvent('tell_user', 'Rekord został usunięty');
         return Chaplin.utils.redirectTo({
           url: '/klienci-wspolni'
         });
@@ -2716,7 +2786,7 @@ module.exports = ClientAddView = (function(_super) {
           if (mediator.collections.clients != null) {
             mediator.collections.clients.add(_this.model);
           }
-          _this.publishEvent('tell_user', 'Klient zapisany');
+          _this.publishEvent('tell_user', "Rekord " + (_this.model.get_url()) + " zapisany");
           return Chaplin.utils.redirectTo({
             url: url != null ? url : '/klienci'
           });
@@ -2746,7 +2816,7 @@ module.exports = ClientAddView = (function(_super) {
     return this.model.destroy({
       success: function(event) {
         mediator.collections.clients.remove(_this.model);
-        _this.publishEvent('tell_user', 'Klient został usunięty');
+        _this.publishEvent('tell_user', 'Rekord został usunięty');
         return Chaplin.utils.redirectTo({
           url: '/klienci'
         });
@@ -3374,7 +3444,7 @@ module.exports = GraphicView = (function(_super) {
           if (mediator.collections.graphics != null) {
             mediator.collections.graphics.add(_this.model);
           }
-          _this.publishEvent('tell_user', 'Element zapisany');
+          _this.publishEvent('tell_user', "Rekord " + (_this.model.get_url()) + " zapisany");
           return Chaplin.utils.redirectTo({
             url: url != null ? url : '/grafiki'
           });
@@ -3404,7 +3474,7 @@ module.exports = GraphicView = (function(_super) {
     return this.model.destroy({
       success: function(event) {
         mediator.collections.graphics.remove(_this.model);
-        _this.publishEvent('tell_user', 'Element został usunięty');
+        _this.publishEvent('tell_user', "Rekord został usunięty");
         return Chaplin.utils.redirectTo({
           url: '/grafiki'
         });
@@ -3472,7 +3542,9 @@ module.exports = HeaderView = (function(_super) {
 
   HeaderView.prototype.initialize = function() {
     HeaderView.__super__.initialize.apply(this, arguments);
-    return this.delegate('click', '#first-name-placeholder', this.login_screen);
+    this.delegate('click', '#first-name-placeholder', this.login_screen);
+    this.delegate('click', '#info-btn', this.info_screen);
+    return this.delegate('click', '#viewed-btn', this.viewed_screen);
   };
 
   HeaderView.prototype.login_screen = function() {
@@ -3481,6 +3553,50 @@ module.exports = HeaderView = (function(_super) {
     mediator.models = {};
     return Chaplin.utils.redirectTo({
       url: '/login'
+    });
+  };
+
+  HeaderView.prototype.info_screen = function() {
+    var $ul, i, str, val, _i, _len, _ref;
+    str = "";
+    _ref = _.last(mediator.info, 10);
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      i = _ref[_i];
+      str = "" + str + "<li>" + i + "</li>";
+    }
+    val = "<h4>Info</h4><ul>" + str + "</ul>";
+    $('#info').html(val);
+    $ul = $("#info");
+    try {
+      $ul.enhanceWithin();
+    } catch (error) {
+      this.publishEvent("log:warn", error);
+    }
+    return $('#info').popup('open', {
+      positionTo: "#info-btn",
+      transition: "fade"
+    });
+  };
+
+  HeaderView.prototype.viewed_screen = function() {
+    var $ul, i, str, val, _i, _len, _ref;
+    str = "";
+    _ref = _.last(_.uniq(mediator.viewed), 20);
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      i = _ref[_i];
+      str = "" + str + "<li>" + i + "</li>";
+    }
+    val = "<h4>Ostatio oglądane</h4><br /> <ul data-role='listview'  >" + str + "</ul>";
+    $('#viewed').html(val);
+    $ul = $("#viewed");
+    try {
+      $ul.enhanceWithin();
+    } catch (error) {
+      this.publishEvent("log:warn", error);
+    }
+    return $('#viewed').popup('open', {
+      positionTo: "#viewed-btn",
+      transition: "fade"
     });
   };
 
@@ -3716,6 +3832,8 @@ module.exports = Layout = (function(_super) {
 
     this.tell_user = __bind(this.tell_user, this);
 
+    this.tell_viewed = __bind(this.tell_viewed, this);
+
     this.schema_change = __bind(this.schema_change, this);
 
     this.jqm_loading_stop = __bind(this.jqm_loading_stop, this);
@@ -3744,6 +3862,7 @@ module.exports = Layout = (function(_super) {
       this.subscribeEvent('table_refresh', this.jqm_table_refresh);
       this.subscribeEvent('server_error', this.server_error);
       this.subscribeEvent('tell_user', this.tell_user);
+      this.subscribeEvent('tell_viewed', this.tell_viewed);
     }
     this.subscribeEvent('log:debug', this.log_debug);
     this.subscribeEvent('log:info', this.log_info);
@@ -3764,8 +3883,13 @@ module.exports = Layout = (function(_super) {
     return mediator.models.user.fetch();
   };
 
+  Layout.prototype.tell_viewed = function(information) {
+    return mediator.viewed.push(information);
+  };
+
   Layout.prototype.tell_user = function(information) {
-    $('#info').text(information);
+    $('#info').html(information);
+    mediator.info.push(information);
     setTimeout(function() {
       return $('#info').popup('open', {
         positionTo: "#info-btn",
@@ -4482,7 +4606,7 @@ module.exports = AddView = (function(_super) {
           if (mediator.collections.listings != null) {
             mediator.collections.listings.add(_this.model);
           }
-          _this.publishEvent('tell_user', 'Rekord zapisany');
+          _this.publishEvent('tell_user', "Rekord " + (_this.model.get_url()) + " zapisany");
           return Chaplin.utils.redirectTo({
             url: url != null ? url : "/oferty?" + ($.param(mediator.collections.listings.query))
           });
@@ -4845,6 +4969,7 @@ module.exports = LoginView = (function(_super) {
         $('#bon-config-link').attr('href', "/biura/" + (_this.model.get('company_id')));
         $('#agent-config-link').attr('href', "/agenci/" + (_this.model.get('id')));
         $('#login').popup('close');
+        _this.publishEvent('tell_user', "Logowanie zakończone.");
         return Chaplin.utils.redirectTo({
           url: ''
         });
@@ -4912,6 +5037,7 @@ module.exports = StructureView = (function(_super) {
     'footer': '#footer-region',
     'header': '#header-region',
     'info': '#info-region',
+    'viewed': '#viewed-region',
     'login': '#login-region',
     'confirm': '#confirm-region'
   };
@@ -5253,7 +5379,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('        <!-- this is REGIONS ONLY -->\n        <div id=\'header-region\' >\n        </div><!-- header -->\n\n        <div id=\'content-region\'>\n        </div><!-- content -->\n\n        <div id=\'footer-region\' >\n        </div><!-- footer -->\n\n\n        <div id="info-region">\n        </div><!-- info-region -->\n        <div id="login-region">\n        </div><!-- info-region -->\n\n        <div id="confirm-region">\n        </div><!-- info-region -->\n\n');
+      __out.push('        <!-- this is REGIONS ONLY -->\n        <div id=\'header-region\' >\n        </div><!-- header -->\n\n        <div id=\'content-region\'>\n        </div><!-- content -->\n\n        <div id=\'footer-region\' >\n        </div><!-- footer -->\n\n        <div id="viewed-region">\n        </div><!-- info-region -->\n\n        <div id="info-region">\n        </div><!-- info-region -->\n        <div id="login-region">\n        </div><!-- info-region -->\n\n        <div id="confirm-region">\n        </div><!-- info-region -->\n\n');
     
     }).call(this);
     
@@ -6039,7 +6165,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('    <a href=\'#left-panel\' data-icon=\'grid\' data-theme="b">Menu</a>\n    <h1>Mobilny Pośrednik</h1>\n\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</button>\n        <button id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-power"></button>\n    </div>\n');
+      __out.push('    <a href=\'#left-panel\' data-icon=\'grid\' data-theme="b">Menu</a>\n    <h1>Mobilny Pośrednik</h1>\n\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'viewed-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-eye ui-btn-icon-notext">Icon only</button>\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</button>\n        <button id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-power"></button>\n    </div>\n');
     
     }).call(this);
     
@@ -6762,6 +6888,102 @@ module.exports = function (__obj) {
   __obj.safe = __objSafe, __obj.escape = __escape;
   return __out.join('');
 }
+});
+
+;require.register("views/templates/viewed", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+    
+      __out.push('<p>Hi im viewed popup</p>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/viewed-view", function(exports, require, module) {
+var View, ViewedView, template,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+template = require('views/templates/viewed');
+
+View = require('views/base/view');
+
+module.exports = ViewedView = (function(_super) {
+
+  __extends(ViewedView, _super);
+
+  function ViewedView() {
+    this.attach = __bind(this.attach, this);
+    return ViewedView.__super__.constructor.apply(this, arguments);
+  }
+
+  ViewedView.prototype.template = template;
+
+  ViewedView.prototype.containerMethod = 'html';
+
+  ViewedView.prototype.id = 'viewed';
+
+  ViewedView.prototype.attributes = {
+    'data-role': 'popup',
+    'data-theme': 'b',
+    'data-position-to': 'window',
+    'data-arrow': 'true'
+  };
+
+  ViewedView.prototype.className = 'ui-content';
+
+  ViewedView.prototype.attach = function() {
+    ViewedView.__super__.attach.apply(this, arguments);
+    return this.publishEvent('log:info', 'HeaderView:attach()');
+  };
+
+  return ViewedView;
+
+})(View);
+
 });
 
 ;

@@ -12,7 +12,7 @@ module.exports = class View extends View
         if _.isUndefined(@form.commit({validate:true}))
             @model.save({},{
                 success:(event) =>
-                    @publishEvent 'tell_user', 'Agent zapisany'
+                    @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
                     # hasChanged doesn't work since we setting values again after save
                     if @model.id == mediator.models.user.get('id') and (
                         @model.get(['username']) isnt mediator.models.user.get('username') or
@@ -37,7 +37,7 @@ module.exports = class View extends View
         @model.destroy
             success: (event) =>
                 mediator.collections.agents.remove(@model)
-                @publishEvent 'tell_user', 'Agent został usunięty'
+                @publishEvent 'tell_user', "Rekord został usunięty"
                 Chaplin.utils.redirectTo {url: '/agenci'}
             error:(model, response, options) =>
                 if response.responseJSON?

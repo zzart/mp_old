@@ -86,6 +86,7 @@ module.exports = class AgentController extends Controller
                             @schema =localStorage.getObject('agent_schema')
                             #@model.schema = @schema
                             @model.schema = _.clone(@schema)
+                            @publishEvent 'tell_viewed', @model.get_url()
                             @view = new EditView {form_name:'agent_form', model:@model, can_edit:@can_edit, edit_type:@edit_type,  region:'content'}
                         error: =>
                             @publishEvent 'loading_stop'
@@ -100,6 +101,7 @@ module.exports = class AgentController extends Controller
                     @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
                     @schema =localStorage.getObject('agent_schema')
                     @model.schema = _.clone(@schema)
+                    @publishEvent 'tell_viewed', @model.get_url()
                     @view = new EditView {form_name:'agent_form', model:@model, can_edit:@can_edit, edit_type:@edit_type,  region:'content'}
 
 

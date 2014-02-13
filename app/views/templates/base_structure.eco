@@ -8,6 +8,8 @@
         <div id='footer-region' >
         </div><!-- footer -->
 
+        <div id="viewed-region">
+        </div><!-- info-region -->
 
         <div id="info-region">
         </div><!-- info-region -->

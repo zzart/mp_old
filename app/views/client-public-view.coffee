@@ -10,7 +10,7 @@ module.exports = class ClientView extends View
         @model.destroy
             success: (event) =>
                 mediator.collections.clients_public.remove(@model)
-                @publishEvent 'tell_user', 'Klient został usunięty'
+                @publishEvent 'tell_user', 'Rekord został usunięty'
                 Chaplin.utils.redirectTo {url: '/klienci-wspolni'}
             error:(model, response, options) =>
                 if response.responseJSON?

@@ -27,6 +27,7 @@ module.exports = class Layout extends Chaplin.Layout
 
             @subscribeEvent('server_error', @server_error)
             @subscribeEvent('tell_user', @tell_user)
+            @subscribeEvent('tell_viewed', @tell_viewed)
 
         @subscribeEvent('log:debug', @log_debug)
         @subscribeEvent('log:info', @log_info)
@@ -43,8 +44,12 @@ module.exports = class Layout extends Chaplin.Layout
         @log.info('****************refreshing schema')
         mediator.models.user.fetch()
 
+    tell_viewed: (information) =>
+        mediator.viewed.push(information)
+
     tell_user: (information) =>
-        $('#info').text(information)
+        $('#info').html(information)
+        mediator.info.push(information)
         #set display popup with delay
         setTimeout(->
             $('#info').popup('open',{ positionTo: "#info-btn", transition:"fade" })

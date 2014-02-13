@@ -44,5 +44,6 @@ module.exports = class BranchController extends Controller
         @schema =localStorage.getObject('branch_schema')
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
+        @publishEvent 'tell_viewed', @model.get_url()
         @view = new View {form_name:'branch_form', model:@model, can_edit:@can_edit, region:'content'}
 

@@ -42,5 +42,6 @@ module.exports = class ClientListController extends Controller
         @model = mediator.collections.clients.get(params.id)
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
+        @publishEvent 'tell_viewed', @model.get_url()
         @view = new ClientView {form_name:'client_form', model:@model, can_edit:@can_edit,  region:'content'}
 

@@ -27,3 +27,6 @@ module.exports = class Agent extends Chaplin.Model
             data[key] = @get(key)
         , this)
         data
+    module_name: ['agent', 'agenci']
+    get_url: ->
+        return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
