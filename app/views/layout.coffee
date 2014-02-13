@@ -114,6 +114,7 @@ module.exports = class Layout extends Chaplin.Layout
         #$("#left-panel").panel('open')
 
     jqm_refersh: =>
+        @log.debug('layout: event jqm_refresh caugth')
         #this is callbacks based so i know precisely WHEN jqm finished rendering !!!
         self = @
         f1 = (callback) ->
@@ -125,6 +126,7 @@ module.exports = class Layout extends Chaplin.Layout
             $("#content-region").enhanceWithin()
             f2(->
                 self.publishEvent('jqm_finished_rendering')
+                self.log.debug('jqm_refresh finished')
             )
         )
         $.mobile.loading('hide')

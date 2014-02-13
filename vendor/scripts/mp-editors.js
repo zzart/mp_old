@@ -4,14 +4,14 @@
      // like 'Select' editor, but will always return a boolean (true or false)
 
   Backbone.Form.editors.Range =  Backbone.Form.editors.Text.extend({
-        //events: _.extend({}, Backbone.Form.editors.Text.prototype.events, {
-        //    'change': function(event) {
-        //        this.trigger('change', this);
-        //    }
-        //}),
+        events: _.extend({}, Backbone.Form.editors.Text.prototype.events, {
+            'change': function(event) {
+                this.trigger('change', this);
+            }
+        }),
         initialize: function(options) {
           Backbone.Form.editors.Text.prototype.initialize.call(this, options);
-          //this.$el.attr('type', 'range');
+          this.$el.attr('type', 'range');
 
         //  if (this.schema.appendToLabel) {
         //      this.updateLabel();
@@ -19,27 +19,13 @@
         //  }
         },
         getValue: function() {
+            //JQM messes this.el after rerenders this slider field
+            //we need to make sure the context stays bound to the newly created element JQM
+            //and its value can be obtained
+            this.el = $("#"+ this.el.id)[0]
+            this.$el = $("#"+ this.el.id)
             var val = Backbone.Form.editors.Text.prototype.getValue.call(this);
-            //var val = this.form.fields.
-            //var val = this.$el.find('input').val();
-            //var val = this.$el.find('input').val();
-            //var val = this.$el.find('input').val();
-            console.log(this.$el);
-            console.log(val, this);
-            return parseInt(val, 100);
-        },
-        setValue: function(value) {
-        //    var val = Backbone.Form.editors.Text.prototype.getValue.call(this);
-
-            window.aa = this;
-            Backbone.Form.editors.Select.prototype.setValue.call(this, value);
-
-        },
-        render: function() {
-            console.log(this, this.value);
-            this.setValue(this.value);
-
-            return this;
+            return parseInt(val);
         },
 
         //updateLabel: function() {

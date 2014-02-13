@@ -1,4 +1,4 @@
-View = require 'views/graphic-view'
+View = require 'views/list-view'
 mediator = require 'mediator'
 
 module.exports = class GraphicListView extends View
@@ -7,8 +7,4 @@ module.exports = class GraphicListView extends View
     attach: =>
         super
         @publishEvent('log:info', 'view: client list view afterRender()')
-
-
-
-
 

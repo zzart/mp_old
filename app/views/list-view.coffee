@@ -16,17 +16,13 @@ module.exports = class ListView extends View
         # @collection = @params.collection
         @collection = _.clone(@params.collection)
         @listing_type = @params.listing_type ? false
-        @controller = @params.controller
-        if _.isNull(localStorage.getObject(@controller))
-            localStorage.setObject(@controller, {})
-        # console.log(@collection)
         @template = require "views/templates/#{@params.template}"
         @delegate 'change', '#select-action', @select_action
         @delegate 'change', '#all', @select_all_action
         @delegate 'click',  '#refresh', @refresh_action
         @delegate 'change', "[data-query]", @query_action
         #@delegate 'click',  ".ui-table-columntoggle-btn", @column_action
-        @delegate 'change', "[data-filter]", @filter_action
+        @delegate 'change', "#view-menu [data-filter]", @filter_action
         #@delegate 'tablecreate' , @table_create
         @delegate 'click',  "[href='#list-table-popup']", @open_column_popup
 

@@ -21,9 +21,7 @@ module.exports = class ClientListController extends Controller
                 @view = new ListView {
                     collection:mediator.collections.clients
                     template:'client_list_view'
-                    filter:'client_type'
                     region:'content'
-                    controller: 'client_controller'
                 }
             error: =>
                 @publishEvent 'loading_stop'

@@ -1,4 +1,4 @@
-<div >
+<div id="view-menu">
         <form>
             <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">
                 <button data-icon="refresh" data-iconpos="notext" id='refresh'>Odśwież</button>

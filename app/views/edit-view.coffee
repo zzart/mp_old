@@ -59,17 +59,6 @@ module.exports = class EditView extends View
         @delegate 'click', '[data-action=\'remove\']', @remove_resources_click
 
     refresh_resource: =>
-        # set button to disabled if we allowing only one upload per element
-        @publishEvent("log:info",  _.isEmpty(window.form.fields.resources.editor.getValue()))
-        if @upload_multiple is false and not _.isEmpty(window.form.fields.resources.editor.getValue())
-            @publishEvent("log:info", "one upload allowed  - removing button ")
-            $("#upload a:first").addClass('ui-state-disabled')
-            $("#upload input").css('display', 'none')
-        else # make sure we back to normal
-            @publishEvent("log:info", "upload allowed  - reseting button")
-            $("#upload a:first").removeClass('ui-state-disabled')
-            $("#upload input").css('display', 'inline')
-
         @publishEvent("log:debug", "refresh_resource")
         $ul = $("#resource_list")
         $li = $("#resource_list li")
@@ -80,6 +69,17 @@ module.exports = class EditView extends View
             $ul.trigger "updatelayout"
         catch error
             @publishEvent("log:warn", error)
+
+        # set button to disabled if we allowing only one upload per element
+        @publishEvent("log:info",  "resources empty: #{_.isEmpty(@form.fields.resources.editor.getValue())}")
+        if @upload_multiple is false and not _.isEmpty(@form.fields.resources.editor.getValue())
+            @publishEvent("log:info", "one upload allowed  - removing button ")
+            $("#upload a:first").addClass('ui-state-disabled')
+            $("#upload input").css('display', 'none')
+        else # make sure we back to normal
+            @publishEvent("log:info", "upload allowed  - reseting button")
+            $("#upload a:first").removeClass('ui-state-disabled')
+            $("#upload input").css('display', 'inline')
 
     remove_resources_click:(e) =>
         # we need to show the privilleged user dialog
@@ -241,16 +241,11 @@ module.exports = class EditView extends View
         if not @form_name.match('rent|sell')
             # init resources when they are needed
             if _.isObject(@model.schema.resources)
+                @publishEvent('log:info', 'view: attach initate uploader , sortable, events ')
                 @init_events()
                 @init_uploader()
                 @init_sortable()
         @publishEvent 'jqm_refersh:render'
-
-
-
-
-
-
 
 
 

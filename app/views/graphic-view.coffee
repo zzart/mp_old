@@ -1,6 +1,6 @@
 View = require 'views/edit-view'
 mediator = require 'mediator'
-module.exports = class ClientAddView extends View
+module.exports = class GraphicView extends View
     initialize: (options) =>
         super
         @upload_multiple = false
@@ -13,11 +13,11 @@ module.exports = class ClientAddView extends View
         if _.isUndefined(@form.commit({validate:true}))
             @model.save({},{
                 success:(event) =>
-                    if mediator.collections.clients?
+                    if mediator.collections.graphics?
                         # add it to collection so we don't need to use server ...
-                        mediator.collections.clients.add(@model)
-                    @publishEvent 'tell_user', 'Klient zapisany'
-                    Chaplin.utils.redirectTo {url: url ? '/klienci'}
+                        mediator.collections.graphics.add(@model)
+                    @publishEvent 'tell_user', 'Element zapisany'
+                    Chaplin.utils.redirectTo {url: url ? '/grafiki'}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -28,27 +28,28 @@ module.exports = class ClientAddView extends View
             @publishEvent 'tell_user', 'Błąd w formularzu!'
 
     refresh_form: =>
-        Chaplin.utils.redirectTo {url: '/klienci/dodaj'}
-
+        Chaplin.utils.redirectTo {url: '/grafiki/dodaj'}
 
     delete_action: =>
         super
         @model.destroy
             success: (event) =>
-                mediator.collections.clients.remove(@model)
-                @publishEvent 'tell_user', 'Klient został usunięty'
-                Chaplin.utils.redirectTo {url: '/klienci'}
+                mediator.collections.graphics.remove(@model)
+                @publishEvent 'tell_user', 'Element został usunięty'
+                Chaplin.utils.redirectTo {url: '/grafiki'}
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
                 else
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
-
-    attach: =>
-        super
-        @publishEvent('log:info', 'view: clientadd afterRender()')
-
-
     back_action: =>
         super
         Chaplin.utils.redirectTo {url: '/grafiki'}
+
+
+    attach: =>
+        super
+        @publishEvent('log:info', 'view: graphic afterRender()')
+        _.delay(@refresh_resource,10)
+
+

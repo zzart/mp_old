@@ -71,7 +71,7 @@
                         <li ><a id='agent-config-link' href="" >Dane Profilu</a></li>
                         <li ><a href="/agenci" >Agenci</a></li>
                         <li ><a href="/oddzialy" >Oddziały</a></li>
-                        <li ><a href="/grafiki/dodaj" >Logo/Znaki wodne</a></li>
+                        <li ><a href="/grafiki" >Logo/Znaki wodne</a></li>
                         <li ><a href="" >Importy</a></li>
                         <li ><a href="" >Eksporty</a></li>
                         <li><a href="" >Portale zewnętrzne</a></li>

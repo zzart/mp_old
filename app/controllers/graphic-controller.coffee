@@ -8,29 +8,27 @@ mediator = require 'mediator'
 module.exports = class GraphicController extends Controller
     list:(params, route, options) ->
         @publishEvent('log:info', 'in client list controller')
-        mediator.collections.clients = new Collection
+        mediator.collections.graphics = new Collection
         # console.log(mediator.collections.clients)
-        mediator.collections.clients.fetch
+        mediator.collections.graphics.fetch
             data: params
             beforeSend: =>
                 @publishEvent 'loading_start'
-                @publishEvent 'tell_user', 'Ładuje listę klientów ...'
+                @publishEvent 'tell_user', 'Ładuje listę grafik ...'
             success: =>
                 @publishEvent('log:info', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
                 @view = new ListView {
-                    collection:mediator.collections.clients
-                    template:'client_list_view'
-                    filter:'client_type'
+                    collection:mediator.collections.graphics
+                    template:'graphic_list_view'
                     region:'content'
-                    controller: 'client_controller'
                 }
             error: =>
                 @publishEvent 'loading_stop'
                 @publishEvent 'server_error'
 
     add:(params, route, options) ->
-        @publishEvent('log:info', 'in clientadd controller')
+        @publishEvent('log:info', 'in graphic controller')
         mediator.models.graphic = new Model
         @schema =localStorage.getObject('graphic_schema')
         @model = mediator.models.graphic
@@ -38,11 +36,11 @@ module.exports = class GraphicController extends Controller
         @view = new View {form_name:'graphic_form', model:@model, can_edit:true, edit_type:'add',  region:'content'}
 
     show:(params, route, options) ->
-        @publishEvent('log:info', 'in client show controller')
-        @redirectTo {'/klienci'} unless _.isObject(mediator.collections.clients.get(params.id))
-        @schema =localStorage.getObject('client_schema')
-        @model = mediator.collections.clients.get(params.id)
+        @publishEvent('log:info', 'in graphic show controller')
+        @redirectTo {'/grafiki'} unless _.isObject(mediator.collections.graphics.get(params.id))
+        @schema =localStorage.getObject('graphic_schema')
+        @model = mediator.collections.graphics.get(params.id)
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
-        @view = new ClientView {form_name:'client_form', model:@model, can_edit:@can_edit,  region:'content'}
+        @view = new View {form_name:'graphic_form', model:@model, can_edit:@can_edit,  region:'content'}
 

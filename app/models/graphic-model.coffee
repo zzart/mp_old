@@ -7,16 +7,29 @@ module.exports = class Graphic extends Chaplin.Model
         (if _.isFunction(value) then value.call(this) else value)
     defaults:
         is_active: '1' # for booleans
-        opacity: 20 #
+        opacity: '100' #
         is_active_func: ->
             if @get('is_active') then 'tak' else 'nie'
-    #     is_private: '' # for booleans
-    #     client_type_func: ->
-    #         switch @get('client_type')
-    #              when 1 then 'kupujący'
-    #              when 2 then 'sprzedający'
-    #              when 3 then 'wynajmujący'
-    #              when 4 then 'najemca'
+        thumbnail_func: ->
+            resource = @get('resources')
+            if not _.isEmpty(resource)
+                r = resource[0]
+                if r.mime_type.split('/')[0] is 'image'
+                    img = new Image()
+                    img.src = 'data:' + r.mime_type + ';base64,' + r.thumbnail
+                    img.outerHTML
+        branch_func: ->
+            if @get('branch') then localStorage.getObject('branches')["#{@get('branch')}"]
+        image_type_func: ->
+            switch parseInt(@get('image_type'))
+                 when 0 then 'logo'
+                 when 1 then 'znak wodny'
+        position_func: ->
+            switch parseInt(@get('position'))
+                 when 0 then 'lewy górny'
+                 when 1 then 'prawy górny'
+                 when 2 then 'lewy dolny'
+                 when 3 then 'prawy dolny'
     toJSON: ->
         data = {}
         json = Backbone.Model::toJSON.call(this)
