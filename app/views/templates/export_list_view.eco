@@ -1,0 +1,55 @@
+<div id="view-menu">
+            <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b'>
+                <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
+                <a href='/eksporty/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
+
+                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
+                <select name="select-action" id="select-action">
+                    <option selected disabled>Akcja</option>
+                    <option value="usun">Usuń</option>
+                </select>
+                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+                <select name="select-filter" id="select-filter" data-filter='branch'>
+                    <option selected disabled>Oddziały</option>
+                    <option value="">Wszystkie</option>
+                    <% for key , val of @branches : %>
+                    <option value="<%= key %>"><%= val %></option>
+                    <% end %>
+                </select>
+            </fieldset>
+    </div>
+
+
+<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
+data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >
+     <thead>
+       <tr class='th-groups'>
+         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>
+         <th>ID</th>
+         <th>Nazwa&nbsp;&nbsp;</th>
+         <th>Adres ftp&nbsp;&nbsp;</th>
+         <th>Oddział&nbsp;&nbsp;</th>
+         <th data-priority="2">Login&nbsp;&nbsp;</th>
+         <th data-priority="5">Data&nbsp;&nbsp;</th>
+         <th data-priority="5">Limit ofert&nbsp;&nbsp;</th>
+         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>
+       </tr>
+     </thead>
+     <tbody>
+      <% for item in @collection : %>
+
+       <tr>
+         <td><label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
+         <td><%= item['id'] %></td>
+         <td><%- item['name'] %></td>
+         <td><a href='/eksporty/<%= item['id'] %>'><%= item['address_ftp'] %></a></td>
+         <td><a href='/eksporty/<%= item['id'] %>'><%= item['branch_func'] %></a></td>
+         <td><a href='/eksporty/<%= item['id'] %>'><%= item['login'] %></a></td>
+         <td><a href='/eksporty/<%= item['id'] %>'><%= item['date_created_func'] %></a></td>
+         <td><%= item['limit'] %></td>
+         <td><a href='/eksporty/<%= item['id'] %>'><%= item['is_active_func'] %></a></td>
+       </tr>
+      <% end %>
+     </tbody>
+   </table>
+

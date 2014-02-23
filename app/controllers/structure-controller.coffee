@@ -28,6 +28,8 @@ module.exports = class StructureController extends Controller
             'bon#show'
             'graphic#add',
             'graphic#show'
+            'export#add',
+            'export#show'
             ]
         list_footer = [
             'listing#list',
@@ -37,6 +39,7 @@ module.exports = class StructureController extends Controller
             'agent#list',
             'bon#list'
             'graphic#list'
+            'export#list'
             ]
         if route.name in edit_footer
             @compose 'footer-nav', NavFooter, region:'footer'

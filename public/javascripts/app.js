@@ -749,6 +749,98 @@ module.exports = ClientPublicController = (function(_super) {
 
 });
 
+;require.register("controllers/export-controller", function(exports, require, module) {
+var Collection, Controller, ExportController, ListView, Model, View, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Controller = require('controllers/auth-controller');
+
+ListView = require('views/export-list-view');
+
+View = require('views/export-view');
+
+Collection = require('models/export-collection');
+
+Model = require('models/export-model');
+
+mediator = require('mediator');
+
+module.exports = ExportController = (function(_super) {
+
+  __extends(ExportController, _super);
+
+  function ExportController() {
+    return ExportController.__super__.constructor.apply(this, arguments);
+  }
+
+  ExportController.prototype.list = function(params, route, options) {
+    var _this = this;
+    this.publishEvent('log:info', 'in client list controller');
+    mediator.collections.exports = new Collection;
+    return mediator.collections.exports.fetch({
+      data: params,
+      beforeSend: function() {
+        _this.publishEvent('loading_start');
+        return _this.publishEvent('tell_user', 'Ładuje listę eksportów ...');
+      },
+      success: function() {
+        _this.publishEvent('log:info', "data with " + params + " fetched ok");
+        _this.publishEvent('loading_stop');
+        return _this.view = new ListView({
+          collection: mediator.collections.exports,
+          template: 'export_list_view',
+          region: 'content'
+        });
+      },
+      error: function() {
+        _this.publishEvent('loading_stop');
+        return _this.publishEvent('server_error');
+      }
+    });
+  };
+
+  ExportController.prototype.add = function(params, route, options) {
+    this.publishEvent('log:info', 'in export controller');
+    mediator.models["export"] = new Model;
+    this.schema = localStorage.getObject('export_schema');
+    this.model = mediator.models["export"];
+    this.model.schema = _.clone(this.schema);
+    return this.view = new View({
+      form_name: 'export_form',
+      model: this.model,
+      can_edit: true,
+      edit_type: 'add',
+      region: 'content'
+    });
+  };
+
+  ExportController.prototype.show = function(params, route, options) {
+    this.publishEvent('log:info', 'in export show controller');
+    if (!_.isObject(mediator.collections.exports.get(params.id))) {
+      this.redirectTo({
+        '/eksporty': '/eksporty'
+      });
+    }
+    this.schema = localStorage.getObject('export_schema');
+    this.model = mediator.collections.exports.get(params.id);
+    this.model.schema = _.clone(this.schema);
+    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
+    this.publishEvent('tell_viewed', this.model.get_url());
+    return this.view = new View({
+      form_name: 'export_form',
+      model: this.model,
+      can_edit: this.can_edit,
+      region: 'content'
+    });
+  };
+
+  return ExportController;
+
+})(Controller);
+
+});
+
 ;require.register("controllers/graphic-controller", function(exports, require, module) {
 var Collection, Controller, GraphicController, ListView, Model, View, mediator,
   __hasProp = {}.hasOwnProperty,
@@ -1193,8 +1285,8 @@ module.exports = StructureController = (function(_super) {
     this.compose('header', Header, {
       region: 'header'
     });
-    edit_footer = ['listing#add', 'listing#show', 'client#add', 'client#show', 'client-public#show', 'branch#add', 'branch#show', 'agent#add', 'agent#show', 'bon#show', 'graphic#add', 'graphic#show'];
-    list_footer = ['listing#list', 'client#list', 'client-public#list', 'branch#list', 'agent#list', 'bon#list', 'graphic#list'];
+    edit_footer = ['listing#add', 'listing#show', 'client#add', 'client#show', 'client-public#show', 'branch#add', 'branch#show', 'agent#add', 'agent#show', 'bon#show', 'graphic#add', 'graphic#show', 'export#add', 'export#show'];
+    list_footer = ['listing#list', 'client#list', 'client-public#list', 'branch#list', 'agent#list', 'bon#list', 'graphic#list', 'export#list'];
     if (_ref = route.name, __indexOf.call(edit_footer, _ref) >= 0) {
       this.compose('footer-nav', NavFooter, {
         region: 'footer'
@@ -1725,6 +1817,102 @@ module.exports = ClientList = (function(_super) {
 
 });
 
+;require.register("models/export-collection", function(exports, require, module) {
+var ExportList, Model,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Model = require('models/export-model');
+
+module.exports = ExportList = (function(_super) {
+
+  __extends(ExportList, _super);
+
+  function ExportList() {
+    return ExportList.__super__.constructor.apply(this, arguments);
+  }
+
+  ExportList.prototype.model = Model;
+
+  ExportList.prototype.url = 'http://localhost:8080/v1/eksporty';
+
+  return ExportList;
+
+})(Chaplin.Collection);
+
+});
+
+;require.register("models/export-model", function(exports, require, module) {
+var Export, mediator,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+mediator = require('mediator');
+
+module.exports = Export = (function(_super) {
+
+  __extends(Export, _super);
+
+  function Export() {
+    return Export.__super__.constructor.apply(this, arguments);
+  }
+
+  Export.prototype.urlRoot = 'http://localhost:8080/v1/eksporty';
+
+  Export.prototype.schema = {};
+
+  Export.prototype.get = function(attr) {
+    var value;
+    value = Backbone.Model.prototype.get.call(this, attr);
+    if (_.isFunction(value)) {
+      return value.call(this);
+    } else {
+      return value;
+    }
+  };
+
+  Export.prototype.defaults = {
+    is_active: '1',
+    is_active_func: function() {
+      if (this.get('is_active')) {
+        return 'tak';
+      } else {
+        return 'nie';
+      }
+    },
+    branch_func: function() {
+      if (this.get('branch')) {
+        return localStorage.getObject('branches')["" + (this.get('branch'))];
+      }
+    },
+    date_created_func: function() {
+      var _base;
+      return typeof (_base = this.get('date_created')).substr === "function" ? _base.substr(0, 10) : void 0;
+    }
+  };
+
+  Export.prototype.toJSON = function() {
+    var data, json;
+    data = {};
+    json = Backbone.Model.prototype.toJSON.call(this);
+    _.each(json, function(value, key) {
+      return data[key] = this.get(key);
+    }, this);
+    return data;
+  };
+
+  Export.prototype.module_name = ['eksport', 'eksporty'];
+
+  Export.prototype.get_url = function() {
+    return "<a href=\'/" + this.module_name[1] + "/" + (this.get('id')) + "\'>" + (this.module_name[0].toUpperCase()) + " #" + (this.get('id')) + "</a>";
+  };
+
+  return Export;
+
+})(Chaplin.Model);
+
+});
+
 ;require.register("models/graphic-collection", function(exports, require, module) {
 var GraphicList, Model,
   __hasProp = {}.hasOwnProperty,
@@ -2099,7 +2287,10 @@ module.exports = function(match) {
   match('iframe/:template', 'iframe#show');
   match('grafiki', 'graphic#list');
   match('grafiki/dodaj', 'graphic#add');
-  return match('grafiki/:id', 'graphic#show');
+  match('grafiki/:id', 'graphic#show');
+  match('eksporty', 'export#list');
+  match('eksporty/dodaj', 'export#add');
+  return match('eksporty/:id', 'export#show');
 };
 
 });
@@ -3202,6 +3393,148 @@ module.exports = EditView = (function(_super) {
   };
 
   return EditView;
+
+})(View);
+
+});
+
+;require.register("views/export-list-view", function(exports, require, module) {
+var ExportListView, View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/list-view');
+
+mediator = require('mediator');
+
+module.exports = ExportListView = (function(_super) {
+
+  __extends(ExportListView, _super);
+
+  function ExportListView() {
+    this.attach = __bind(this.attach, this);
+    return ExportListView.__super__.constructor.apply(this, arguments);
+  }
+
+  ExportListView.prototype.initialize = function(params) {
+    return ExportListView.__super__.initialize.apply(this, arguments);
+  };
+
+  ExportListView.prototype.attach = function() {
+    ExportListView.__super__.attach.apply(this, arguments);
+    return this.publishEvent('log:info', 'view: export list view afterRender()');
+  };
+
+  return ExportListView;
+
+})(View);
+
+});
+
+;require.register("views/export-view", function(exports, require, module) {
+var ExportView, View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/edit-view');
+
+mediator = require('mediator');
+
+module.exports = ExportView = (function(_super) {
+
+  __extends(ExportView, _super);
+
+  function ExportView() {
+    this.attach = __bind(this.attach, this);
+
+    this.back_action = __bind(this.back_action, this);
+
+    this.delete_action = __bind(this.delete_action, this);
+
+    this.refresh_form = __bind(this.refresh_form, this);
+
+    this.save_action = __bind(this.save_action, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return ExportView.__super__.constructor.apply(this, arguments);
+  }
+
+  ExportView.prototype.initialize = function(options) {
+    return ExportView.__super__.initialize.apply(this, arguments);
+  };
+
+  ExportView.prototype.save_action = function(url) {
+    var _this = this;
+    ExportView.__super__.save_action.apply(this, arguments);
+    this.publishEvent('log:info', 'commmit form');
+    if (_.isUndefined(this.form.commit({
+      validate: true
+    }))) {
+      return this.model.save({}, {
+        success: function(event) {
+          if (mediator.collections.exports != null) {
+            mediator.collections.exports.add(_this.model);
+          }
+          _this.publishEvent('tell_user', "Rekord " + (_this.model.get_url()) + " zapisany");
+          return Chaplin.utils.redirectTo({
+            url: url != null ? url : '/eksporty'
+          });
+        },
+        error: function(model, response, options) {
+          if (response.responseJSON != null) {
+            return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+          } else {
+            return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+          }
+        }
+      });
+    } else {
+      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+    }
+  };
+
+  ExportView.prototype.refresh_form = function() {
+    return Chaplin.utils.redirectTo({
+      url: '/eksporty/dodaj'
+    });
+  };
+
+  ExportView.prototype.delete_action = function() {
+    var _this = this;
+    ExportView.__super__.delete_action.apply(this, arguments);
+    return this.model.destroy({
+      success: function(event) {
+        mediator.collections.exports.remove(_this.model);
+        _this.publishEvent('tell_user', "Rekord został usunięty");
+        return Chaplin.utils.redirectTo({
+          url: '/eksporty'
+        });
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  ExportView.prototype.back_action = function() {
+    ExportView.__super__.back_action.apply(this, arguments);
+    return Chaplin.utils.redirectTo({
+      url: '/eksporty'
+    });
+  };
+
+  ExportView.prototype.attach = function() {
+    ExportView.__super__.attach.apply(this, arguments);
+    return this.publishEvent('log:info', 'view: export afterRender()');
+  };
+
+  return ExportView;
 
 })(View);
 
@@ -5834,6 +6167,108 @@ module.exports = function (__obj) {
 }
 });
 
+;require.register("views/templates/export_list_view", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var item, key, val, _i, _len, _ref, _ref1;
+    
+      __out.push('<div id="view-menu">\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/eksporty/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter" data-filter=\'branch\'>\n                    <option selected disabled>Oddziały</option>\n                    <option value="">Wszystkie</option>\n                    ');
+    
+      _ref = this.branches;
+      for (key in _ref) {
+        val = _ref[key];
+        __out.push('\n                    <option value="');
+        __out.push(__sanitize(key));
+        __out.push('">');
+        __out.push(__sanitize(val));
+        __out.push('</option>\n                    ');
+      }
+    
+      __out.push('\n                </select>\n            </fieldset>\n    </div>\n\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Nazwa&nbsp;&nbsp;</th>\n         <th>Adres ftp&nbsp;&nbsp;</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="5">Data&nbsp;&nbsp;</th>\n         <th data-priority="5">Limit ofert&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+    
+      _ref1 = this.collection;
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        item = _ref1[_i];
+        __out.push('\n\n       <tr>\n         <td><label><input name="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" id="');
+        __out.push(__sanitize(item['id']));
+        __out.push('" data-mini="true" type="checkbox"></label></td>\n         <td>');
+        __out.push(__sanitize(item['id']));
+        __out.push('</td>\n         <td>');
+        __out.push(item['name']);
+        __out.push('</td>\n         <td><a href=\'/eksporty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['address_ftp']));
+        __out.push('</a></td>\n         <td><a href=\'/eksporty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['branch_func']));
+        __out.push('</a></td>\n         <td><a href=\'/eksporty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['login']));
+        __out.push('</a></td>\n         <td><a href=\'/eksporty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['date_created_func']));
+        __out.push('</a></td>\n         <td>');
+        __out.push(__sanitize(item['limit']));
+        __out.push('</td>\n         <td><a href=\'/eksporty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(__sanitize(item['is_active_func']));
+        __out.push('</a></td>\n       </tr>\n      ');
+      }
+    
+      __out.push('\n     </tbody>\n   </table>\n\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
 ;require.register("views/templates/footer_base", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
@@ -6389,7 +6824,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty?category=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty?category=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty?category=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty?category=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty?category=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty?category=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty?category=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty?category=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty?category=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty?category=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty?category=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty?category=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="/oferty?status=4" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=3" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=1" >Nieaktywna<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=5" >Sprzedana<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=6" >Wynajęta<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=7" >Umowa przedstępna<span class=\'ui-li-count\'>34</span></a> </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a id=\'agent-config-link\' href="" >Dane Profilu</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="/grafiki" >Logo/Znaki wodne</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="/iframe/kw" >Księgi wieczyste</a></li>\n                        <li><a href="/iframe/geo" >Geoportal</a></li>\n                        <li><a href="/iframe/geodz">Wyszukaj działkę</a></li>\n                        <li><a href="/iframe/calendar">Kalendarz</a></li>\n                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>\n                        <!--\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        -->\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
+      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty?category=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty?category=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty?category=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty?category=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty?category=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty?category=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty?category=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty?category=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty?category=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty?category=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty?category=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty?category=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=warehose_rent"    >Lokale użytkowe Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="/oferty?status=4" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=3" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=1" >Nieaktywna<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=5" >Sprzedana<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=6" >Wynajęta<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=7" >Umowa przedstępna<span class=\'ui-li-count\'>34</span></a> </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a id=\'agent-config-link\' href="" >Dane Profilu</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="/grafiki" >Logo/Znaki wodne</a></li>\n                        <li ><a href="" >Importy</a></li>\n                        <li ><a href="/eksporty" >Eksporty</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="" >Gumtree</a></li>\n                        <li><a href="" >aleGratka</a></li>\n                        <li><a href="" >Tablica</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="/iframe/kw" >Księgi wieczyste</a></li>\n                        <li><a href="/iframe/geo" >Geoportal</a></li>\n                        <li><a href="/iframe/geodz">Wyszukaj działkę</a></li>\n                        <li><a href="/iframe/calendar">Kalendarz</a></li>\n                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>\n                        <!--\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        -->\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
     
     }).call(this);
     
@@ -6565,7 +7000,7 @@ module.exports = function (__obj) {
         __out.push('</option>\n                    ');
       }
     
-      __out.push('\n                </select>\n\n                   <input name="wylacznosc" id="wylacznosc" type="checkbox" data-filter=\'wylacznosc\'>\n                       <label for="wylacznosc">Wyłączność</label>\n\n                <input name="radio-choice-b" id="radio-choice-c" value="pierwotny"  type="radio" data-filter=\'rynek_func\'>\n                <label for="radio-choice-c">Pierwotny</label>\n                <input name="radio-choice-b" id="radio-choice-d" value="wtórny" type="radio" data-filter=\'rynek_func\'>\n                <label for="radio-choice-d">Wtórny</label>\n\n            </fieldset>\n\n\n\n\n            </div>\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Agres&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Wprowadzenie&nbsp;&nbsp;</th>\n         <th data-priority="6">Modyfikacja&nbsp;&nbsp;</th>\n         <th data-priority="7">Piętro&nbsp;&nbsp;</th>\n         <th data-priority="6">Status&nbsp;&nbsp;</th>\n         <th data-priority="6">Rynek&nbsp;&nbsp;</th>\n         <th data-priority="6">Wyłączność&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('\n                </select>\n\n                   <input name="wylacznosc" id="wylacznosc" type="checkbox" data-filter=\'wylacznosc\'>\n                       <label for="wylacznosc">Wyłączność</label>\n\n                <input name="radio-choice-b" id="radio-choice-c" value="pierwotny"  type="radio" data-filter=\'rynek_func\'>\n                <label for="radio-choice-c">Pierwotny</label>\n                <input name="radio-choice-b" id="radio-choice-d" value="wtórny" type="radio" data-filter=\'rynek_func\'>\n                <label for="radio-choice-d">Wtórny</label>\n\n            </fieldset>\n\n\n\n\n            </div>\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Adres&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Wprowadzenie&nbsp;&nbsp;</th>\n         <th data-priority="6">Modyfikacja&nbsp;&nbsp;</th>\n         <th data-priority="7">Piętro&nbsp;&nbsp;</th>\n         <th data-priority="6">Status&nbsp;&nbsp;</th>\n         <th data-priority="6">Rynek&nbsp;&nbsp;</th>\n         <th data-priority="6">Wyłączność&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref3 = this.collection;
       for (_i = 0, _len = _ref3.length; _i < _len; _i++) {

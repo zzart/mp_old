@@ -73,7 +73,7 @@ data-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz
          <th>Zdjęcie&nbsp;&nbsp;</th>
          <th>ID</th>
          <th>Agent&nbsp;&nbsp;</th>
-         <th>Agres&nbsp;&nbsp;</th>
+         <th>Adres&nbsp;&nbsp;</th>
          <th data-priority="2">Klient&nbsp;&nbsp;</th>
          <th data-priority="2">Cena&nbsp;&nbsp;</th>
          <th data-priority="4">Pok.&nbsp;&nbsp;</th>

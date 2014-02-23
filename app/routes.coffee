@@ -24,3 +24,6 @@ module.exports = (match) ->
     match 'grafiki',                     'graphic#list'
     match 'grafiki/dodaj',               'graphic#add'
     match 'grafiki/:id',                 'graphic#show'
+    match 'eksporty',                    'export#list'
+    match 'eksporty/dodaj',              'export#add'
+    match 'eksporty/:id',                'export#show'
