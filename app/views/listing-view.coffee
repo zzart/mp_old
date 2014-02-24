@@ -198,9 +198,12 @@ module.exports = class AddView extends View
         projection = new OpenLayers.Projection("EPSG:4326") #Transform from WGS 1984
         openlayers_projection = new OpenLayers.Projection("EPSG:900913") # Spherical Mercator Projection
         #set POLAND ;)
-        lat= 52.05
-        lon = 19.55
-        zoom = 7
+        lat= @model.get('lat') or 52.05
+        lon = @model.get('lon') or 19.55
+        if @model.get('lat')
+            zoom = 15
+        else
+            zoom = 7
         #Init all the layers
         layer = new OpenLayers.Layer.OSM()
         markers = new OpenLayers.Layer.Markers( "Markers",
@@ -215,7 +218,7 @@ module.exports = class AddView extends View
         map = new OpenLayers.Map( "openmap",
             controls: [
                 new OpenLayers.Control.PanZoom(),
-                new OpenLayers.Control.EditingToolbar(vlayer)
+                # new OpenLayers.Control.EditingToolbar(vlayer)
                 ]
             units: 'km'
             projection: projection
@@ -223,6 +226,7 @@ module.exports = class AddView extends View
         )
         map.addLayers([layer, vlayer, markers])
         map.addControl(new OpenLayers.Control.MousePosition())
+        map.addControl(new OpenLayers.Control.Navigation())
         map.addControl(new OpenLayers.Control.OverviewMap())
         map.addControl(new OpenLayers.Control.Attribution())
         ##TODO: map.addControl(new OpenLayers.Control.Geolocate())
@@ -233,9 +237,24 @@ module.exports = class AddView extends View
         size = new OpenLayers.Size(21,25)
         offset = new OpenLayers.Pixel(-(size.w/2), -size.h)
         icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset)
-        marker = new OpenLayers.Marker(new OpenLayers.LonLat(0,0).transform(projection), icon)
+        marker = new OpenLayers.Marker(
+            new OpenLayers.LonLat(0,0).transform(projection), icon)
+            # ).transform(projection, openlayers_projection), icon)
         markers.addMarker(marker)
 
+        #for further referance
+        @map = map
+        @marker = marker
+
+        # if we have coordinates , set them on the map
+        if @model.get('lon')
+            position =new OpenLayers.LonLat( @model.get('lon'),@model.get('lat'))
+                .transform( projection, openlayers_projection)
+            newPx = @map.getLayerPxFromLonLat(position)
+            @marker.moveTo(newPx)
+            @map.setCenter(position, zoom)
+
+        # add mark on click
         map.events.register "click", map, (e) ->
             opx = map.getLayerPxFromViewPortPx(e.xy)
             lonLat = map.getLonLatFromPixel(e.xy)
@@ -245,9 +264,6 @@ module.exports = class AddView extends View
             $("[name='lat']").val(new_position.lat)
             $("[name='lon']").val(new_position.lon)
 
-        #for further referance
-        @map = map
-        @marker = marker
 
     render: =>
         #NOTE:

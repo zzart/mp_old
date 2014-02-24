@@ -5128,15 +5128,19 @@ module.exports = AddView = (function(_super) {
   };
 
   AddView.prototype.openstreet = function() {
-    var icon, lat, layer, lon, lonLat, map, marker, markers, offset, openlayers_projection, projection, size, vlayer, zoom;
+    var icon, lat, layer, lon, lonLat, map, marker, markers, newPx, offset, openlayers_projection, position, projection, size, vlayer, zoom;
     this.publishEvent('log:debug', 'opentstreet called');
     OpenLayers.ImgPath = 'img/';
     $("#openmap").css('height', '400px');
     projection = new OpenLayers.Projection("EPSG:4326");
     openlayers_projection = new OpenLayers.Projection("EPSG:900913");
-    lat = 52.05;
-    lon = 19.55;
-    zoom = 7;
+    lat = this.model.get('lat') || 52.05;
+    lon = this.model.get('lon') || 19.55;
+    if (this.model.get('lat')) {
+      zoom = 15;
+    } else {
+      zoom = 7;
+    }
     layer = new OpenLayers.Layer.OSM();
     markers = new OpenLayers.Layer.Markers("Markers", {
       projection: projection,
@@ -5147,13 +5151,14 @@ module.exports = AddView = (function(_super) {
       displayProjection: projection
     });
     map = new OpenLayers.Map("openmap", {
-      controls: [new OpenLayers.Control.PanZoom(), new OpenLayers.Control.EditingToolbar(vlayer)],
+      controls: [new OpenLayers.Control.PanZoom()],
       units: 'km',
       projection: projection,
       displayProjection: projection
     });
     map.addLayers([layer, vlayer, markers]);
     map.addControl(new OpenLayers.Control.MousePosition());
+    map.addControl(new OpenLayers.Control.Navigation());
     map.addControl(new OpenLayers.Control.OverviewMap());
     map.addControl(new OpenLayers.Control.Attribution());
     lonLat = new OpenLayers.LonLat(lon, lat).transform(projection, map.getProjectionObject());
@@ -5163,7 +5168,15 @@ module.exports = AddView = (function(_super) {
     icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset);
     marker = new OpenLayers.Marker(new OpenLayers.LonLat(0, 0).transform(projection), icon);
     markers.addMarker(marker);
-    map.events.register("click", map, function(e) {
+    this.map = map;
+    this.marker = marker;
+    if (this.model.get('lon')) {
+      position = new OpenLayers.LonLat(this.model.get('lon'), this.model.get('lat')).transform(projection, openlayers_projection);
+      newPx = this.map.getLayerPxFromLonLat(position);
+      this.marker.moveTo(newPx);
+      this.map.setCenter(position, zoom);
+    }
+    return map.events.register("click", map, function(e) {
       var new_position, opx;
       opx = map.getLayerPxFromViewPortPx(e.xy);
       lonLat = map.getLonLatFromPixel(e.xy);
@@ -5173,8 +5186,6 @@ module.exports = AddView = (function(_super) {
       $("[name='lat']").val(new_position.lat);
       return $("[name='lon']").val(new_position.lon);
     });
-    this.map = map;
-    return this.marker = marker;
   };
 
   AddView.prototype.render = function() {
