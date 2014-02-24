@@ -2230,6 +2230,7 @@ module.exports = Login = (function(_super) {
     localStorage.setObject('agents', this.get('agents'));
     localStorage.setObject('branches', this.get('branches'));
     localStorage.setObject('clients', this.get('clients'));
+    localStorage.setObject('account', this.get('account'));
     return this.set({
       is_logged: true
     });
@@ -3859,6 +3860,8 @@ module.exports = HeaderView = (function(_super) {
 
   function HeaderView() {
     this.attach = __bind(this.attach, this);
+
+    this.getTemplateData = __bind(this.getTemplateData, this);
     return HeaderView.__super__.constructor.apply(this, arguments);
   }
 
@@ -3877,7 +3880,8 @@ module.exports = HeaderView = (function(_super) {
     HeaderView.__super__.initialize.apply(this, arguments);
     this.delegate('click', '#first-name-placeholder', this.login_screen);
     this.delegate('click', '#info-btn', this.info_screen);
-    return this.delegate('click', '#viewed-btn', this.viewed_screen);
+    this.delegate('click', '#viewed-btn', this.viewed_screen);
+    return this.delegate('click', '#account-status-btn', this.account_status);
   };
 
   HeaderView.prototype.login_screen = function() {
@@ -3886,6 +3890,17 @@ module.exports = HeaderView = (function(_super) {
     mediator.models = {};
     return Chaplin.utils.redirectTo({
       url: '/login'
+    });
+  };
+
+  HeaderView.prototype.account_status = function() {
+    var as, val;
+    as = localStorage.getObject('account');
+    val = "<h4>Konto</h4><p>Przestrzeń dysku: <b>" + as.disk_usage + "</b> <br />Status konta: <b>" + as.status + "</b></p>";
+    $('#info').html(val);
+    return $('#info').popup('open', {
+      positionTo: "#account-status-btn",
+      transition: "fade"
     });
   };
 
@@ -3931,6 +3946,12 @@ module.exports = HeaderView = (function(_super) {
       positionTo: "#viewed-btn",
       transition: "fade"
     });
+  };
+
+  HeaderView.prototype.getTemplateData = function() {
+    return {
+      disk_usage: localStorage.getItem('disk_usage')
+    };
   };
 
   HeaderView.prototype.attach = function() {
@@ -6600,7 +6621,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('    <a href=\'#left-panel\' data-icon=\'grid\' data-theme="b">Menu</a>\n    <h1>Mobilny Pośrednik</h1>\n\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'viewed-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-eye ui-btn-icon-notext">Icon only</button>\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</button>\n        <button id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-power"></button>\n    </div>\n');
+      __out.push('    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-left">\n        <a href=\'#left-panel\' class=\'ui-btn ui-icon-grid ui-btn-icon-left\' data-theme="b">Menu</a>\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'viewed-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-eye ui-btn-icon-notext">Icon only</button>\n    </div>\n\n    <h1>Mobilny Pośrednik</h1>\n\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'account-status-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-shop ui-btn-icon-notext">Icon only</button>\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</button>\n        <button id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-power"></button>\n    </div>\n');
     
     }).call(this);
     
