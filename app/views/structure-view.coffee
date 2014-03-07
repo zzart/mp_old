@@ -19,6 +19,7 @@ module.exports = class StructureView extends View
         'viewed': '#viewed-region'
         'login': '#login-region'
         'confirm': '#confirm-region'
+        'popgeneric': '#popgeneric-region'
 
     attach: =>
         super

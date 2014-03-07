@@ -18,10 +18,12 @@ module.exports = class View extends View
         #super
         #NOTE: not calling SUPER here so we can manually append EL to CONTAINER the way we want it
         #and we need it inside the form element
-        $('#view-menu').append(@$el)
+        ## clear any previous lists
+        $('#view-list').remove()
+        $('#view-menu').after(@$el)
         #initialize sorting tables  http://tablesorter.com/docs/
         #można sortować wielokolumnowo przytrzymując shift ;)
         if @collection.length > 1
             $("#list-table").tablesorter({sortList:[[4,0]], headers:{0:{'sorter':false}, 1:{'sorter':false}}})
         #@publishEvent 'table_refresh'
-        @publishEvent('log:info', 'tabview: tab-view afterAttach()')
+        @publishEvent('log:info', 'subview afterAttach()')

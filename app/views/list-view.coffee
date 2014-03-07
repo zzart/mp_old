@@ -19,8 +19,10 @@ module.exports = class ListView extends View
         @listing_type = @params.listing_type ? false
         @template = require "views/templates/#{@params.template}"
         @sub_template = require "views/templates/#{@params.template}_items"
+
         @delegate 'change', '#select-action', @select_action
         @delegate 'change', '#all', @select_all_action
+
         @delegate 'click',  '#refresh', @refresh_action
         @delegate 'change', "[data-query]", @query_action
         @delegate 'change', "#view-menu [data-filter]", @filter_action
@@ -52,20 +54,23 @@ module.exports = class ListView extends View
         @filter= {}
 
     select_all_action: =>
-        selected = $('#list-table>thead input:checkbox ').prop('checked')
-        $('#list-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh")
+        @publishEvent("log:info", "select all action")
+        selected = $('#list-table>thead input:checkbox').prop('checked')
+        $('#list-table>tbody input:checkbox').prop('checked', selected).checkboxradio("refresh")
 
     select_action: (event) =>
+        @publishEvent("log:info", "select action")
         #get all selected offers
-        selected = $('#list-table>tbody input:checked ')
+        selected = $('#list-table>tbody input:checked')
         console.log(selected)
         self = @
         clean_after_action = (selected) =>
             #Once action is done clear the selection
-            $('#list-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh")
+            $('#list-table>tbody input:checkbox').prop('checked', false).checkboxradio("refresh")
             $("#select-action :selected").removeAttr('selected')
             selected = null
             return
+
         @publishEvent('log:info', "performing action #{event.target.value} for offers #{selected}")
         if selected.length > 0
             if event.target.value == 'usun'
@@ -92,15 +97,40 @@ module.exports = class ListView extends View
                     $(@).off('click')
                     #clean only after the CLICK event
                     clean_after_action(selected)
+
+            if event.target.value == 'zmien_agenta'
+                str = ""
+                for k,v of localStorage.getObject('agents')
+                    str = "#{str}<li value='#{k}'><a id='#{k}'>#{v}</a></li>"
+                val = "<h4>Wybierz Agenta</h4><br /><ul data-role='listview' id='agent-choose'>#{str}</ul>"
+                $('#popgeneric').html(val)
+                $ul = $("#popgeneric")
+                try
+                    $ul.enhanceWithin()
+                catch error
+                    @publishEvent("log:warn", error)
+                $('#popgeneric').popup('open',{ transition:"fade" })
+                # unbind is for stopping it firing multiple times
+                $("#agent-choose li").unbind().click ->
+                    $('#popgeneric').popup('close')
+                    # inside click f() we can reference attributes of element on which click was established
+                    # so @value is list item 'value' attribute
+                    for i in selected
+                        console.log(@value, i.id)
+                        model = self.collection_hard.get(i.id)
+                        # set (change:agent) will trigger sync on model
+                        model.set('agent', @value)
+                    self.render_subview()
+
         else
             @publishEvent 'tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)'
             clean_after_action(selected)
 
     filter_action: (event) =>
+        @publishEvent("log:info", "filter_action_called")
         event.preventDefault()
-        event.stopPropagation()
-        event.stopImmediatePropagation()
-        #console.log('klik', event.which, event.type, event)
+        # event.stopPropagation()
+        # event.stopImmediatePropagation()
         # always start with fresh collection
         @collection = _.clone(@collection_hard)
         # needs data-filter attribute on select emelemt

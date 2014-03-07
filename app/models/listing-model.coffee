@@ -53,12 +53,24 @@ module.exports = class Listing extends Chaplin.Model
     module_name: ['oferta', 'oferty']
     get_url: ->
         return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
-        # agent_type_func: ->
-        #     switch @get('agent_type')
-        #          when 0 then 'pośrednik'
-        #          when 1 then 'admin'
-        #          when 2 then 'menadzer'
-        #          when 3 then 'IT'
+
+    initialize: ->
+        @on('change:agent', @onChangeAgent)
+        @on('add', @onAdd)
+        @on('remove', @onRemove)
+        @on('destroy', @onDestory)
+    onChangeAgent: (model, attribute) ->
+        console.log('--> model changed', model, attribute)
+        model.save()
+        #onAdd: ->
+        #    console.log('--> model add')
+        #onDestroy: ->
+        #    console.log('--> model destroy')
+        #onRemove: ->
+        #    console.log('--> model remove')
+        #module_name: ['klient', 'klienci']
+
+
     # file_to_string: ->
     #     'test function'
 

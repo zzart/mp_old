@@ -8,6 +8,7 @@ LeftPanelView = require 'views/left-panel-view'
 InfoView = require 'views/info-view'
 ConfirmView = require 'views/confirm-view'
 ViewedView = require 'views/viewed-view'
+PopGenericView = require 'views/popgeneric-view'
 
 module.exports = class StructureController extends Controller
     beforeAction: (params, route) ->
@@ -51,6 +52,7 @@ module.exports = class StructureController extends Controller
         @compose 'info', InfoView, region:'info'
         @compose 'viewed', ViewedView, region:'viewed'
         @compose 'confirm', ConfirmView, region:'confirm'
+        @compose 'popgeneric', PopGenericView, region:'popgeneric'
         #init panel after init jqm
         @publishEvent 'structureController:render'
         @publishEvent('log:info', 'structureController done ----------')

@@ -6,8 +6,10 @@
         <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
         <select name="select-action" id="select-action">
             <option selected disabled>Akcja</option>
+            <option value="drukuj">Drukuj</option>
+            <option value="zmien_agenta">Zmień Agenta</option>
+            <option value="email">Email</option>
             <option value="usun">Usuń</option>
-            <option value="drukuj" disabled>Drukuj</option>
             <option value="eksport" disabled>Eksport do pliku</option>
         </select>
 

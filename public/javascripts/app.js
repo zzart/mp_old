@@ -1245,7 +1245,7 @@ module.exports = RefreshController = (function(_super) {
 });
 
 ;require.register("controllers/structure-controller", function(exports, require, module) {
-var ConfirmView, Controller, Footer, Header, InfoView, LeftPanelView, ListFooter, NavFooter, StructureController, StructureView, ViewedView,
+var ConfirmView, Controller, Footer, Header, InfoView, LeftPanelView, ListFooter, NavFooter, PopGenericView, StructureController, StructureView, ViewedView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -1269,6 +1269,8 @@ InfoView = require('views/info-view');
 ConfirmView = require('views/confirm-view');
 
 ViewedView = require('views/viewed-view');
+
+PopGenericView = require('views/popgeneric-view');
 
 module.exports = StructureController = (function(_super) {
 
@@ -1309,6 +1311,9 @@ module.exports = StructureController = (function(_super) {
     });
     this.compose('confirm', ConfirmView, {
       region: 'confirm'
+    });
+    this.compose('popgeneric', PopGenericView, {
+      region: 'popgeneric'
     });
     this.publishEvent('structureController:render');
     return this.publishEvent('log:info', 'structureController done ----------');
@@ -2187,6 +2192,18 @@ module.exports = Listing = (function(_super) {
 
   Listing.prototype.get_url = function() {
     return "<a href=\'/" + this.module_name[1] + "/" + (this.get('id')) + "\'>" + (this.module_name[0].toUpperCase()) + " #" + (this.get('id')) + "</a>";
+  };
+
+  Listing.prototype.initialize = function() {
+    this.on('change:agent', this.onChangeAgent);
+    this.on('add', this.onAdd);
+    this.on('remove', this.onRemove);
+    return this.on('destroy', this.onDestory);
+  };
+
+  Listing.prototype.onChangeAgent = function(model, attribute) {
+    console.log('--> model changed', model, attribute);
+    return model.save();
   };
 
   return Listing;
@@ -3934,7 +3951,7 @@ module.exports = HeaderView = (function(_super) {
       i = _ref[_i];
       str = "" + str + "<li>" + i + "</li>";
     }
-    val = "<h4>Ostatio oglądane</h4><br /> <ul data-role='listview'  >" + str + "</ul>";
+    val = "<h4>Ostatio oglądane</h4><br /> <ul data-role='listview' >" + str + "</ul>";
     $('#viewed').html(val);
     $ul = $("#viewed");
     try {
@@ -4540,7 +4557,8 @@ module.exports = View = (function(_super) {
   };
 
   View.prototype.attach = function() {
-    $('#view-menu').append(this.$el);
+    $('#view-list').remove();
+    $('#view-menu').after(this.$el);
     if (this.collection.length > 1) {
       $("#list-table").tablesorter({
         sortList: [[4, 0]],
@@ -4554,7 +4572,7 @@ module.exports = View = (function(_super) {
         }
       });
     }
-    return this.publishEvent('log:info', 'tabview: tab-view afterAttach()');
+    return this.publishEvent('log:info', 'subview afterAttach()');
   };
 
   return View;
@@ -4914,18 +4932,20 @@ module.exports = ListView = (function(_super) {
 
   ListView.prototype.select_all_action = function() {
     var selected;
-    selected = $('#list-table>thead input:checkbox ').prop('checked');
-    return $('#list-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
+    this.publishEvent("log:info", "select all action");
+    selected = $('#list-table>thead input:checkbox').prop('checked');
+    return $('#list-table>tbody input:checkbox').prop('checked', selected).checkboxradio("refresh");
   };
 
   ListView.prototype.select_action = function(event) {
-    var clean_after_action, selected, self,
+    var $ul, clean_after_action, k, selected, self, str, v, val, _ref,
       _this = this;
-    selected = $('#list-table>tbody input:checked ');
+    this.publishEvent("log:info", "select action");
+    selected = $('#list-table>tbody input:checked');
     console.log(selected);
     self = this;
     clean_after_action = function(selected) {
-      $('#list-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
+      $('#list-table>tbody input:checkbox').prop('checked', false).checkboxradio("refresh");
       $("#select-action :selected").removeAttr('selected');
       selected = null;
     };
@@ -4933,7 +4953,7 @@ module.exports = ListView = (function(_super) {
     if (selected.length > 0) {
       if (event.target.value === 'usun') {
         $("#confirm").popup('open');
-        return $("#confirmed").unbind().click(function() {
+        $("#confirmed").unbind().click(function() {
           var i, model, _i, _len,
             _this = this;
           for (_i = 0, _len = selected.length; _i < _len; _i++) {
@@ -4960,6 +4980,36 @@ module.exports = ListView = (function(_super) {
           return clean_after_action(selected);
         });
       }
+      if (event.target.value === 'zmien_agenta') {
+        str = "";
+        _ref = localStorage.getObject('agents');
+        for (k in _ref) {
+          v = _ref[k];
+          str = "" + str + "<li value='" + k + "'><a id='" + k + "'>" + v + "</a></li>";
+        }
+        val = "<h4>Wybierz Agenta</h4><br /><ul data-role='listview' id='agent-choose'>" + str + "</ul>";
+        $('#popgeneric').html(val);
+        $ul = $("#popgeneric");
+        try {
+          $ul.enhanceWithin();
+        } catch (error) {
+          this.publishEvent("log:warn", error);
+        }
+        $('#popgeneric').popup('open', {
+          transition: "fade"
+        });
+        return $("#agent-choose li").unbind().click(function() {
+          var i, model, _i, _len;
+          $('#popgeneric').popup('close');
+          for (_i = 0, _len = selected.length; _i < _len; _i++) {
+            i = selected[_i];
+            console.log(this.value, i.id);
+            model = self.collection_hard.get(i.id);
+            model.set('agent', this.value);
+          }
+          return self.render_subview();
+        });
+      }
     } else {
       this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
       return clean_after_action(selected);
@@ -4968,9 +5018,8 @@ module.exports = ListView = (function(_super) {
 
   ListView.prototype.filter_action = function(event) {
     var id, key, list_of_models, value;
+    this.publishEvent("log:info", "filter_action_called");
     event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
     this.collection = _.clone(this.collection_hard);
     key = event.target.dataset.filter;
     id = event.target.id;
@@ -5697,6 +5746,44 @@ module.exports = LoginView = (function(_super) {
 
 });
 
+;require.register("views/popgeneric-view", function(exports, require, module) {
+var PopGenericView, View, template,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+template = require('views/templates/popgeneric');
+
+View = require('views/base/view');
+
+module.exports = PopGenericView = (function(_super) {
+
+  __extends(PopGenericView, _super);
+
+  function PopGenericView() {
+    return PopGenericView.__super__.constructor.apply(this, arguments);
+  }
+
+  PopGenericView.prototype.template = template;
+
+  PopGenericView.prototype.containerMethod = 'html';
+
+  PopGenericView.prototype.id = 'popgeneric';
+
+  PopGenericView.prototype.attributes = {
+    'data-role': 'popup',
+    'data-theme': 'b',
+    'data-position-to': 'window',
+    'data-arrow': 'true'
+  };
+
+  PopGenericView.prototype.className = 'ui-content';
+
+  return PopGenericView;
+
+})(View);
+
+});
+
 ;require.register("views/structure-view", function(exports, require, module) {
 var FooterView, StructureView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -5740,7 +5827,8 @@ module.exports = StructureView = (function(_super) {
     'info': '#info-region',
     'viewed': '#viewed-region',
     'login': '#login-region',
-    'confirm': '#confirm-region'
+    'confirm': '#confirm-region',
+    'popgeneric': '#popgeneric-region'
   };
 
   StructureView.prototype.attach = function() {
@@ -6132,7 +6220,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('        <!-- this is REGIONS ONLY -->\n        <div id=\'header-region\' >\n        </div><!-- header -->\n\n        <div id=\'content-region\'>\n        </div><!-- content -->\n\n        <div id=\'footer-region\' >\n        </div><!-- footer -->\n\n        <div id="viewed-region">\n        </div><!-- info-region -->\n\n        <div id="info-region">\n        </div><!-- info-region -->\n        <div id="login-region">\n        </div><!-- info-region -->\n\n        <div id="confirm-region">\n        </div><!-- info-region -->\n\n');
+      __out.push('<!-- this is REGIONS ONLY -->\n<div id=\'header-region\' >\n</div><!-- header -->\n\n<div id=\'content-region\'>\n</div><!-- content -->\n\n<div id=\'footer-region\' >\n</div><!-- footer -->\n\n<div id="viewed-region">\n</div><!-- info-region -->\n\n<div id="info-region">\n</div><!-- info-region -->\n\n<div id="login-region">\n</div><!-- info-region -->\n\n<div id="confirm-region">\n</div><!-- info-region -->\n\n<div id="popgeneric-region">\n</div><!-- pop-region -->\n');
     
     }).call(this);
     
@@ -7640,7 +7728,7 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.listing_type));
     
-      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="usun">Usuń</option>\n            <option value="drukuj" disabled>Drukuj</option>\n            <option value="eksport" disabled>Eksport do pliku</option>\n        </select>\n\n        <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="status-query" id="status-query" data-query=\'status\'>\n            <option selected disabled>Status</option>\n            <option value="">Wszystkie</option>\n            <option value="1">Aktywne</option>\n            <option value="0">Nieaktywne</option>\n            <option value="2">Archiwalne</option>\n            <option value="3">Robocze</option>\n            <option value="4">Sprzedane</option>\n            <option value="5">Wynajęte</option>\n            <option value="6">Umowa przedwstępna</option>\n        </select>\n\n        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="agent-query" id="agent-query" data-query=\'agent\'>\n            <option selected disabled>Agent</option>\n            <option value="">Wszyscy</option>\n            ');
+      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="drukuj">Drukuj</option>\n            <option value="zmien_agenta">Zmień Agenta</option>\n            <option value="email">Email</option>\n            <option value="usun">Usuń</option>\n            <option value="eksport" disabled>Eksport do pliku</option>\n        </select>\n\n        <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="status-query" id="status-query" data-query=\'status\'>\n            <option selected disabled>Status</option>\n            <option value="">Wszystkie</option>\n            <option value="1">Aktywne</option>\n            <option value="0">Nieaktywne</option>\n            <option value="2">Archiwalne</option>\n            <option value="3">Robocze</option>\n            <option value="4">Sprzedane</option>\n            <option value="5">Wynajęte</option>\n            <option value="6">Umowa przedwstępna</option>\n        </select>\n\n        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="agent-query" id="agent-query" data-query=\'agent\'>\n            <option selected disabled>Agent</option>\n            <option value="">Wszyscy</option>\n            ');
     
       _ref = this.agents;
       for (key in _ref) {
@@ -7928,6 +8016,57 @@ module.exports = function (__obj) {
       }
     
       __out.push('\n\t\t</ul>\n\n\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/popgeneric", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+    
+      __out.push('<p>Hi im popgeneric popup</p>\n');
     
     }).call(this);
     

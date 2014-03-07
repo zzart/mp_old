@@ -1,21 +1,24 @@
-        <!-- this is REGIONS ONLY -->
-        <div id='header-region' >
-        </div><!-- header -->
+<!-- this is REGIONS ONLY -->
+<div id='header-region' >
+</div><!-- header -->
 
-        <div id='content-region'>
-        </div><!-- content -->
+<div id='content-region'>
+</div><!-- content -->
 
-        <div id='footer-region' >
-        </div><!-- footer -->
+<div id='footer-region' >
+</div><!-- footer -->
 
-        <div id="viewed-region">
-        </div><!-- info-region -->
+<div id="viewed-region">
+</div><!-- info-region -->
 
-        <div id="info-region">
-        </div><!-- info-region -->
-        <div id="login-region">
-        </div><!-- info-region -->
+<div id="info-region">
+</div><!-- info-region -->
 
-        <div id="confirm-region">
-        </div><!-- info-region -->
+<div id="login-region">
+</div><!-- info-region -->
 
+<div id="confirm-region">
+</div><!-- info-region -->
+
+<div id="popgeneric-region">
+</div><!-- pop-region -->

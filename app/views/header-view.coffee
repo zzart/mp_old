@@ -43,7 +43,7 @@ module.exports = class HeaderView extends View
         str = ""
         for i in _.last(_.uniq(mediator.viewed), 20)
             str = "#{str}<li>#{i}</li>"
-        val = "<h4>Ostatio oglądane</h4><br /> <ul data-role='listview'  >#{str}</ul>"
+        val = "<h4>Ostatio oglądane</h4><br /> <ul data-role='listview' >#{str}</ul>"
         $('#viewed').html(val)
         $ul = $("#viewed")
         try
