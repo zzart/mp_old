@@ -10,39 +10,3 @@
                 </select>
             </fieldset>
 </div>
-
-<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
-data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">
-     <thead>
-       <tr class='th-groups'>
-         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>
-         <th>ID</th>
-         <th data-priority="2">Nazwa&nbsp;&nbsp;</th>
-         <th data-priority="2">Identyfikator&nbsp;&nbsp;</th>
-         <th data-priority="2">WWW&nbsp;&nbsp;</th>
-         <th data-priority="5">Tel&nbsp;&nbsp;</th>
-         <th data-priority="4">Email&nbsp;&nbsp;</th>
-         <th data-priority="6">Miasto&nbsp;&nbsp;</th>
-         <th data-priority="6">Nip&nbsp;&nbsp;</th>
-         <th data-priority="6">Główny&nbsp;&nbsp;</th>
-       </tr>
-     </thead>
-     <tbody>
-      <% for item in @collection : %>
-       <tr>
-         <td> <label> <input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true"  type="checkbox"> </label> </td>
-         <td><%= item['id'] %></td>
-         <td><a href='/oddzialy/<%= item['id'] %>'><%= item['name'] %></a></td>
-         <td><a href='/oddzialy/<%= item['id'] %>'><%= item['slug'] %></a></td>
-         <td><%= item['website'] %></td>
-         <td><%= item['phone'] %></td>
-         <td><%= item['email'] %></td>
-         <td><%= item['town'] %></td>
-         <td><%= item['nip'] %></td>
-         <td><%= item['is_main_func'] %></td>
-       </tr>
-      <% end %>
-     </tbody>
-   </table>
-
-

@@ -1,0 +1,34 @@
+<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
+data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">
+     <thead>
+       <tr class='th-groups'>
+         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>
+         <th>ID</th>
+         <th>Agent&nbsp;&nbsp;</th>
+         <th>Imię&nbsp;&nbsp;</th>
+         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>
+         <th data-priority="2">Email&nbsp;&nbsp;</th>
+         <th data-priority="4">Telefon&nbsp;&nbsp;</th>
+         <th data-priority="5">Firma&nbsp;&nbsp;</th>
+         <th data-priority="6">Adres&nbsp;&nbsp;</th>
+         <th data-priority="6">Budżet&nbsp;&nbsp;</th>
+       </tr>
+     </thead>
+     <tbody>
+      <% for item in @collection : %>
+
+       <tr>
+         <td> <label> <input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true"  type="checkbox"> </label> </td>
+         <td><%= item['id'] %></td>
+         <td><%= item['agent'] %></td>
+         <td><a href='/klienci-wspolni/<%= item['id'] %>'><%= item['first_name'] %></a></td>
+         <td><a href='/klienci-wspolni/<%= item['id'] %>'><%= item['surname'] %></a></td>
+         <td><%= item['email'] %></td>
+         <td><%= item['phone'] %></td>
+         <td><%= item['company_name'] %></td>
+         <td><%= item['address'] %></td>
+         <td><%= item['budget'] %></td>
+       </tr>
+      <% end %>
+     </tbody>
+</table>

@@ -4491,13 +4491,85 @@ module.exports = LeftPanelView = (function(_super) {
 
 });
 
-;require.register("views/list-view", function(exports, require, module) {
-var ListView, View, mediator,
+;require.register("views/list-items-view", function(exports, require, module) {
+var View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 View = require('views/base/view');
+
+mediator = require('mediator');
+
+module.exports = View = (function(_super) {
+
+  __extends(View, _super);
+
+  function View() {
+    this.attach = __bind(this.attach, this);
+
+    this.render = __bind(this.render, this);
+
+    this.getTemplateData = __bind(this.getTemplateData, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return View.__super__.constructor.apply(this, arguments);
+  }
+
+  View.prototype.autoRender = true;
+
+  View.prototype.id = 'view-list';
+
+  View.prototype.initialize = function(options) {
+    this.template = options.template;
+    return this.collection = options.collection;
+  };
+
+  View.prototype.getTemplateData = function() {
+    return {
+      collection: this.collection.toJSON(),
+      agents: localStorage.getObject('agents'),
+      clients: localStorage.getObject('clients'),
+      branches: localStorage.getObject('branches')
+    };
+  };
+
+  View.prototype.render = function() {
+    View.__super__.render.apply(this, arguments);
+    return this.publishEvent('log:info', 'subview: sub-view render()');
+  };
+
+  View.prototype.attach = function() {
+    $('#view-menu').append(this.$el);
+    if (this.collection.length > 1) {
+      $("#list-table").tablesorter({
+        sortList: [[4, 0]],
+        headers: {
+          0: {
+            'sorter': false
+          },
+          1: {
+            'sorter': false
+          }
+        }
+      });
+    }
+    return this.publishEvent('log:info', 'tabview: tab-view afterAttach()');
+  };
+
+  return View;
+
+})(View);
+
+});
+
+;require.register("views/list-view-collection", function(exports, require, module) {
+var CollectionView, ListView, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+CollectionView = require('views/base/collection-view');
 
 mediator = require('mediator');
 
@@ -4630,7 +4702,6 @@ module.exports = ListView = (function(_super) {
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
-    console.log('klik', event.which, event.type, event);
     this.collection = _.clone(this.collection_hard);
     key = event.target.dataset.filter;
     id = event.target.id;
@@ -4655,11 +4726,10 @@ module.exports = ListView = (function(_super) {
     this.publishEvent('log:debug', value);
     console.log(this.filter);
     if (_.isEmpty(this.filter)) {
-      this.render();
+
     } else {
       list_of_models = this.collection_hard.where(this.filter);
-      this.collection.reset(list_of_models);
-      return this.render();
+      return this.collection.reset(list_of_models);
     }
   };
 
@@ -4747,6 +4817,272 @@ module.exports = ListView = (function(_super) {
     }
     this.publishEvent('jqm_refersh:render');
     this.publishEvent('table_refresh');
+    return this.selects_refresh();
+  };
+
+  return ListView;
+
+})(CollectionView);
+
+});
+
+;require.register("views/list-view", function(exports, require, module) {
+var ListView, SubView, View, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+SubView = require('views/list-items-view');
+
+mediator = require('mediator');
+
+module.exports = ListView = (function(_super) {
+
+  __extends(ListView, _super);
+
+  function ListView() {
+    this.attach = __bind(this.attach, this);
+
+    this.render_subview = __bind(this.render_subview, this);
+
+    this.render = __bind(this.render, this);
+
+    this.getTemplateData = __bind(this.getTemplateData, this);
+
+    this.selects_refresh = __bind(this.selects_refresh, this);
+
+    this.refresh_action = __bind(this.refresh_action, this);
+
+    this.filter_apply = __bind(this.filter_apply, this);
+
+    this.filter_action = __bind(this.filter_action, this);
+
+    this.select_action = __bind(this.select_action, this);
+
+    this.select_all_action = __bind(this.select_all_action, this);
+
+    this.query_action = __bind(this.query_action, this);
+
+    this.open_column_popup = __bind(this.open_column_popup, this);
+    return ListView.__super__.constructor.apply(this, arguments);
+  }
+
+  ListView.prototype.autoRender = true;
+
+  ListView.prototype.containerMethod = "html";
+
+  ListView.prototype.attributes = {
+    'data-role': 'content'
+  };
+
+  ListView.prototype.id = 'content';
+
+  ListView.prototype.className = 'ui-content';
+
+  ListView.prototype.initialize = function(params) {
+    var _ref;
+    ListView.__super__.initialize.apply(this, arguments);
+    this.params = params;
+    this.filter = {};
+    this.collection_hard = this.params.collection;
+    this.collection = _.clone(this.params.collection);
+    this.listing_type = (_ref = this.params.listing_type) != null ? _ref : false;
+    this.template = require("views/templates/" + this.params.template);
+    this.sub_template = require("views/templates/" + this.params.template + "_items");
+    this.delegate('change', '#select-action', this.select_action);
+    this.delegate('change', '#all', this.select_all_action);
+    this.delegate('click', '#refresh', this.refresh_action);
+    this.delegate('change', "[data-query]", this.query_action);
+    this.delegate('change', "#view-menu [data-filter]", this.filter_action);
+    this.delegate('click', "[href='#list-table-popup']", this.open_column_popup);
+    this.publishEvent('log:debug', this.params);
+    return window.collection = this.collection_hard;
+  };
+
+  ListView.prototype.open_column_popup = function(event) {
+    this.publishEvent("log:info", "coumn toggle popup");
+    event.preventDefault();
+    return $('#list-table-popup').popup('open');
+  };
+
+  ListView.prototype.query_action = function(event) {
+    this.publishEvent("log:info", "query_action called");
+    return this.filter = {};
+  };
+
+  ListView.prototype.select_all_action = function() {
+    var selected;
+    selected = $('#list-table>thead input:checkbox ').prop('checked');
+    return $('#list-table>tbody input:checkbox ').prop('checked', selected).checkboxradio("refresh");
+  };
+
+  ListView.prototype.select_action = function(event) {
+    var clean_after_action, selected, self,
+      _this = this;
+    selected = $('#list-table>tbody input:checked ');
+    console.log(selected);
+    self = this;
+    clean_after_action = function(selected) {
+      $('#list-table>tbody input:checkbox ').prop('checked', false).checkboxradio("refresh");
+      $("#select-action :selected").removeAttr('selected');
+      selected = null;
+    };
+    this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + selected);
+    if (selected.length > 0) {
+      if (event.target.value === 'usun') {
+        $("#confirm").popup('open');
+        return $("#confirmed").unbind().click(function() {
+          var i, model, _i, _len,
+            _this = this;
+          for (_i = 0, _len = selected.length; _i < _len; _i++) {
+            i = selected[_i];
+            model = self.collection_hard.get($(i).attr('id'));
+            model.destroy({
+              wait: true,
+              success: function(event) {
+                Chaplin.EventBroker.publishEvent('log:info', "Element usunięty id" + (model.get('id')));
+                self.collection_hard.remove(model);
+                self.render_subview();
+                return Chaplin.EventBroker.publishEvent('tell_user', 'Element został usunięty');
+              },
+              error: function(model, response, options) {
+                if (response.responseJSON != null) {
+                  return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+                } else {
+                  return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+                }
+              }
+            });
+          }
+          $(this).off('click');
+          return clean_after_action(selected);
+        });
+      }
+    } else {
+      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
+      return clean_after_action(selected);
+    }
+  };
+
+  ListView.prototype.filter_action = function(event) {
+    var id, key, list_of_models, value;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    this.collection = _.clone(this.collection_hard);
+    key = event.target.dataset.filter;
+    id = event.target.id;
+    this.undelegate('change', "#" + id, this.filter_action);
+    if (event.target.type === 'checkbox') {
+      this.publishEvent("log:info", event.target.type);
+      value = event.target.checked;
+    } else if (event.target.type === 'select-one') {
+      this.publishEvent("log:info", event.target.type);
+      value = parseInt(event.target.value);
+    } else {
+      value = event.target.value;
+    }
+    if (_.isNaN(value)) {
+      this.filter = _.omit(this.filter, key);
+      this.publishEvent("log:info", "omiting " + key);
+      console.log(this.filter);
+    } else {
+      this.filter[key] = value;
+    }
+    this.publishEvent('log:debug', key);
+    this.publishEvent('log:debug', value);
+    console.log(this.filter);
+    if (_.isEmpty(this.filter)) {
+      return this.render_subview();
+    } else {
+      list_of_models = this.collection_hard.where(this.filter);
+      this.collection.reset(list_of_models);
+      return this.render_subview();
+    }
+  };
+
+  ListView.prototype.filter_apply = function() {
+    var list_of_models;
+    this.publishEvent('log:debug', 'filter apply');
+    if (obj[this.filter] !== false) {
+      console.log(obj);
+      this.publishEvent('log:debug', 'filter apply');
+      list_of_models = this.collection_hard.where(obj);
+      this.collection.reset(list_of_models);
+    } else {
+      this.publishEvent('log:debug', 'filter reset');
+      this.collection = _.clone(this.collection_hard);
+    }
+    return this.render_subview();
+  };
+
+  ListView.prototype.refresh_action = function(event) {
+    var _this = this;
+    event.preventDefault();
+    this.publishEvent('log:debug', 'refresh');
+    return this.collection_hard.fetch({
+      data: this.collection_hard.query || {},
+      success: function() {
+        _this.publishEvent('tell_user', 'Odświeżam listę elementów');
+        _this.collection = _.clone(_this.collection_hard);
+        return _this.render_subview();
+      },
+      error: function(model, response, options) {
+        if (response.responseJSON != null) {
+          return Chaplin.EventBroker.publishEvent('tell_user', response.responseJSON['title']);
+        } else {
+          return Chaplin.EventBroker.publishEvent('tell_user', 'Brak kontaktu z serwerem');
+        }
+      }
+    });
+  };
+
+  ListView.prototype.selects_refresh = function() {
+    var k, v, _ref, _results;
+    if (this.collection.query) {
+      _ref = this.collection.query;
+      _results = [];
+      for (k in _ref) {
+        v = _ref[k];
+        $("[data-query=\'" + k + "\']").val(v);
+        _results.push($("[data-query=\'" + k + "\']").selectmenu('refresh'));
+      }
+      return _results;
+    }
+  };
+
+  ListView.prototype.getTemplateData = function() {
+    return {
+      listing_type: this.listing_type,
+      agents: localStorage.getObject('agents'),
+      clients: localStorage.getObject('clients'),
+      branches: localStorage.getObject('branches')
+    };
+  };
+
+  ListView.prototype.render = function() {
+    ListView.__super__.render.apply(this, arguments);
+    $("#list-table-popup").remove();
+    return $("#list-table-popup-popup").remove();
+  };
+
+  ListView.prototype.render_subview = function() {
+    this.publishEvent('log:info', "render sub_view");
+    this.subview("items", new SubView({
+      template: this.sub_template,
+      collection: this.collection
+    }));
+    this.subview("items").render();
+    return this.publishEvent('jqm_refersh:render');
+  };
+
+  ListView.prototype.attach = function() {
+    ListView.__super__.attach.apply(this, arguments);
+    this.publishEvent('log:info', 'view: list-view afterRender()');
+    this.publishEvent('jqm_refersh:render');
+    this.render_subview();
     return this.selects_refresh();
   };
 
@@ -5639,25 +5975,77 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      var item, key, val, _i, _len, _ref, _ref1;
+      var key, val, _ref;
     
-      __out.push('<div id="view-menu">\n        <form>\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/agenci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter" data-filter=\'agent_type\'>\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="0">Pośrednik</option>\n                    <option value="1">Administrator nieruchomości</option>\n                    <option value="2">Menadzer</option>\n                    <option value="3">Wsparcie IT</option>\n                </select>\n                <label for="branch-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="branch-filter" id="branch-filter" data-filter=\'branch\'>\n                    <option selected disabled>Oddział</option>\n                    <option value="">Wszystkie</option>\n                    ');
+      __out.push('<div id="view-menu">\n    <form>\n        <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n            <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n            <a href=\'/agenci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n            <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n            <select name="select-action" id="select-action">\n                <option selected disabled>Akcja</option>\n                <option value="usun">Usuń</option>\n            </select>\n            <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n            <select name="select-filter" id="select-filter" data-filter=\'agent_type\'>\n                <option selected disabled>Filtr</option>\n                <option value="">Wszyscy</option>\n                <option value="0">Pośrednik</option>\n                <option value="1">Administrator nieruchomości</option>\n                <option value="2">Menadzer</option>\n                <option value="3">Wsparcie IT</option>\n            </select>\n            <label for="branch-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n            <select name="branch-filter" id="branch-filter" data-filter=\'branch\'>\n                <option selected disabled>Oddział</option>\n                <option value="">Wszystkie</option>\n                ');
     
       _ref = this.branches;
       for (key in _ref) {
         val = _ref[key];
-        __out.push('\n                    <option value="');
+        __out.push('\n                <option value="');
         __out.push(__sanitize(key));
         __out.push('">');
         __out.push(__sanitize(val));
-        __out.push('</option>\n                    ');
+        __out.push('</option>\n                ');
       }
     
-      __out.push('\n                </select>\n            </fieldset>\n    </div>\n\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th width="2%"> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="4">Aktywny&nbsp;&nbsp;</th>\n         <th data-priority="6">Admin&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('\n            </select>\n    </fieldset>\n</div>\n');
     
-      _ref1 = this.collection;
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        item = _ref1[_i];
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/agent_list_view_items", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var item, _i, _len, _ref;
+    
+      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th width="2%"> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="4">Aktywny&nbsp;&nbsp;</th>\n         <th data-priority="6">Admin&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+    
+      _ref = this.collection;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
         __out.push('\n\n       <tr>\n         <td width="2%"> <label> <input name="');
         __out.push(__sanitize(item['id']));
         __out.push('" id="');
@@ -5693,7 +6081,7 @@ module.exports = function (__obj) {
         __out.push('</td>\n       </tr>\n      ');
       }
     
-      __out.push('\n     </tbody>\n   </table>\n\n\n');
+      __out.push('\n     </tbody>\n   </table>\n');
     
     }).call(this);
     
@@ -5928,9 +6316,60 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
+    
+      __out.push('<div id="view-menu">\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/oddzialy/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n            </fieldset>\n</div>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/branch_list_view_items", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div id="view-menu">\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/oddzialy/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n            </fieldset>\n</div>\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th data-priority="2">Nazwa&nbsp;&nbsp;</th>\n         <th data-priority="2">Identyfikator&nbsp;&nbsp;</th>\n         <th data-priority="2">WWW&nbsp;&nbsp;</th>\n         <th data-priority="5">Tel&nbsp;&nbsp;</th>\n         <th data-priority="4">Email&nbsp;&nbsp;</th>\n         <th data-priority="6">Miasto&nbsp;&nbsp;</th>\n         <th data-priority="6">Nip&nbsp;&nbsp;</th>\n         <th data-priority="6">Główny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th data-priority="2">Nazwa&nbsp;&nbsp;</th>\n         <th data-priority="2">Identyfikator&nbsp;&nbsp;</th>\n         <th data-priority="2">WWW&nbsp;&nbsp;</th>\n         <th data-priority="5">Tel&nbsp;&nbsp;</th>\n         <th data-priority="4">Email&nbsp;&nbsp;</th>\n         <th data-priority="6">Miasto&nbsp;&nbsp;</th>\n         <th data-priority="6">Nip&nbsp;&nbsp;</th>\n         <th data-priority="6">Główny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -5964,7 +6403,7 @@ module.exports = function (__obj) {
         __out.push('</td>\n       </tr>\n      ');
       }
     
-      __out.push('\n     </tbody>\n   </table>\n\n\n');
+      __out.push('\n     </tbody>\n</table>\n');
     
     }).call(this);
     
@@ -6014,9 +6453,60 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
+    
+      __out.push('<div id="view-menu">\n    <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n        <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n        <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="usun">Usuń</option>\n            <option value="drukuj" disabled>Drukuj</option>\n            <option value="eksport" disabled>Eksport do pliku</option>\n        </select>\n        <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="select-filter" id="select-filter" data-filter=\'client_type\'>\n            <option selected disabled>Filtr</option>\n            <option value="">Wszyscy</option>\n            <option value="1">Kupujący</option>\n            <option value="2">Sprzedający</option>\n            <option value="3">Najemca</option>\n            <option value="4">Wynajmujący</option>\n        </select>\n    </fieldset>\n</div>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/client_list_view_items", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div id="view-menu">\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter" data-filter=\'client_type\'>\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n    </div>\n\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n         <th data-priority="6">Typ&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -6052,7 +6542,7 @@ module.exports = function (__obj) {
         __out.push('</td>\n       </tr>\n      ');
       }
     
-      __out.push('\n     </tbody>\n   </table>\n\n\n');
+      __out.push('\n     </tbody>\n   </table>\n');
     
     }).call(this);
     
@@ -6102,9 +6592,60 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
+    
+      __out.push('<div id="view-menu">\n    <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n        <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n        <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="usun">Usuń</option>\n            <option value="drukuj" disabled>Drukuj</option>\n            <option value="eksport" disabled>Eksport do pliku</option>\n        </select>\n        <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="select-filter" id="select-filter">\n            <option selected disabled>Filtr</option>\n            <option value="">Wszyscy</option>\n            <option value="1">Kupujący</option>\n            <option value="2">Sprzedający</option>\n            <option value="3">Najemca</option>\n            <option value="4">Wynajmujący</option>\n        </select>\n    </fieldset>\n</div><!-- /grid-b -->\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/client_public_list_view_items", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div id="view-menu">\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme="b">\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\'>Odśwież</button>\n                <a href=\'/klienci/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter">\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszyscy</option>\n                    <option value="1">Kupujący</option>\n                    <option value="2">Sprzedający</option>\n                    <option value="3">Najemca</option>\n                    <option value="4">Wynajmujący</option>\n                </select>\n            </fieldset>\n\n</div><!-- /grid-b -->\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a">\n     <thead>\n       <tr class=\'th-groups\'>\n         <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Imię&nbsp;&nbsp;</th>\n         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>\n         <th data-priority="2">Email&nbsp;&nbsp;</th>\n         <th data-priority="4">Telefon&nbsp;&nbsp;</th>\n         <th data-priority="5">Firma&nbsp;&nbsp;</th>\n         <th data-priority="6">Adres&nbsp;&nbsp;</th>\n         <th data-priority="6">Budżet&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -6138,7 +6679,7 @@ module.exports = function (__obj) {
         __out.push('</td>\n       </tr>\n      ');
       }
     
-      __out.push('\n     </tbody>\n   </table>\n\n\n');
+      __out.push('\n     </tbody>\n</table>\n');
     
     }).call(this);
     
@@ -6239,25 +6780,77 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      var item, key, val, _i, _len, _ref, _ref1;
+      var key, val, _ref;
     
-      __out.push('<div id="view-menu">\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/eksporty/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter" data-filter=\'branch\'>\n                    <option selected disabled>Oddziały</option>\n                    <option value="">Wszystkie</option>\n                    ');
+      __out.push('<div id="view-menu">\n    <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n        <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n        <a href=\'/eksporty/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="usun">Usuń</option>\n        </select>\n        <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="select-filter" id="select-filter" data-filter=\'branch\'>\n            <option selected disabled>Oddziały</option>\n            <option value="">Wszystkie</option>\n            ');
     
       _ref = this.branches;
       for (key in _ref) {
         val = _ref[key];
-        __out.push('\n                    <option value="');
+        __out.push('\n            <option value="');
         __out.push(__sanitize(key));
         __out.push('">');
         __out.push(__sanitize(val));
-        __out.push('</option>\n                    ');
+        __out.push('</option>\n            ');
       }
     
-      __out.push('\n                </select>\n            </fieldset>\n    </div>\n\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Nazwa&nbsp;&nbsp;</th>\n         <th>Adres ftp&nbsp;&nbsp;</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="5">Data&nbsp;&nbsp;</th>\n         <th data-priority="5">Limit ofert&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('\n        </select>\n    </fieldset>\n</div>\n');
     
-      _ref1 = this.collection;
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        item = _ref1[_i];
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/export_list_view_items", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var item, _i, _len, _ref;
+    
+      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Nazwa&nbsp;&nbsp;</th>\n         <th>Adres ftp&nbsp;&nbsp;</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="5">Data&nbsp;&nbsp;</th>\n         <th data-priority="5">Limit ofert&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+    
+      _ref = this.collection;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
         __out.push('\n\n       <tr>\n         <td><label><input name="');
         __out.push(__sanitize(item['id']));
         __out.push('" id="');
@@ -6291,7 +6884,7 @@ module.exports = function (__obj) {
         __out.push('</a></td>\n       </tr>\n      ');
       }
     
-      __out.push('\n     </tbody>\n   </table>\n\n');
+      __out.push('\n     </tbody>\n</table>\n');
     
     }).call(this);
     
@@ -6545,9 +7138,60 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
+    
+      __out.push('<div id="view-menu">\n    <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n        <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n        <a href=\'/grafiki/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="usun">Usuń</option>\n        </select>\n        <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="select-filter" id="select-filter" data-filter=\'image_type\'>\n            <option selected disabled>Filtr</option>\n            <option value="">Wszystko</option>\n            <option value="0">Logo</option>\n            <option value="1">Znak wodny</option>\n        </select>\n    </fieldset>\n</div>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/graphic_list_view_items", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<div id="view-menu">\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/grafiki/dodaj\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                </select>\n                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="select-filter" id="select-filter" data-filter=\'image_type\'>\n                    <option selected disabled>Filtr</option>\n                    <option value="">Wszystko</option>\n                    <option value="0">Logo</option>\n                    <option value="1">Znak wodny</option>\n                </select>\n            </fieldset>\n    </div>\n\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Grafika&nbsp;&nbsp;</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th data-priority="2">Typ grafiki&nbsp;&nbsp;</th>\n         <th data-priority="2">Pozycja&nbsp;&nbsp;</th>\n         <th data-priority="4">Przeźroczystość&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywna&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Grafika&nbsp;&nbsp;</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th data-priority="2">Typ grafiki&nbsp;&nbsp;</th>\n         <th data-priority="2">Pozycja&nbsp;&nbsp;</th>\n         <th data-priority="4">Przeźroczystość&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywna&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -6581,7 +7225,7 @@ module.exports = function (__obj) {
         __out.push('</td>\n       </tr>\n      ');
       }
     
-      __out.push('\n     </tbody>\n   </table>\n\n\n');
+      __out.push('\n     </tbody>\n</table>\n');
     
     }).call(this);
     
@@ -6990,53 +7634,105 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      var item, key, val, _i, _len, _ref, _ref1, _ref2, _ref3;
+      var key, val, _ref, _ref1, _ref2;
     
-      __out.push('    <div id="view-menu">\n            <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n                <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n                <a href=\'/oferty/dodaj?type=');
+      __out.push('<div id="view-menu">\n    <fieldset data-role="controlgroup" data-type="horizontal" data-theme=\'b\'>\n        <button data-icon="refresh" data-iconpos="notext" id=\'refresh\' >Odśwież</button>\n        <a href=\'/oferty/dodaj?type=');
     
       __out.push(__sanitize(this.listing_type));
     
-      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n                <select name="select-action" id="select-action">\n                    <option selected disabled>Akcja</option>\n                    <option value="usun">Usuń</option>\n                    <option value="drukuj" disabled>Drukuj</option>\n                    <option value="eksport" disabled>Eksport do pliku</option>\n                </select>\n\n\n                <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="status-query" id="status-query" data-query=\'status\'>\n                    <option selected disabled>Status</option>\n                    <option value="">Wszystkie</option>\n                    <option value="1">Aktywne</option>\n                    <option value="0">Nieaktywne</option>\n                    <option value="2">Archiwalne</option>\n                    <option value="3">Robocze</option>\n                    <option value="4">Sprzedane</option>\n                    <option value="5">Wynajęte</option>\n                    <option value="6">Umowa przedwstępna</option>\n                </select>\n\n                <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="agent-query" id="agent-query" data-query=\'agent\'>\n                    <option selected disabled>Agent</option>\n                    <option value="">Wszyscy</option>\n                    ');
+      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="usun">Usuń</option>\n            <option value="drukuj" disabled>Drukuj</option>\n            <option value="eksport" disabled>Eksport do pliku</option>\n        </select>\n\n        <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="status-query" id="status-query" data-query=\'status\'>\n            <option selected disabled>Status</option>\n            <option value="">Wszystkie</option>\n            <option value="1">Aktywne</option>\n            <option value="0">Nieaktywne</option>\n            <option value="2">Archiwalne</option>\n            <option value="3">Robocze</option>\n            <option value="4">Sprzedane</option>\n            <option value="5">Wynajęte</option>\n            <option value="6">Umowa przedwstępna</option>\n        </select>\n\n        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="agent-query" id="agent-query" data-query=\'agent\'>\n            <option selected disabled>Agent</option>\n            <option value="">Wszyscy</option>\n            ');
     
       _ref = this.agents;
       for (key in _ref) {
         val = _ref[key];
-        __out.push('\n                    <option value="');
+        __out.push('\n            <option value="');
         __out.push(__sanitize(key));
         __out.push('">');
         __out.push(__sanitize(val));
-        __out.push('</option>\n                    ');
+        __out.push('</option>\n            ');
       }
     
-      __out.push('\n                </select>\n                <label for="client-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="client-query" id="client-query" data-query=\'client\'>\n                    <option selected disabled>Klient</option>\n                    <option value="">Wszyscy</option>\n                    ');
+      __out.push('\n        </select>\n        <label for="client-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="client-query" id="client-query" data-query=\'client\'>\n            <option selected disabled>Klient</option>\n            <option value="">Wszyscy</option>\n            ');
     
       _ref1 = this.clients;
       for (key in _ref1) {
         val = _ref1[key];
-        __out.push('\n                    <option value="');
+        __out.push('\n            <option value="');
         __out.push(__sanitize(key));
         __out.push('">');
         __out.push(__sanitize(val));
-        __out.push('</option>\n                    ');
+        __out.push('</option>\n            ');
       }
     
-      __out.push('\n                </select>\n                <label for="branch-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n                <select name="branch-query" id="branch-query" data-query=\'branch\'>\n                    <option selected disabled>Oddział</option>\n                    <option value="">Wszystkie</option>\n                    ');
+      __out.push('\n        </select>\n        <label for="branch-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="branch-query" id="branch-query" data-query=\'branch\'>\n            <option selected disabled>Oddział</option>\n            <option value="">Wszystkie</option>\n            ');
     
       _ref2 = this.branches;
       for (key in _ref2) {
         val = _ref2[key];
-        __out.push('\n                    <option value="');
+        __out.push('\n            <option value="');
         __out.push(__sanitize(key));
         __out.push('">');
         __out.push(__sanitize(val));
-        __out.push('</option>\n                    ');
+        __out.push('</option>\n            ');
       }
     
-      __out.push('\n                </select>\n\n                   <input name="wylacznosc" id="wylacznosc" type="checkbox" data-filter=\'wylacznosc\'>\n                       <label for="wylacznosc">Wyłączność</label>\n\n                <input name="radio-choice-b" id="radio-choice-c" value="pierwotny"  type="radio" data-filter=\'rynek_func\'>\n                <label for="radio-choice-c">Pierwotny</label>\n                <input name="radio-choice-b" id="radio-choice-d" value="wtórny" type="radio" data-filter=\'rynek_func\'>\n                <label for="radio-choice-d">Wtórny</label>\n\n            </fieldset>\n\n\n\n\n            </div>\n\n<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Adres&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Wprowadzenie&nbsp;&nbsp;</th>\n         <th data-priority="6">Modyfikacja&nbsp;&nbsp;</th>\n         <th data-priority="7">Piętro&nbsp;&nbsp;</th>\n         <th data-priority="6">Status&nbsp;&nbsp;</th>\n         <th data-priority="6">Rynek&nbsp;&nbsp;</th>\n         <th data-priority="6">Wyłączność&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('\n        </select>\n\n            <input name="wylacznosc" id="wylacznosc" type="checkbox" data-filter=\'wylacznosc\'>\n                <label for="wylacznosc">Wyłączność</label>\n\n        <input name="radio-choice-b" id="radio-choice-c" value="pierwotny"  type="radio" data-filter=\'rynek_func\'>\n        <label for="radio-choice-c">Pierwotny</label>\n        <input name="radio-choice-b" id="radio-choice-d" value="wtórny" type="radio" data-filter=\'rynek_func\'>\n        <label for="radio-choice-d">Wtórny</label>\n\n    </fieldset>\n</div>\n');
     
-      _ref3 = this.collection;
-      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
-        item = _ref3[_i];
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("views/templates/listing_list_view_items", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var item, _i, _len, _ref;
+    
+      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Adres&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Wprowadzenie&nbsp;&nbsp;</th>\n         <th data-priority="6">Modyfikacja&nbsp;&nbsp;</th>\n         <th data-priority="7">Piętro&nbsp;&nbsp;</th>\n         <th data-priority="6">Status&nbsp;&nbsp;</th>\n         <th data-priority="6">Rynek&nbsp;&nbsp;</th>\n         <th data-priority="6">Wyłączność&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+    
+      _ref = this.collection;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
         __out.push('\n       <tr>\n         <td><label><input name="');
         __out.push(__sanitize(item['id']));
         __out.push('" id="');
@@ -7103,7 +7799,7 @@ module.exports = function (__obj) {
         __out.push('</td>\n       </tr>\n      ');
       }
     
-      __out.push('\n\n     </tbody>\n   </table>\n\n\n');
+      __out.push('\n     </tbody>\n   </table>\n');
     
     }).call(this);
     

@@ -1,63 +1,23 @@
 <div id="view-menu">
-            <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b'>
-                <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
-                <a href='/klienci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
+    <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b'>
+        <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
+        <a href='/klienci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
 
-                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
-                <select name="select-action" id="select-action">
-                    <option selected disabled>Akcja</option>
-                    <option value="usun">Usuń</option>
-                    <option value="drukuj" disabled>Drukuj</option>
-                    <option value="eksport" disabled>Eksport do pliku</option>
-                </select>
-                <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
-                <select name="select-filter" id="select-filter" data-filter='client_type'>
-                    <option selected disabled>Filtr</option>
-                    <option value="">Wszyscy</option>
-                    <option value="1">Kupujący</option>
-                    <option value="2">Sprzedający</option>
-                    <option value="3">Najemca</option>
-                    <option value="4">Wynajmujący</option>
-                </select>
-            </fieldset>
-    </div>
-
-
-<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
-data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >
-     <thead>
-       <tr class='th-groups'>
-         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>
-         <th>ID</th>
-         <th>Agent&nbsp;&nbsp;</th>
-         <th>Imię&nbsp;&nbsp;</th>
-         <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>
-         <th data-priority="2">Email&nbsp;&nbsp;</th>
-         <th data-priority="4">Telefon&nbsp;&nbsp;</th>
-         <th data-priority="5">Firma&nbsp;&nbsp;</th>
-         <th data-priority="6">Adres&nbsp;&nbsp;</th>
-         <th data-priority="6">Budżet&nbsp;&nbsp;</th>
-         <th data-priority="6">Typ&nbsp;&nbsp;</th>
-       </tr>
-     </thead>
-     <tbody>
-      <% for item in @collection : %>
-
-       <tr>
-         <td><label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
-         <td><%= item['id'] %></td>
-         <td><%= item['agent'] %></td>
-         <td><a href='/klienci/<%= item['id'] %>'><%= item['first_name'] %></a></td>
-         <td><a href='/klienci/<%= item['id'] %>'><%= item['surname'] %></a></td>
-         <td><%= item['email'] %></td>
-         <td><%= item['phone'] %></td>
-         <td><%= item['company_name'] %></td>
-         <td><%= item['address'] %></td>
-         <td><%= item['budget'] %></td>
-         <td><%= item['client_type_func'] %></td>
-       </tr>
-      <% end %>
-     </tbody>
-   </table>
-
-
+        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
+        <select name="select-action" id="select-action">
+            <option selected disabled>Akcja</option>
+            <option value="usun">Usuń</option>
+            <option value="drukuj" disabled>Drukuj</option>
+            <option value="eksport" disabled>Eksport do pliku</option>
+        </select>
+        <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+        <select name="select-filter" id="select-filter" data-filter='client_type'>
+            <option selected disabled>Filtr</option>
+            <option value="">Wszyscy</option>
+            <option value="1">Kupujący</option>
+            <option value="2">Sprzedający</option>
+            <option value="3">Najemca</option>
+            <option value="4">Wynajmujący</option>
+        </select>
+    </fieldset>
+</div>

@@ -1,0 +1,58 @@
+<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
+data-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >
+     <thead>
+       <tr class='th-groups'>
+         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>
+         <th>Zdjęcie&nbsp;&nbsp;</th>
+         <th>ID</th>
+         <th>Agent&nbsp;&nbsp;</th>
+         <th>Adres&nbsp;&nbsp;</th>
+         <th data-priority="2">Klient&nbsp;&nbsp;</th>
+         <th data-priority="2">Cena&nbsp;&nbsp;</th>
+         <th data-priority="4">Pok.&nbsp;&nbsp;</th>
+         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>
+         <th data-priority="6">Wprowadzenie&nbsp;&nbsp;</th>
+         <th data-priority="6">Modyfikacja&nbsp;&nbsp;</th>
+         <th data-priority="7">Piętro&nbsp;&nbsp;</th>
+         <th data-priority="6">Status&nbsp;&nbsp;</th>
+         <th data-priority="6">Rynek&nbsp;&nbsp;</th>
+         <th data-priority="6">Wyłączność&nbsp;&nbsp;</th>
+       </tr>
+     </thead>
+     <tbody>
+      <% for item in @collection : %>
+       <tr>
+         <td><label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
+         <td><%- item['thumbnail_func'] %></td>
+         <td><a href='/oferty/<%= item['id'] %>'><%= item['remote_id'] %></td>
+         <td><%= item['agent_func'] %></td>
+         <td><a href='/oferty/<%= item['id'] %>'>
+            <% if item['town']: %>
+                <%= item['town'] %>
+            <% end %>
+            <% if item['street']: %>
+                ,<%= item['street'] %>
+            <% end %>
+            <% if item['number']: %>
+                &nbsp;<%= item['number'] %>
+            <% end %>
+            <% if item['street_district']: %>
+                ,<%= item['street_district'] %>
+            <% end %>
+            </td>
+         <td><%= item['client_func'] %></td>
+         <td><%= item['cena'] %><%= item['waluta_func'] %></td>
+         <td><%= item['liczba_pokoi'] %></td>
+         <td><%= item['powierzchnia_calkowita'] %> m2</td>
+         <td><%= item['date_created_func'] %></td>
+         <td><%= item['date_modyfied_func'] %></td>
+         <td><%= item['pietro'] %></td>
+         <td><%= item['status_func'] %></td>
+         <td><%= item['rynek_func'] %></td>
+         <td><%= item['wylacznosc_func'] %></td>
+         <td style="display:none;" ><%= item['tytul'] %></td>
+         <td style="display:none;" ><%= item['opis'] %></td>
+       </tr>
+      <% end %>
+     </tbody>
+   </table>

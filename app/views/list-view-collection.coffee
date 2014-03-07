@@ -1,8 +1,7 @@
-View = require 'views/base/view'
-SubView = require 'views/list-items-view'
+#View = require 'views/base/view'
+CollectionView = require 'views/base/collection-view'
 mediator = require 'mediator'
-
-module.exports = class ListView extends View
+module.exports = class ListView extends CollectionView
     autoRender: true
     containerMethod: "html"
     attributes: { 'data-role':'content' }
@@ -18,16 +17,14 @@ module.exports = class ListView extends View
         @collection = _.clone(@params.collection)
         @listing_type = @params.listing_type ? false
         @template = require "views/templates/#{@params.template}"
-        @sub_template = require "views/templates/#{@params.template}_items"
         @delegate 'change', '#select-action', @select_action
         @delegate 'change', '#all', @select_all_action
         @delegate 'click',  '#refresh', @refresh_action
         @delegate 'change', "[data-query]", @query_action
         @delegate 'change', "#view-menu [data-filter]", @filter_action
-        @delegate 'click',  "[href='#list-table-popup']", @open_column_popup
         #@delegate 'click',  ".ui-table-columntoggle-btn", @column_action
         #@delegate 'tablecreate' , @table_create
-
+        @delegate 'click',  "[href='#list-table-popup']", @open_column_popup
         @publishEvent('log:debug', @params)
         #init_events: =>
         #    @delegate 'click',  ".ui-table-columntoggle-btn", @column_action
@@ -48,8 +45,6 @@ module.exports = class ListView extends View
 
     query_action: (event) =>
         @publishEvent("log:info", "query_action called")
-        #reset filter
-        @filter= {}
 
     select_all_action: =>
         selected = $('#list-table>thead input:checkbox ').prop('checked')
@@ -81,7 +76,7 @@ module.exports = class ListView extends View
                             success: (event) =>
                                 Chaplin.EventBroker.publishEvent('log:info', "Element usunięty id#{model.get('id')}")
                                 self.collection_hard.remove(model)
-                                self.render_subview()
+                                self.render()
                                 Chaplin.EventBroker.publishEvent 'tell_user', 'Element został usunięty'
                             error:(model, response, options) =>
                                 if response.responseJSON?
@@ -130,17 +125,18 @@ module.exports = class ListView extends View
 
         console.log(@filter)
         if _.isEmpty(@filter)
-            #TODO: test this
-            @render_subview()
+            #@render()
+            return
         else
             list_of_models = @collection_hard.where(@filter)
             @collection.reset(list_of_models)
             #$("input[type='radio'] ##{id}" ).prop( "checked", value ).checkboxradio( "refresh" )
             #$("input[type='checkbox'] ##{id}" ).prop( "checked", value ).checkboxradio( "refresh" )
-            @render_subview()
+            #@render()
 
 
     filter_apply: =>
+
         @publishEvent('log:debug', 'filter apply')
         #TODO: doesn't work for multiple filter objects
         if obj[@filter] isnt false
@@ -151,7 +147,7 @@ module.exports = class ListView extends View
         else
             @publishEvent('log:debug', 'filter reset')
             @collection = _.clone(@collection_hard)
-        @render_subview()
+        @render()
 
 
     refresh_action: (event) =>
@@ -162,7 +158,7 @@ module.exports = class ListView extends View
             success: =>
                 @publishEvent 'tell_user', 'Odświeżam listę elementów'
                 @collection = _.clone(@collection_hard)
-                @render_subview()
+                @render()
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -176,7 +172,7 @@ module.exports = class ListView extends View
                 $("[data-query=\'#{k}\']").selectmenu('refresh')
 
     getTemplateData: =>
-        #collection: @collection.toJSON()
+        collection: @collection.toJSON()
         listing_type: @listing_type
         agents: localStorage.getObject('agents')
         clients: localStorage.getObject('clients')
@@ -188,18 +184,20 @@ module.exports = class ListView extends View
         $("#list-table-popup").remove()
         $("#list-table-popup-popup").remove()
 
-    render_subview: =>
-        @publishEvent('log:info', "render sub_view")
-        # @collection = @params.collection
-        @subview "items", new SubView template: @sub_template, collection: @collection
-        @subview("items").render()
-        @publishEvent 'jqm_refersh:render'
-
     attach: =>
         super
         @publishEvent('log:info', 'view: list-view afterRender()')
+        #initialize sorting tables  http://tablesorter.com/docs/
+        #można sortować wielokolumnowo przytrzymując shift ;)
+        if @collection.length > 1
+            $("#list-table").tablesorter({sortList:[[4,0]], headers:{0:{'sorter':false}, 1:{'sorter':false}}})
         @publishEvent 'jqm_refersh:render'
-        @render_subview()
+        @publishEvent 'table_refresh'
         @selects_refresh()
+
+
+
+
+
 
 
