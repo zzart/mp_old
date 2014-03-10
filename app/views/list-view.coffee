@@ -116,6 +116,7 @@ module.exports = class ListView extends View
                     # inside click f() we can reference attributes of element on which click was established
                     # so @value is list item 'value' attribute
                     for i in selected
+                        # TODO: this might take a while so we could do progress bar of some sorts....
                         console.log(@value, i.id)
                         model = self.collection_hard.get(i.id)
                         # set (change:agent) will trigger sync on model

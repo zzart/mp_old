@@ -51,3 +51,6 @@ module.exports = class View extends View
 
     attach: =>
         super
+        # disable admin setting for normal users
+        if mediator.models.user.get('is_admin') is false
+            $("[data-fields='is_admin'] select").slider('disable')

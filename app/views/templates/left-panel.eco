@@ -42,6 +42,7 @@
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
+                        <!--
     <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">
                     <h3>Etykiety</h3>
                     <ul data-role="listview" >
@@ -54,6 +55,7 @@
                         <li><a href="/oferty?status=7" >Umowa przedstępna<span class='ui-li-count'>34</span></a> </li>
                     </ul>
                 </div>
+                        -->
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">
                     <h3>Kontrahenci</h3>
                     <ul data-role="listview" >
@@ -72,20 +74,31 @@
                         <li ><a href="/agenci" >Agenci</a></li>
                         <li ><a href="/oddzialy" >Oddziały</a></li>
                         <li ><a href="/grafiki" >Logo/Znaki wodne</a></li>
+                        <!--
                         <li ><a href="" >Importy</a></li>
-                        <li ><a href="/eksporty" >Eksporty</a></li>
                         <li><a href="" >Portale zewnętrzne</a></li>
+                        -->
+                        <li ><a href="/eksporty" >Eksporty</a></li>
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">
                     <h3>Wyszukiwania</h3>
                     <ul data-role="listview">
-                        <li><a href="" >Wyszukiwanie Zaawansowane</a></li>
+                        <!-- <li><a href="" >Wyszukiwanie Zaawansowane</a></li> -->
                         <li data-role='list-divider' >Portale Zewnętrzne </li>
-                        <li><a href="" >Gumtree</a></li>
-                        <li><a href="" >aleGratka</a></li>
-                        <li><a href="" >Tablica</a></li>
+                        <li><a href="http://www.oferty.malopolska.pl/" target="_blank" >OfertyMałopolska</a></li>
+                        <li><a href="http://www.gumtree.pl/" target="_blank" >Gumtree</a></li>
+                        <li><a href="http://www.tablica.pl/" target="_blank" >Tablica</a></li>
+                        <li><a href="http://dom.gratka.pl/" target="_blank" >Gratka</a></li>
+                        <li><a href="http://www.domiporta.pl/" target="_blank" >Domiporta</a></li>
+                        <li><a href="http://alegratka.pl/nieruchomosci/" target="_blank" >AleGratka</a></li>
+                        <li><a href="http://www.krn.pl/" target="_blank" >KRN</a></li>
+                        <li><a href="http://www.morizon.pl/" target="_blank" >Morizon</a></li>
+                        <li><a href="http://www.szybko.pl/" target="_blank" >Szybko</a></li>
+                        <li><a href="http://nieruchomosci.multiple.pl" target="_blank" >Multiple</a></li>
+                        <li><a href="http://oferty.net" target="_blank" >OfertyNet</a></li>
+                        <li><a href="http://otodom.pl" target="_blank" >Otodom</a></li>
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
@@ -93,17 +106,18 @@
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">
                     <h3>Narzędzia</h3>
                     <ul data-role="listview" >
+                        <li><a href="https://maps.google.com/" target="_blank" >MapyGoogle</a></li>
+                        <li><a href="http://www.openstreetmap.org" target="_blank" >OpenStreet</a></li>
                         <li><a href="/iframe/kw" >Księgi wieczyste</a></li>
-                        <li><a href="/iframe/geo" >Geoportal</a></li>
-                        <li><a href="/iframe/geodz">Wyszukaj działkę</a></li>
-                        <li><a href="/iframe/calendar">Kalendarz</a></li>
-                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>
-                        <!--
-                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>
                         <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>
                         <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>
+                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>
+                        <!--
+                        <li><a href="/iframe/calendar">Kalendarz</a></li>
+                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>
                         -->
                         <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>
+                        <li><a href="http://pfrn.pl/" >PFRN</a></li>
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
