@@ -22,7 +22,7 @@ module.exports = class HeaderView extends View
 
     account_status: ->
         as = localStorage.getObject('account')
-        val = "<h4>Konto</h4><p>Przestrzeń dysku: <b>#{as.disk_usage}</b> <br />Status konta: <b>#{as.status}</b></p>"
+        val = "<h4>Konto</h4><p>Liczba ofert: <b>#{as.total_listings}</b><br />Przestrzeń dysku: <b>#{as.disk_usage}</b><br />Status konta: <b>#{as.status}</b></p>"
         $('#info').html(val)
         $('#info').popup('open',{ positionTo: "#account-status-btn", transition:"fade" })
 

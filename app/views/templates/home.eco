@@ -1,2 +1,48 @@
-<h1>Witamy <%= @title %> </h1>
+<h3><%= @first_name %>, Witamy!</h3>
 
+<ul data-role="listview" data-inset="true" data-divider-theme="a">
+<li data-role="list-divider">Ostatio Dodane</li>
+
+      <% for item in @latest: %>
+            <li><a href="#oferty/<%= item['id'] %>">
+              <%- item['thumbnail_func'] %>
+        <h3><%= item['remote_id'] %> /
+        <strong><%= item['category_func'] %></strong> </h3>
+        <p><%= item['town'] %> <%= item['street'] %> <%= item['number'] %></p>
+        <p class="ui-li-aside"><strong><%= item['cena'] %><%= item['waluta_func'] %></strong></p>
+            <span class="ui-li-count"><%= item['date_modyfied_func'] %></span>
+            </a>
+            </li>
+      <% end %>
+
+<li data-role="list-divider">Ostatnio Zmodyfikowane</li>
+
+      <% for item in @latest_modyfied: %>
+            <li><a href="#oferty/<%= item['id'] %>">
+              <%- item['thumbnail_func'] %>
+        <h3><%= item['remote_id'] %> /
+        <strong><%= item['category_func'] %></strong> </h3>
+        <p><%= item['town'] %> <%= item['street'] %> <%= item['number'] %></p>
+        <p class="ui-li-aside"><strong><%= item['cena'] %><%= item['waluta_func'] %></strong></p>
+            <span class="ui-li-count"><%= item['date_modyfied_func'] %></span>
+            </a>
+            </li>
+      <% end %>
+
+<li data-role="list-divider">Wymagające Odświerzenia</li>
+
+      <% for item in @update_needed: %>
+            <li><a href="#oferty/<%= item['id'] %>">
+              <%- item['thumbnail_func'] %>
+        <h3><%= item['remote_id'] %> /
+        <strong><%= item['category_func'] %></strong> </h3>
+        <p><%= item['town'] %> <%= item['street'] %> <%= item['number'] %></p>
+        <p class="ui-li-aside"><strong><%= item['cena'] %><%= item['waluta_func'] %></strong></p>
+            <span class="ui-li-count"><%= item['date_modyfied_func'] %></span>
+            </a>
+            </li>
+      <% end %>
+
+<li data-role="list-divider">Status Eksportów</li>
+<li><a href="#eksporty">OK</a></li>
+</ul>

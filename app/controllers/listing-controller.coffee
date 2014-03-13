@@ -54,21 +54,49 @@ module.exports = class ListingController extends Controller
     show:(params, route, options) ->
         @publishEvent('log:info', 'in listing show controller')
         url = "/oferty?#{$.param(mediator.last_query)}"
-        @redirectTo {url} unless _.isObject(mediator.collections.listings.get(params.id))
-        @model = mediator.collections.listings.get(params.id)
-        categories =_.invert(localStorage.getObject('categories'))
-        category = categories[@model.get('category')]
-        form = "#{category}_form"
-        schema = "#{category}_schema"
-        @schema =localStorage.getObject(schema)
-        console.log(categories, @schema, @model.get('category'))
-        @model.schema = _.clone(@schema)
-        @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
-        @publishEvent 'tell_viewed', @model.get_url()
-        @view = new View {
-            form_name:form
-            model:@model
-            can_edit:@can_edit
-            region:'content'
-        }
+        # @redirectTo {url} unless _.isObject(mediator.collections.listings.get(params.id))
+        if _.isObject(mediator.collections.listings?.get(params.id))
+            @model = mediator.collections.listings.get(params.id)
+            categories =_.invert(localStorage.getObject('categories'))
+            category = categories[@model.get('category')]
+            form = "#{category}_form"
+            schema = "#{category}_schema"
+            @schema =localStorage.getObject(schema)
+            # console.log(categories, @schema, @model.get('category'))
+            @model.schema = _.clone(@schema)
+            @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
+            @publishEvent 'tell_viewed', @model.get_url()
+            @view = new View {
+                form_name:form
+                model:@model
+                can_edit:@can_edit
+                region:'content'
+            }
+        else
+            mediator.models.listing = new Model
+            @model = mediator.models.listing
+            @model.set('id', params.id)
+            @model.fetch
+            # data: {id: params.id}
+                success: =>
+                    @publishEvent('log:info', "data with #{params} fetched ok" )
+                    categories =_.invert(localStorage.getObject('categories'))
+                    category = categories[@model.get('category')]
+                    form = "#{category}_form"
+                    schema = "#{category}_schema"
+                    @schema =localStorage.getObject(schema)
+                    # console.log(categories, @schema, @model.get('category'))
+                    @model.schema = _.clone(@schema)
+                    @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
+                    @publishEvent 'tell_viewed', @model.get_url()
+                    @view = new View {
+                        form_name:form
+                        model:@model
+                        can_edit:@can_edit
+                        region:'content'
+                    }
+
+                error: =>
+                    @publishEvent 'server_error'
+
 

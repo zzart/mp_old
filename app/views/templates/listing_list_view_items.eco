@@ -42,11 +42,11 @@ data-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz
             </td>
          <td><%= item['client_func'] %></td>
          <td><%= item['cena'] %><%= item['waluta_func'] %></td>
-         <td><%= item['liczba_pokoi'] %></td>
+         <td><%= item['liczba_pokoi'] %> pk</td>
          <td><%= item['powierzchnia_calkowita'] %> m2</td>
          <td><%= item['date_created_func'] %></td>
          <td><%= item['date_modyfied_func'] %></td>
-         <td><%= item['pietro'] %></td>
+         <td><%= item['pietro'] %> pt</td>
          <td><%= item['status_func'] %></td>
          <td><%= item['rynek_func'] %></td>
          <td><%= item['wylacznosc_func'] %></td>

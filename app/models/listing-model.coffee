@@ -31,6 +31,9 @@ module.exports = class Listing extends Chaplin.Model
             localStorage.getObject('choices')["#{@get('rynek')}"]
         wylacznosc_func: ->
             if @get('wylacznosc') then 'tak' else 'nie'
+        category_func: ->
+            localStorage.getObject('categories_full')["#{@get('category')}"]
+
 
         status_func: ->
             switch @get('status')

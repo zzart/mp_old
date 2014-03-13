@@ -108,11 +108,15 @@ module.exports = class AgentController extends Controller
                 else
                     @publishEvent('log:info', 'in agent show Else')
                     @model = mediator.collections.agents.get(params.id)
+                    console.log(
+                        mediator.models.user.get('is_admin'),
+                        @model.get('id'),
+                        mediator.models.user.get('id'))
                     # this is so user can't delete themself!!
                     @edit_type = ''
                     if mediator.models.user.get('id') is @model.get('id')
                         @edit_type = 'add'
-                    @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
+                    @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('id'), mediator.models.user.get('id'))
                     @schema =localStorage.getObject('agent_schema')
                     @model.schema = _.clone(@schema)
                     @publishEvent 'tell_viewed', @model.get_url()

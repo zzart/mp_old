@@ -30,3 +30,6 @@ width:22px;
 #upload .ui-input-text{
 border-style:none;
 }
+.auto_height {
+min-height: 150px; /* !important is used to force override. */
+}

@@ -79,7 +79,12 @@ module.exports = class AddView extends View
 
     back_action: =>
         super
-        Chaplin.utils.redirectTo {url: "/oferty?#{$.param(mediator.collections.listings.query)}"}
+        # coming from HOMEPAGE and pressing back button causes no listings to be present yet
+        # need to redirect back to HOMEPAGE is this case
+        if mediator.collections.listings? is true
+            Chaplin.utils.redirectTo {url: "/oferty?#{$.param(mediator.collections.listings.query )}"}
+        else
+            Chaplin.utils.redirectTo {url: "/"}
 
     copy_address: (event) ->
         @publishEvent('log:info', 'copy address event')

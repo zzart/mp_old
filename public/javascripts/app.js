@@ -313,11 +313,12 @@ module.exports = AgentController = (function(_super) {
         } else {
           _this.publishEvent('log:info', 'in agent show Else');
           _this.model = mediator.collections.agents.get(params.id);
+          console.log(mediator.models.user.get('is_admin'), _this.model.get('id'), mediator.models.user.get('id'));
           _this.edit_type = '';
           if (mediator.models.user.get('id') === _this.model.get('id')) {
             _this.edit_type = 'add';
           }
-          _this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), 1, 0);
+          _this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), _this.model.get('id'), mediator.models.user.get('id'));
           _this.schema = localStorage.getObject('agent_schema');
           _this.model.schema = _.clone(_this.schema);
           _this.publishEvent('tell_viewed', _this.model.get_url());
@@ -1105,30 +1106,53 @@ module.exports = ListingController = (function(_super) {
   };
 
   ListingController.prototype.show = function(params, route, options) {
-    var categories, category, form, schema, url;
+    var categories, category, form, schema, url, _ref,
+      _this = this;
     this.publishEvent('log:info', 'in listing show controller');
     url = "/oferty?" + ($.param(mediator.last_query));
-    if (!_.isObject(mediator.collections.listings.get(params.id))) {
-      this.redirectTo({
-        url: url
+    if (_.isObject((_ref = mediator.collections.listings) != null ? _ref.get(params.id) : void 0)) {
+      this.model = mediator.collections.listings.get(params.id);
+      categories = _.invert(localStorage.getObject('categories'));
+      category = categories[this.model.get('category')];
+      form = "" + category + "_form";
+      schema = "" + category + "_schema";
+      this.schema = localStorage.getObject(schema);
+      this.model.schema = _.clone(this.schema);
+      this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
+      this.publishEvent('tell_viewed', this.model.get_url());
+      return this.view = new View({
+        form_name: form,
+        model: this.model,
+        can_edit: this.can_edit,
+        region: 'content'
+      });
+    } else {
+      mediator.models.listing = new Model;
+      this.model = mediator.models.listing;
+      this.model.set('id', params.id);
+      return this.model.fetch({
+        success: function() {
+          _this.publishEvent('log:info', "data with " + params + " fetched ok");
+          categories = _.invert(localStorage.getObject('categories'));
+          category = categories[_this.model.get('category')];
+          form = "" + category + "_form";
+          schema = "" + category + "_schema";
+          _this.schema = localStorage.getObject(schema);
+          _this.model.schema = _.clone(_this.schema);
+          _this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), _this.model.get('agent'), mediator.models.user.get('id'));
+          _this.publishEvent('tell_viewed', _this.model.get_url());
+          return _this.view = new View({
+            form_name: form,
+            model: _this.model,
+            can_edit: _this.can_edit,
+            region: 'content'
+          });
+        },
+        error: function() {
+          return _this.publishEvent('server_error');
+        }
       });
     }
-    this.model = mediator.collections.listings.get(params.id);
-    categories = _.invert(localStorage.getObject('categories'));
-    category = categories[this.model.get('category')];
-    form = "" + category + "_form";
-    schema = "" + category + "_schema";
-    this.schema = localStorage.getObject(schema);
-    console.log(categories, this.schema, this.model.get('category'));
-    this.model.schema = _.clone(this.schema);
-    this.can_edit = mediator.can_edit(mediator.models.user.get('is_admin'), this.model.get('agent'), mediator.models.user.get('id'));
-    this.publishEvent('tell_viewed', this.model.get_url());
-    return this.view = new View({
-      form_name: form,
-      model: this.model,
-      can_edit: this.can_edit,
-      region: 'content'
-    });
   };
 
   return ListingController;
@@ -2160,6 +2184,9 @@ module.exports = Listing = (function(_super) {
         return 'nie';
       }
     },
+    category_func: function() {
+      return localStorage.getObject('categories_full')["" + (this.get('category'))];
+    },
     status_func: function() {
       switch (this.get('status')) {
         case 0:
@@ -2245,11 +2272,15 @@ module.exports = Login = (function(_super) {
       localStorage.setObject(key, val);
     }
     localStorage.setObject('categories', this.get('categories'));
+    localStorage.setObject('categories_full', this.get('categories_full'));
     localStorage.setObject('choices', this.get('choices'));
     localStorage.setObject('agents', this.get('agents'));
     localStorage.setObject('branches', this.get('branches'));
     localStorage.setObject('clients', this.get('clients'));
     localStorage.setObject('account', this.get('account'));
+    localStorage.setObject('latest', this.get('latest'));
+    localStorage.setObject('latest_modyfied', this.get('latest_modyfied'));
+    localStorage.setObject('update_needed', this.get('update_needed'));
     return this.set({
       is_logged: true
     });
@@ -3918,7 +3949,7 @@ module.exports = HeaderView = (function(_super) {
   HeaderView.prototype.account_status = function() {
     var as, val;
     as = localStorage.getObject('account');
-    val = "<h4>Konto</h4><p>Przestrzeń dysku: <b>" + as.disk_usage + "</b> <br />Status konta: <b>" + as.status + "</b></p>";
+    val = "<h4>Konto</h4><p>Liczba ofert: <b>" + as.total_listings + "</b><br />Przestrzeń dysku: <b>" + as.disk_usage + "</b><br />Status konta: <b>" + as.status + "</b></p>";
     $('#info').html(val);
     return $('#info').popup('open', {
       positionTo: "#account-status-btn",
@@ -3988,7 +4019,7 @@ module.exports = HeaderView = (function(_super) {
 });
 
 ;require.register("views/home-page-view", function(exports, require, module) {
-var HomePageView, View, template,
+var Collection, HomePageView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -3996,6 +4027,10 @@ var HomePageView, View, template,
 template = require('views/templates/home');
 
 View = require('views/base/view');
+
+Collection = require('models/listing-collection');
+
+mediator = require('mediator');
 
 module.exports = HomePageView = (function(_super) {
 
@@ -4023,14 +4058,25 @@ module.exports = HomePageView = (function(_super) {
   HomePageView.prototype.className = 'ui-content';
 
   HomePageView.prototype.getTemplateData = function() {
+    var listings1, listings2, listings3;
+    listings1 = new Collection;
+    listings2 = new Collection;
+    listings3 = new Collection;
+    listings1.set(JSON.parse(localStorage.getObject('latest')));
+    listings2.set(JSON.parse(localStorage.getObject('latest_modyfied')));
+    listings3.set(JSON.parse(localStorage.getObject('update_needed')));
     return {
-      title: "na homepage!"
+      first_name: mediator.models.user.get('first_name'),
+      latest: listings1.toJSON(),
+      latest_modyfied: listings2.toJSON(),
+      update_needed: listings3.toJSON()
     };
   };
 
   HomePageView.prototype.attach = function() {
     HomePageView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'HomeView: attach()');
+    this.publishEvent('log:info', 'HomeView: attach()');
+    return this.publishEvent('jqm_refersh:render');
   };
 
   return HomePageView;
@@ -5391,9 +5437,15 @@ module.exports = AddView = (function(_super) {
 
   AddView.prototype.back_action = function() {
     AddView.__super__.back_action.apply(this, arguments);
-    return Chaplin.utils.redirectTo({
-      url: "/oferty?" + ($.param(mediator.collections.listings.query))
-    });
+    if ((mediator.collections.listings != null) === true) {
+      return Chaplin.utils.redirectTo({
+        url: "/oferty?" + ($.param(mediator.collections.listings.query))
+      });
+    } else {
+      return Chaplin.utils.redirectTo({
+        url: "/"
+      });
+    }
   };
 
   AddView.prototype.copy_address = function(event) {
@@ -7419,12 +7471,94 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
+      var item, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
     
-      __out.push('<h1>Witamy ');
+      __out.push('<h3>');
     
-      __out.push(__sanitize(this.title));
+      __out.push(__sanitize(this.first_name));
     
-      __out.push(' </h1>\n\n');
+      __out.push(', Witamy!</h3>\n\n<ul data-role="listview" data-inset="true" data-divider-theme="a">\n<li data-role="list-divider">Ostatio Dodane</li>\n\n      ');
+    
+      _ref = this.latest;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        item = _ref[_i];
+        __out.push('\n            <li><a href="#oferty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('">\n              ');
+        __out.push(item['thumbnail_func']);
+        __out.push('\n        <h3>');
+        __out.push(__sanitize(item['remote_id']));
+        __out.push(' /\n        <strong>');
+        __out.push(__sanitize(item['category_func']));
+        __out.push('</strong> </h3>\n        <p>');
+        __out.push(__sanitize(item['town']));
+        __out.push(' ');
+        __out.push(__sanitize(item['street']));
+        __out.push(' ');
+        __out.push(__sanitize(item['number']));
+        __out.push('</p>\n        <p class="ui-li-aside"><strong>');
+        __out.push(__sanitize(item['cena']));
+        __out.push(__sanitize(item['waluta_func']));
+        __out.push('</strong></p>\n            <span class="ui-li-count">');
+        __out.push(__sanitize(item['date_modyfied_func']));
+        __out.push('</span>\n            </a>\n            </li>\n      ');
+      }
+    
+      __out.push('\n\n<li data-role="list-divider">Ostatnio Zmodyfikowane</li>\n\n      ');
+    
+      _ref1 = this.latest_modyfied;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        item = _ref1[_j];
+        __out.push('\n            <li><a href="#oferty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('">\n              ');
+        __out.push(item['thumbnail_func']);
+        __out.push('\n        <h3>');
+        __out.push(__sanitize(item['remote_id']));
+        __out.push(' /\n        <strong>');
+        __out.push(__sanitize(item['category_func']));
+        __out.push('</strong> </h3>\n        <p>');
+        __out.push(__sanitize(item['town']));
+        __out.push(' ');
+        __out.push(__sanitize(item['street']));
+        __out.push(' ');
+        __out.push(__sanitize(item['number']));
+        __out.push('</p>\n        <p class="ui-li-aside"><strong>');
+        __out.push(__sanitize(item['cena']));
+        __out.push(__sanitize(item['waluta_func']));
+        __out.push('</strong></p>\n            <span class="ui-li-count">');
+        __out.push(__sanitize(item['date_modyfied_func']));
+        __out.push('</span>\n            </a>\n            </li>\n      ');
+      }
+    
+      __out.push('\n\n<li data-role="list-divider">Wymagające Odświerzenia</li>\n\n      ');
+    
+      _ref2 = this.update_needed;
+      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+        item = _ref2[_k];
+        __out.push('\n            <li><a href="#oferty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('">\n              ');
+        __out.push(item['thumbnail_func']);
+        __out.push('\n        <h3>');
+        __out.push(__sanitize(item['remote_id']));
+        __out.push(' /\n        <strong>');
+        __out.push(__sanitize(item['category_func']));
+        __out.push('</strong> </h3>\n        <p>');
+        __out.push(__sanitize(item['town']));
+        __out.push(' ');
+        __out.push(__sanitize(item['street']));
+        __out.push(' ');
+        __out.push(__sanitize(item['number']));
+        __out.push('</p>\n        <p class="ui-li-aside"><strong>');
+        __out.push(__sanitize(item['cena']));
+        __out.push(__sanitize(item['waluta_func']));
+        __out.push('</strong></p>\n            <span class="ui-li-count">');
+        __out.push(__sanitize(item['date_modyfied_func']));
+        __out.push('</span>\n            </a>\n            </li>\n      ');
+      }
+    
+      __out.push('\n\n<li data-role="list-divider">Status Eksportów</li>\n<li><a href="#eksporty">OK</a></li>\n</ul>\n');
     
     }).call(this);
     
@@ -7871,7 +8005,7 @@ module.exports = function (__obj) {
         __out.push(__sanitize(item['waluta_func']));
         __out.push('</td>\n         <td>');
         __out.push(__sanitize(item['liczba_pokoi']));
-        __out.push('</td>\n         <td>');
+        __out.push(' pk</td>\n         <td>');
         __out.push(__sanitize(item['powierzchnia_calkowita']));
         __out.push(' m2</td>\n         <td>');
         __out.push(__sanitize(item['date_created_func']));
@@ -7879,7 +8013,7 @@ module.exports = function (__obj) {
         __out.push(__sanitize(item['date_modyfied_func']));
         __out.push('</td>\n         <td>');
         __out.push(__sanitize(item['pietro']));
-        __out.push('</td>\n         <td>');
+        __out.push(' pt</td>\n         <td>');
         __out.push(__sanitize(item['status_func']));
         __out.push('</td>\n         <td>');
         __out.push(__sanitize(item['rynek_func']));
