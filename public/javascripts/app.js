@@ -1168,7 +1168,7 @@ var LoginController, LoginView, Model, StructureController, mediator,
 
 StructureController = require('controllers/structure-controller');
 
-LoginView = require('views/login-view');
+LoginView = require('views/autologin-view');
 
 Model = require('models/login-model');
 
@@ -2165,6 +2165,10 @@ module.exports = Listing = (function(_super) {
       var _base;
       return typeof (_base = this.get('date_modyfied')).substr === "function" ? _base.substr(0, 10) : void 0;
     },
+    date_updated_func: function() {
+      var _base;
+      return typeof (_base = this.get('date_updated')).substr === "function" ? _base.substr(0, 10) : void 0;
+    },
     waluta_func: function() {
       return localStorage.getObject('choices')["" + (this.get('waluta'))];
     },
@@ -2231,8 +2235,10 @@ module.exports = Listing = (function(_super) {
   };
 
   Listing.prototype.onChangeAgent = function(model, attribute) {
-    console.log('--> model changed', model, attribute);
-    return model.save();
+    if (!_.isUndefined(model.previous('agent'))) {
+      console.log('--> model changed', model, attribute);
+      return model.save();
+    }
   };
 
   return Listing;
@@ -4066,7 +4072,6 @@ module.exports = HomePageView = (function(_super) {
     listings2.set(JSON.parse(localStorage.getObject('latest_modyfied')));
     listings3.set(JSON.parse(localStorage.getObject('update_needed')));
     return {
-      first_name: mediator.models.user.get('first_name'),
       latest: listings1.toJSON(),
       latest_modyfied: listings2.toJSON(),
       update_needed: listings3.toJSON()
@@ -4998,6 +5003,8 @@ module.exports = ListView = (function(_super) {
     clean_after_action = function(selected) {
       $('#list-table>tbody input:checkbox').prop('checked', false).checkboxradio("refresh");
       $("#select-action :selected").removeAttr('selected');
+      $("#select-action option:first").attr('selected', 'selected');
+      $("#select-action").selectmenu('refresh');
       selected = null;
     };
     this.publishEvent('log:info', "performing action " + event.target.value + " for offers " + selected);
@@ -5049,7 +5056,7 @@ module.exports = ListView = (function(_super) {
         $('#popgeneric').popup('open', {
           transition: "fade"
         });
-        return $("#agent-choose li").unbind().click(function() {
+        $("#agent-choose li").unbind().click(function() {
           var i, model, _i, _len;
           $('#popgeneric').popup('close');
           for (_i = 0, _len = selected.length; _i < _len; _i++) {
@@ -5060,6 +5067,7 @@ module.exports = ListView = (function(_super) {
           }
           return self.render_subview();
         });
+        return clean_after_action(selected);
       }
     } else {
       this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
@@ -5650,7 +5658,6 @@ module.exports = AddView = (function(_super) {
     this.publishEvent('log:info', "render sub_view " + tab_id);
     if (__indexOf.call(this.rendered_tabs, tab_id) < 0) {
       $temp = $(this.form.el).find("#" + tab_id);
-      console.log('---> ', this.form.el, $temp, tab_id);
       window.form = this.form;
       this.subview(tab_id, new TabView({
         container: this.el,
@@ -7473,11 +7480,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
     
-      __out.push('<h3>');
-    
-      __out.push(__sanitize(this.first_name));
-    
-      __out.push(', Witamy!</h3>\n\n<ul data-role="listview" data-inset="true" data-divider-theme="a">\n<li data-role="list-divider">Ostatio Dodane</li>\n\n      ');
+      __out.push('<ul data-role="listview" data-inset="true" data-divider-theme="a">\n<li data-role="list-divider">Ostatio Dodane</li>\n\n      ');
     
       _ref = this.latest;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -7488,19 +7491,19 @@ module.exports = function (__obj) {
         __out.push(item['thumbnail_func']);
         __out.push('\n        <h3>');
         __out.push(__sanitize(item['remote_id']));
-        __out.push(' /\n        <strong>');
+        __out.push(' ');
         __out.push(__sanitize(item['category_func']));
-        __out.push('</strong> </h3>\n        <p>');
+        __out.push('</h3>\n        <p>');
         __out.push(__sanitize(item['town']));
         __out.push(' ');
         __out.push(__sanitize(item['street']));
         __out.push(' ');
         __out.push(__sanitize(item['number']));
-        __out.push('</p>\n        <p class="ui-li-aside"><strong>');
+        __out.push('  ');
         __out.push(__sanitize(item['cena']));
         __out.push(__sanitize(item['waluta_func']));
-        __out.push('</strong></p>\n            <span class="ui-li-count">');
-        __out.push(__sanitize(item['date_modyfied_func']));
+        __out.push('</p>\n        <p class="ui-li-aside">Ostatnio wprowadzone</p>\n            <span class="ui-li-count">');
+        __out.push(__sanitize(item['date_created_func']));
         __out.push('</span>\n            </a>\n            </li>\n      ');
       }
     
@@ -7515,18 +7518,18 @@ module.exports = function (__obj) {
         __out.push(item['thumbnail_func']);
         __out.push('\n        <h3>');
         __out.push(__sanitize(item['remote_id']));
-        __out.push(' /\n        <strong>');
+        __out.push(' ');
         __out.push(__sanitize(item['category_func']));
-        __out.push('</strong> </h3>\n        <p>');
+        __out.push('</h3>\n        <p>');
         __out.push(__sanitize(item['town']));
         __out.push(' ');
         __out.push(__sanitize(item['street']));
         __out.push(' ');
         __out.push(__sanitize(item['number']));
-        __out.push('</p>\n        <p class="ui-li-aside"><strong>');
+        __out.push(' ');
         __out.push(__sanitize(item['cena']));
         __out.push(__sanitize(item['waluta_func']));
-        __out.push('</strong></p>\n            <span class="ui-li-count">');
+        __out.push('</p>\n        <p class="ui-li-aside">Ostatnia modyfikacja</p>\n            <span class="ui-li-count">');
         __out.push(__sanitize(item['date_modyfied_func']));
         __out.push('</span>\n            </a>\n            </li>\n      ');
       }
@@ -7542,19 +7545,19 @@ module.exports = function (__obj) {
         __out.push(item['thumbnail_func']);
         __out.push('\n        <h3>');
         __out.push(__sanitize(item['remote_id']));
-        __out.push(' /\n        <strong>');
+        __out.push(' ');
         __out.push(__sanitize(item['category_func']));
-        __out.push('</strong> </h3>\n        <p>');
+        __out.push(' </h3>\n        <p>');
         __out.push(__sanitize(item['town']));
         __out.push(' ');
         __out.push(__sanitize(item['street']));
         __out.push(' ');
         __out.push(__sanitize(item['number']));
-        __out.push('</p>\n        <p class="ui-li-aside"><strong>');
+        __out.push('  ');
         __out.push(__sanitize(item['cena']));
         __out.push(__sanitize(item['waluta_func']));
-        __out.push('</strong></p>\n            <span class="ui-li-count">');
-        __out.push(__sanitize(item['date_modyfied_func']));
+        __out.push('</p>\n        <p class="ui-li-aside">Ostatnie odświerzenie</p>\n            <span class="ui-li-count">');
+        __out.push(__sanitize(item['date_updated_func']));
         __out.push('</span>\n            </a>\n            </li>\n      ');
       }
     

@@ -21,6 +21,8 @@ module.exports = class Listing extends Chaplin.Model
             @get('date_created').substr?(0,10)
         date_modyfied_func: ->
             @get('date_modyfied').substr?(0,10)
+        date_updated_func: ->
+            @get('date_updated').substr?(0,10)
         waluta_func: ->
             localStorage.getObject('choices')["#{@get('waluta')}"]
         agent_func: ->
@@ -63,8 +65,12 @@ module.exports = class Listing extends Chaplin.Model
         @on('remove', @onRemove)
         @on('destroy', @onDestory)
     onChangeAgent: (model, attribute) ->
-        console.log('--> model changed', model, attribute)
-        model.save()
+        # for changing Agent from dropdown list page
+        # NOTE: we want to trigger this only for already existing models which have agent set
+        # otherwise trigger fires each time new models is created
+        if not _.isUndefined(model.previous('agent'))
+            console.log('--> model changed', model, attribute)
+            model.save()
         #onAdd: ->
         #    console.log('--> model add')
         #onDestroy: ->

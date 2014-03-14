@@ -65,9 +65,14 @@ module.exports = class ListView extends View
         console.log(selected)
         self = @
         clean_after_action = (selected) =>
-            #Once action is done clear the selection
+            #Once action is done clear selected items checkboxes
             $('#list-table>tbody input:checkbox').prop('checked', false).checkboxradio("refresh")
+            # Clear dropdown menu
             $("#select-action :selected").removeAttr('selected')
+            # this should work but it doesn't
+            $("#select-action option:first").attr('selected', 'selected')
+            # refresh dropdown
+            $("#select-action").selectmenu('refresh')
             selected = null
             return
 
@@ -122,6 +127,7 @@ module.exports = class ListView extends View
                         # set (change:agent) will trigger sync on model
                         model.set('agent', @value)
                     self.render_subview()
+                clean_after_action(selected)
 
         else
             @publishEvent 'tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)'

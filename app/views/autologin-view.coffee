@@ -21,6 +21,8 @@ module.exports = class LoginView extends View
         #get data from form
         @user = 'admin@novum'
         @pass = 'admin'
+        # @user = 'dd@novum'
+        # @pass = 'dd'
         #@user = 'test'
         #@pass = 'test'
         # -------------------------

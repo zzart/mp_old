@@ -288,7 +288,7 @@ module.exports = class AddView extends View
         # console.log('->>', @el, tab_id, id)
         if tab_id not in @rendered_tabs
             $temp = $(@form.el).find("##{tab_id}")
-            console.log('---> ', @form.el, $temp, tab_id)
+            # console.log('---> ', @form.el, $temp, tab_id)
             window.form = @form
             @subview tab_id, new TabView container: @el, template: $temp, id: tab_id
             @subview(tab_id).render()

@@ -26,7 +26,7 @@ module.exports = class HomePageView extends View
         listings2.set(JSON.parse(localStorage.getObject('latest_modyfied')))
         listings3.set(JSON.parse(localStorage.getObject('update_needed')))
 
-        first_name: mediator.models.user.get('first_name')
+        #first_name: mediator.models.user.get('first_name')
         latest :            listings1.toJSON()
         latest_modyfied :   listings2.toJSON()
         update_needed :     listings3.toJSON()
