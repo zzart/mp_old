@@ -1,14 +1,14 @@
-Controller = require 'controllers/base/controller'
+Controller =    require 'controllers/base/controller'
 StructureView = require 'views/structure-view'
-Header = require 'views/header-view'
-Footer = require 'views/footer-view'
-NavFooter = require 'views/footer-edit-view'
-ListFooter = require 'views/footer-list-view'
+Header =        require 'views/header-view'
+Footer =        require 'views/footer-view'
+NavFooter =     require 'views/footer-edit-view'
+ListFooter =    require 'views/footer-list-view'
 LeftPanelView = require 'views/left-panel-view'
-InfoView = require 'views/info-view'
-ConfirmView = require 'views/confirm-view'
-ViewedView = require 'views/viewed-view'
-PopGenericView = require 'views/popgeneric-view'
+InfoView =      require 'views/info-view'
+ConfirmView =   require 'views/confirm-view'
+ViewedView =    require 'views/viewed-view'
+PopGenericView =require 'views/popgeneric-view'
 
 module.exports = class StructureController extends Controller
     beforeAction: (params, route) ->

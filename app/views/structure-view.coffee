@@ -13,8 +13,8 @@ module.exports = class StructureView extends View
     regions:
         'page': '#page-region'
         'content': '#content-region'
-        'footer': '#footer-region'
         'header': '#header-region'
+        'footer': '#footer-region'
         'info': '#info-region'
         'viewed': '#viewed-region'
         'login': '#login-region'

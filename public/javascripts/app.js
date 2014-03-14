@@ -3746,7 +3746,12 @@ module.exports = FooterView = (function(_super) {
   };
 
   FooterView.prototype.attach = function() {
+    var new_el;
     FooterView.__super__.attach.apply(this, arguments);
+    new_el = _.clone(this.el);
+    _.delay(function() {
+      return $("#footer-region").append(new_el.outerHTML);
+    }, 30);
     this.publishEvent('log:info', 'FooterView:attach');
     return this.publishEvent('jqm_footer_refersh:render');
   };
@@ -5886,8 +5891,8 @@ module.exports = StructureView = (function(_super) {
   StructureView.prototype.regions = {
     'page': '#page-region',
     'content': '#content-region',
-    'footer': '#footer-region',
     'header': '#header-region',
+    'footer': '#footer-region',
     'info': '#info-region',
     'viewed': '#viewed-region',
     'login': '#login-region',

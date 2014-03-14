@@ -1,6 +1,7 @@
 template = require 'views/templates/home'
 View = require 'views/base/view'
 Collection = require 'models/listing-collection'
+# Footer = require 'views/footer-view'
 mediator = require 'mediator'
 module.exports = class HomePageView extends View
     autoRender: true
@@ -9,8 +10,9 @@ module.exports = class HomePageView extends View
     id: 'content'
     template: template
     className: 'ui-content'
-    #initialize: ->
+    # initialize: ->
     #    @delegate 'mouseenter', @route_change
+    #     @delegate 'panelclose', @panel_close
 
     #route_change:(e) ->
     #    console.log('hover')
@@ -35,8 +37,4 @@ module.exports = class HomePageView extends View
         super
         @publishEvent('log:info', 'HomeView: attach()')
         @publishEvent 'jqm_refersh:render'
-
-        #  dispose: =>
-        #      super
-        #      @publishEvent('log:info', 'home-page-view dispose()')
 
