@@ -10,7 +10,6 @@ module.exports = class AuthController extends StructureController
         @publishEvent('log:info',  window.location.pathname)
         @publishEvent('log:info',  mediator.models.user?.toJSON())
         # @publishEvent('tell_user', 'Pracuje ...')
-        $.mobile.loading('show')
 
         if _.isEmpty(mediator.models.user)
             mediator.redirectUrl = window.location.pathname
@@ -35,6 +34,9 @@ Backbone.sync = (method, model, options) ->
     # console.log('options: ',  options )
     # console.log('options data: ',  options.data )
     # console.log('is new?:',  model.isNew?())
+    $.mobile.loading('show')
+    #$.mobile.loading('show')
+    # -------- let's find general hook event for recieving request
     # lets do this once logged in
     if Chaplin.mediator.models.user?.get('is_logged')
         # check if we have a collection wirh url or model with urlRoot
@@ -58,5 +60,14 @@ Backbone.sync = (method, model, options) ->
         # console.log(method, options, model)
 
     #calling the original sync funtion so we only overriding what we need
-    _sync.call( this, method, model, options )
+    request = _sync.call( this, method, model, options )
+    request.done((msg) ->
+        $.mobile.loading('hide')
+        #console.log('request done')
+    )
+    request.fail((jqXHR, textStatus) ->
+        console.log(jqXHR, textStatus)
+        $.mobile.loading('hide')
+        @publishEvent('tell_user', "Błąd #{jqXHR}, #{textStatus}")
+    )
 #AUTH -----------------------------------------------------------------------

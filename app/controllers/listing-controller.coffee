@@ -15,8 +15,8 @@ module.exports = class ListingController extends Controller
         mediator.collections.listings.query_add(options.query)
         mediator.collections.listings.fetch
             data: mediator.collections.listings.query
-            beforeSend: =>
-                @publishEvent 'tell_user', 'Ładuje oferty...'
+            #beforeSend: =>
+            #    @publishEvent 'tell_user', 'Ładuje oferty...'
             success: =>
                 @publishEvent('log:info', "data with #{params} fetched ok" )
                 @view = new ListView {

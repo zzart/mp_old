@@ -158,7 +158,7 @@ module.exports = class ListView extends View
         if _.isNaN(value)
             @filter = _.omit(@filter, key)
             @publishEvent("log:info", "omiting #{key}" )
-            console.log(@filter)
+            @publishEvent("log:info", @filter)
         else
             @filter[key] = value
 

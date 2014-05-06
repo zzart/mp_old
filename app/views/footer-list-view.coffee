@@ -8,6 +8,7 @@ module.exports = class FooterView extends View
     attributes: { 'data-role':'footer', 'data-position':'fixed' , 'data-theme':'b' }
     attach: =>
         super
+        console.log(@el)
         @publishEvent('log:info', 'FooterView:attach')
         #@publishEvent 'jqm_page_refersh:render'
         @publishEvent 'jqm_footer_refersh:render'

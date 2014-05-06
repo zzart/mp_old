@@ -9,14 +9,14 @@ data-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz
          <th>Adres&nbsp;&nbsp;</th>
          <th data-priority="2">Klient&nbsp;&nbsp;</th>
          <th data-priority="2">Cena&nbsp;&nbsp;</th>
+         <th data-priority="5"><abbr title="Powierzchnia całkowita">Pow. cał.</abbr>&nbsp;&nbsp;</th>
          <th data-priority="4">Pok.&nbsp;&nbsp;</th>
-         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>
-         <th data-priority="6">Wprowadzenie&nbsp;&nbsp;</th>
-         <th data-priority="6">Modyfikacja&nbsp;&nbsp;</th>
-         <th data-priority="7">Piętro&nbsp;&nbsp;</th>
+         <th data-priority="7"><abbr title="Piętro">Pt.</abbr>&nbsp;&nbsp;</th>
          <th data-priority="6">Status&nbsp;&nbsp;</th>
          <th data-priority="6">Rynek&nbsp;&nbsp;</th>
-         <th data-priority="6">Wyłączność&nbsp;&nbsp;</th>
+         <th data-priority="6"><abbr title="Wyłączność">Wył.</abbr>&nbsp;&nbsp;</th>
+         <th data-priority="6"><abbr title="Ostatnia modyfikacja">Modyfi.</abbr>&nbsp;&nbsp;</th>
+         <th data-priority="6"><abbr title="Data wprowadzenia">Wprowadz.&nbsp;&nbsp;</th>
        </tr>
      </thead>
      <tbody>
@@ -42,14 +42,14 @@ data-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz
             </td>
          <td><%= item['client_func'] %></td>
          <td><%= item['cena'] %><%= item['waluta_func'] %></td>
-         <td><%= item['liczba_pokoi'] %> pk</td>
          <td><%= item['powierzchnia_calkowita'] %> m2</td>
-         <td><%= item['date_created_func'] %></td>
-         <td><%= item['date_modyfied_func'] %></td>
+         <td><%= item['liczba_pokoi'] %> pk</td>
          <td><%= item['pietro'] %> pt</td>
          <td><%= item['status_func'] %></td>
          <td><%= item['rynek_func'] %></td>
          <td><%= item['wylacznosc_func'] %></td>
+         <td><%= item['date_created_func'] %></td>
+         <td><%= item['date_modyfied_func'] %></td>
          <td style="display:none;" ><%= item['tytul'] %></td>
          <td style="display:none;" ><%= item['opis'] %></td>
        </tr>

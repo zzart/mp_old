@@ -134,7 +134,7 @@ module.exports = class Layout extends Chaplin.Layout
                 self.log.debug('jqm_refresh finished')
             )
         )
-        $.mobile.loading('hide')
+        #$.mobile.loading('hide')
         # $ ->
         #     $("#content-region").enhanceWithin()
 

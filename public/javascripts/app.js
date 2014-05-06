@@ -363,7 +363,6 @@ module.exports = AuthController = (function(_super) {
     this.publishEvent('log:info', 'AuthController#beforeAction()');
     this.publishEvent('log:info', window.location.pathname);
     this.publishEvent('log:info', (_ref = mediator.models.user) != null ? _ref.toJSON() : void 0);
-    $.mobile.loading('show');
     if (_.isEmpty(mediator.models.user)) {
       mediator.redirectUrl = window.location.pathname;
       return this.redirectTo({
@@ -379,7 +378,8 @@ module.exports = AuthController = (function(_super) {
 _sync = Backbone.sync;
 
 Backbone.sync = function(method, model, options) {
-  var hash, params, url, _ref;
+  var hash, params, request, url, _ref;
+  $.mobile.loading('show');
   if ((_ref = Chaplin.mediator.models.user) != null ? _ref.get('is_logged') : void 0) {
     if (model.urlRoot) {
       if (model.isNew()) {
@@ -399,7 +399,15 @@ Backbone.sync = function(method, model, options) {
       return xhr.setRequestHeader('X-Auth-Token', hash);
     };
   }
-  return _sync.call(this, method, model, options);
+  request = _sync.call(this, method, model, options);
+  request.done(function(msg) {
+    return $.mobile.loading('hide');
+  });
+  return request.fail(function(jqXHR, textStatus) {
+    console.log(jqXHR, textStatus);
+    $.mobile.loading('hide');
+    return this.publishEvent('tell_user', "Błąd " + jqXHR + ", " + textStatus);
+  });
 };
 
 });
@@ -1064,9 +1072,6 @@ module.exports = ListingController = (function(_super) {
     mediator.collections.listings.query_add(options.query);
     return mediator.collections.listings.fetch({
       data: mediator.collections.listings.query,
-      beforeSend: function() {
-        return _this.publishEvent('tell_user', 'Ładuje oferty...');
-      },
       success: function() {
         _this.publishEvent('log:info', "data with " + params + " fetched ok");
         return _this.view = new ListView({
@@ -3704,6 +3709,7 @@ module.exports = FooterView = (function(_super) {
 
   FooterView.prototype.attach = function() {
     FooterView.__super__.attach.apply(this, arguments);
+    console.log(this.el);
     this.publishEvent('log:info', 'FooterView:attach');
     return this.publishEvent('jqm_footer_refersh:render');
   };
@@ -3750,7 +3756,8 @@ module.exports = FooterView = (function(_super) {
     FooterView.__super__.attach.apply(this, arguments);
     new_el = _.clone(this.el);
     _.delay(function() {
-      return $("#footer-region").append(new_el.outerHTML);
+      $("#footer-region").html('').append(new_el.outerHTML);
+      return $("#footer-region").enhanceWithin();
     }, 30);
     this.publishEvent('log:info', 'FooterView:attach');
     return this.publishEvent('jqm_footer_refersh:render');
@@ -4422,14 +4429,13 @@ module.exports = Layout = (function(_super) {
     f2 = function(callback) {
       return callback();
     };
-    f1(function() {
+    return f1(function() {
       $("#content-region").enhanceWithin();
       return f2(function() {
         self.publishEvent('jqm_finished_rendering');
         return self.log.debug('jqm_refresh finished');
       });
     });
-    return $.mobile.loading('hide');
   };
 
   Layout.prototype.jqm_refersh_alone = function() {
@@ -5100,7 +5106,7 @@ module.exports = ListView = (function(_super) {
     if (_.isNaN(value)) {
       this.filter = _.omit(this.filter, key);
       this.publishEvent("log:info", "omiting " + key);
-      console.log(this.filter);
+      this.publishEvent("log:info", this.filter);
     } else {
       this.filter[key] = value;
     }
@@ -7963,7 +7969,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Adres&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="5">Pow. całkowita&nbsp;&nbsp;</th>\n         <th data-priority="6">Wprowadzenie&nbsp;&nbsp;</th>\n         <th data-priority="6">Modyfikacja&nbsp;&nbsp;</th>\n         <th data-priority="7">Piętro&nbsp;&nbsp;</th>\n         <th data-priority="6">Status&nbsp;&nbsp;</th>\n         <th data-priority="6">Rynek&nbsp;&nbsp;</th>\n         <th data-priority="6">Wyłączność&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>Zdjęcie&nbsp;&nbsp;</th>\n         <th>ID</th>\n         <th>Agent&nbsp;&nbsp;</th>\n         <th>Adres&nbsp;&nbsp;</th>\n         <th data-priority="2">Klient&nbsp;&nbsp;</th>\n         <th data-priority="2">Cena&nbsp;&nbsp;</th>\n         <th data-priority="5"><abbr title="Powierzchnia całkowita">Pow. cał.</abbr>&nbsp;&nbsp;</th>\n         <th data-priority="4">Pok.&nbsp;&nbsp;</th>\n         <th data-priority="7"><abbr title="Piętro">Pt.</abbr>&nbsp;&nbsp;</th>\n         <th data-priority="6">Status&nbsp;&nbsp;</th>\n         <th data-priority="6">Rynek&nbsp;&nbsp;</th>\n         <th data-priority="6"><abbr title="Wyłączność">Wył.</abbr>&nbsp;&nbsp;</th>\n         <th data-priority="6"><abbr title="Ostatnia modyfikacja">Modyfi.</abbr>&nbsp;&nbsp;</th>\n         <th data-priority="6"><abbr title="Data wprowadzenia">Wprowadz.&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -8012,14 +8018,10 @@ module.exports = function (__obj) {
         __out.push(__sanitize(item['cena']));
         __out.push(__sanitize(item['waluta_func']));
         __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['liczba_pokoi']));
-        __out.push(' pk</td>\n         <td>');
         __out.push(__sanitize(item['powierzchnia_calkowita']));
         __out.push(' m2</td>\n         <td>');
-        __out.push(__sanitize(item['date_created_func']));
-        __out.push('</td>\n         <td>');
-        __out.push(__sanitize(item['date_modyfied_func']));
-        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['liczba_pokoi']));
+        __out.push(' pk</td>\n         <td>');
         __out.push(__sanitize(item['pietro']));
         __out.push(' pt</td>\n         <td>');
         __out.push(__sanitize(item['status_func']));
@@ -8027,6 +8029,10 @@ module.exports = function (__obj) {
         __out.push(__sanitize(item['rynek_func']));
         __out.push('</td>\n         <td>');
         __out.push(__sanitize(item['wylacznosc_func']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['date_created_func']));
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['date_modyfied_func']));
         __out.push('</td>\n         <td style="display:none;" >');
         __out.push(__sanitize(item['tytul']));
         __out.push('</td>\n         <td style="display:none;" >');
