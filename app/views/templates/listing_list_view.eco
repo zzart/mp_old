@@ -24,6 +24,7 @@
             <option value="4">Sprzedane</option>
             <option value="5">Wynajęte</option>
             <option value="6">Umowa przedwstępna</option>
+            <option value="7">Usunięte</option>
         </select>
 
         <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>

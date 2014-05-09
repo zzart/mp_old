@@ -46,6 +46,7 @@ module.exports = class Listing extends Chaplin.Model
                  when 4 then 'sprzedana'
                  when 5 then 'wynajęta'
                  when 6 then 'umowa przedwstępna'
+                 when 7 then 'usunięta'
 
     toJSON: ->
         data = {}

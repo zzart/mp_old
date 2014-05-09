@@ -2212,6 +2212,8 @@ module.exports = Listing = (function(_super) {
           return 'wynajęta';
         case 6:
           return 'umowa przedwstępna';
+        case 7:
+          return 'usunięta';
       }
     }
   };
@@ -7881,7 +7883,7 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.listing_type));
     
-      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="drukuj">Drukuj</option>\n            <option value="zmien_agenta">Zmień Agenta</option>\n            <option value="email">Email</option>\n            <option value="usun">Usuń</option>\n            <option value="eksport" disabled>Eksport do pliku</option>\n        </select>\n\n        <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="status-query" id="status-query" data-query=\'status\'>\n            <option selected disabled>Status</option>\n            <option value="">Wszystkie</option>\n            <option value="1">Aktywne</option>\n            <option value="0">Nieaktywne</option>\n            <option value="2">Archiwalne</option>\n            <option value="3">Robocze</option>\n            <option value="4">Sprzedane</option>\n            <option value="5">Wynajęte</option>\n            <option value="6">Umowa przedwstępna</option>\n        </select>\n\n        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="agent-query" id="agent-query" data-query=\'agent\'>\n            <option selected disabled>Agent</option>\n            <option value="">Wszyscy</option>\n            ');
+      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="drukuj">Drukuj</option>\n            <option value="zmien_agenta">Zmień Agenta</option>\n            <option value="email">Email</option>\n            <option value="usun">Usuń</option>\n            <option value="eksport" disabled>Eksport do pliku</option>\n        </select>\n\n        <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="status-query" id="status-query" data-query=\'status\'>\n            <option selected disabled>Status</option>\n            <option value="">Wszystkie</option>\n            <option value="1">Aktywne</option>\n            <option value="0">Nieaktywne</option>\n            <option value="2">Archiwalne</option>\n            <option value="3">Robocze</option>\n            <option value="4">Sprzedane</option>\n            <option value="5">Wynajęte</option>\n            <option value="6">Umowa przedwstępna</option>\n            <option value="7">Usunięte</option>\n        </select>\n\n        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="agent-query" id="agent-query" data-query=\'agent\'>\n            <option selected disabled>Agent</option>\n            <option value="">Wszyscy</option>\n            ');
     
       _ref = this.agents;
       for (key in _ref) {
