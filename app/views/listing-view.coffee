@@ -52,7 +52,12 @@ module.exports = class AddView extends View
                         # add it to collection so we don't need to use server ...
                         mediator.collections.listings.add(@model)
                     @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
-                    Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
+                    # if no query being done and we doing save this changs forever
+                    # so redirect to HOME if url or listing.query is undefined
+                    if mediator.collections.listings?.query?
+                        Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
+                    else
+                        Chaplin.utils.redirectTo {url: url ? "/"}
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']

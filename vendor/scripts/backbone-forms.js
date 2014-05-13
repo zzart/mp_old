@@ -223,7 +223,7 @@ var Form = Backbone.View.extend({
       //Add them
       _.each(keys, function(key) {
         var field = fields[key];
-        //console.log(key)
+        console.log(key);
 
         $container.append(field.render().el);
       });
@@ -2230,7 +2230,7 @@ Form.editors.Date = Form.editors.Base.extend({
         date = this.$date.val();
 
     if (!year || !month || !date) return null;
-    current = new Date()
+    current = new Date();
     //console.log(new Date(Date.UTC(year, month, date, current.getHours(), current.getMinutes())));
     return new Date(Date.UTC(year, month, date, current.getHours(), current.getMinutes()));
 

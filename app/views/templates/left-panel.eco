@@ -16,8 +16,8 @@
                         <li><a href="/oferty?category=land_sell"    >Grunty Sprzedaż</a></li>
                         <li><a href="/oferty?category=commercial_rent"    >Lokale Wynajem</a></li>
                         <li><a href="/oferty?category=commercial_sell"    >Lokale Sprzedaż</a></li>
-                        <li><a href="/oferty?category=warehose_rent"    >Lokale użytkowe Wynajem</a></li>
-                        <li><a href="/oferty?category=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>
+                        <li><a href="/oferty?category=warehouse_rent"    >Hale Wynajem</a></li>
+                        <li><a href="/oferty?category=warehouse_sell"   >Hale Sprzedaż</a></li>
                         <li><a href="/oferty?category=object_rent"   >Obiekty Wynajem</a></li>
                         <li><a href="/oferty?category=object_sell"   >Obiekty Sprzedaż</a></li>
                         <li data-role='list-divider' > </li>
@@ -35,8 +35,8 @@
                         <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>
                         <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>
                         <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>
-                        <li><a href="/oferty/dodaj?type=warehose_rent"    >Lokale użytkowe Wynajem</a></li>
-                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Lokale użytkowe Sprzedaż</a></li>
+                        <li><a href="/oferty/dodaj?type=warehouse_rent"    >Hale Wynajem</a></li>
+                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Hale Sprzedaż</a></li>
                         <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>
                         <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>
                         <li data-role='list-divider' > </li>
