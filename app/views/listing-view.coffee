@@ -73,9 +73,14 @@ module.exports = class AddView extends View
         @model.destroy
             success: (event) =>
                 # type = _.invert(localStorage.getObject('category'))[@model.get('category')]
-                mediator.collections.listings.remove(@model)
+                mediator.collections.listings?.remove(@model)
                 @publishEvent 'tell_user', 'Rekord został usunięty'
-                Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
+                # if no query being done and we doing save this changs forever
+                # so redirect to HOME if url or listing.query is undefined
+                if mediator.collections.listings?.query?
+                    Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
+                else
+                    Chaplin.utils.redirectTo {url: url ? "/"}
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']

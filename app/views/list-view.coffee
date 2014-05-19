@@ -74,6 +74,8 @@ module.exports = class ListView extends View
             # refresh dropdown
             $("#select-action").selectmenu('refresh')
             selected = null
+            # for table THEAD
+            @publishEvent 'jqm_refersh:render'
             return
 
         @publishEvent('log:info', "performing action #{event.target.value} for offers #{selected}")

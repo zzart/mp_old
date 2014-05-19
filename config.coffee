@@ -35,9 +35,9 @@ exports.config =
           'vendor/scripts/list.js',
           'vendor/scripts/jquery.tablesorter.min.js',
           'vendor/scripts/hmac-sha256.js',
-          'vendor/scripts/enc-base64-min.js'
-          'vendor/scripts/fineuploader-4.2.1.js'
-          'vendor/scripts/OpenLayers.debug.js'
+          'vendor/scripts/enc-base64-min.js',
+          'vendor/scripts/fineuploader-4.2.1.js',
+          'vendor/scripts/OpenLayers.js'
         ]
         after: [
           'test/vendor/scripts/test-helper.js'
