@@ -129,6 +129,7 @@ module.exports = class AddView extends View
         $("[name='borough']").val('')
         $("[name='internet_county']").val('')
         $("[name='county']").val('')
+        $("[name='number']").val('')
 
     fill_address: (event) ->
         @publishEvent('log:info', 'fill address event')
@@ -136,9 +137,10 @@ module.exports = class AddView extends View
         obj = @response[event.target.value]
         $("[name='postcode']").val(obj.address.postcode)
         $("[name='street']").val(obj.address.road or obj.address.pedestrian)
-        $("[name='town']").val(obj.address.city)
-        $("[name='province']").val(obj.address.state)
-        $("[name='town_district']").val(obj.address.city_district)
+        $("[name='town']").val(obj.address.city or obj.address.village)
+        $("[name='province']").val(obj.address.state.replace('województwo ', ''))
+        $("[name='number']").val(obj.address.house_number)
+        $("[name='town_district']").val(obj.address.city_district or obj.address.suburb)
         $("[name='lat']").val(obj.lat)
         $("[name='lon']").val(obj.lon)
         full_name = obj.display_name.split(',')
@@ -148,8 +150,9 @@ module.exports = class AddView extends View
                 county = item
             else if item.indexOf('gmina') > -1
                 borough = item
-        $("[name='borough']").val(borough or '')
-        $("[name='county']").val(county or '')
+        @publishEvent('log:info', "county:#{county}, borough:#{borough}, address.county:#{obj.address.county}, address.borough:#{obj.address.borough}")
+        $("[name='borough']").val(borough or obj.address.borough or obj.address.village or obj.address.city)
+        $("[name='county']").val(county or obj.address.county or '')
         #clean suggested list items
         $ul = $('ul#autocomplete.ui-listview')
         $('ul#autocomplete.ui-listview > li').remove()

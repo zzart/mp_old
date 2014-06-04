@@ -5519,7 +5519,8 @@ module.exports = AddView = (function(_super) {
     $("[name='internet_borough']").val('');
     $("[name='borough']").val('');
     $("[name='internet_county']").val('');
-    return $("[name='county']").val('');
+    $("[name='county']").val('');
+    return $("[name='number']").val('');
   };
 
   AddView.prototype.fill_address = function(event) {
@@ -5529,9 +5530,10 @@ module.exports = AddView = (function(_super) {
     obj = this.response[event.target.value];
     $("[name='postcode']").val(obj.address.postcode);
     $("[name='street']").val(obj.address.road || obj.address.pedestrian);
-    $("[name='town']").val(obj.address.city);
-    $("[name='province']").val(obj.address.state);
-    $("[name='town_district']").val(obj.address.city_district);
+    $("[name='town']").val(obj.address.city || obj.address.village);
+    $("[name='province']").val(obj.address.state.replace('województwo ', ''));
+    $("[name='number']").val(obj.address.house_number);
+    $("[name='town_district']").val(obj.address.city_district || obj.address.suburb);
     $("[name='lat']").val(obj.lat);
     $("[name='lon']").val(obj.lon);
     full_name = obj.display_name.split(',');
@@ -5543,8 +5545,9 @@ module.exports = AddView = (function(_super) {
         borough = item;
       }
     }
-    $("[name='borough']").val(borough || '');
-    $("[name='county']").val(county || '');
+    this.publishEvent('log:info', "county:" + county + ", borough:" + borough + ", address.county:" + obj.address.county + ", address.borough:" + obj.address.borough);
+    $("[name='borough']").val(borough || obj.address.borough || obj.address.village || obj.address.city);
+    $("[name='county']").val(county || obj.address.county || '');
     $ul = $('ul#autocomplete.ui-listview');
     $('ul#autocomplete.ui-listview > li').remove();
     $ul.listview("refresh");
