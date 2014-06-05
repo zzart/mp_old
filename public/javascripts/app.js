@@ -91,13 +91,15 @@
   globals.require.brunch = true;
 })();
 require.register("application", function(exports, require, module) {
-var Application, Layout, RefreshController, StructureController, mediator, routes,
+var Application, Layout, RefreshController, SingleRefreshController, StructureController, mediator, routes,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 StructureController = require('controllers/structure-controller');
 
 RefreshController = require('controllers/refresh-controller');
+
+SingleRefreshController = require('controllers/single-refresh-controller');
 
 Layout = require('views/layout');
 
@@ -129,7 +131,8 @@ module.exports = Application = (function(_super) {
 
   Application.prototype.initControllers = function() {
     new StructureController();
-    return new RefreshController();
+    new RefreshController();
+    return new SingleRefreshController();
   };
 
   Application.prototype.initMediator = function() {
@@ -1201,8 +1204,8 @@ module.exports = LoginController = (function(_super) {
 
 });
 
-;require.register("controllers/refresh-controller", function(exports, require, module) {
-var Controller, Model, RefreshController, mediator,
+;require.register("controllers/single-refresh-controller", function(exports, require, module) {
+var Controller, Model, SingleRefreshController, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1213,63 +1216,41 @@ Model = require('models/refresh-model');
 
 mediator = require('mediator');
 
-module.exports = RefreshController = (function(_super) {
+module.exports = SingleRefreshController = (function(_super) {
 
-  __extends(RefreshController, _super);
+  __extends(SingleRefreshController, _super);
 
-  function RefreshController() {
-    this.refresh_dependencies = __bind(this.refresh_dependencies, this);
-    return RefreshController.__super__.constructor.apply(this, arguments);
+  function SingleRefreshController() {
+    this.refresh_localstorage = __bind(this.refresh_localstorage, this);
+    return SingleRefreshController.__super__.constructor.apply(this, arguments);
   }
 
-  RefreshController.prototype.initialize = function() {
-    this.subscribeEvent('refreshmodel', this.refresh_model);
-    this.subscribeEvent('modelchanged', this.refresh_dependencies);
-    return window.refresh = this.refresh_model;
+  SingleRefreshController.prototype.initialize = function() {
+    return this.subscribeEvent('refresh_localstorage', this.refresh_localstorage);
   };
 
-  RefreshController.prototype.refresh_model = function(model, callback) {
-    var data, params,
+  SingleRefreshController.prototype.refresh_localstorage = function(model) {
+    var params,
       _this = this;
-    this.callback = callback;
-    data = model.split('/');
     params = {};
-    params['model'] = data[0];
-    params['type'] = data[1];
+    params['model'] = model;
+    params['type'] = 'data';
     this.model = new Model;
     return this.model.fetch({
       data: params,
       success: function() {
-        _this.publishEvent('log:info', "data with " + params.model + params.type + " fetched ok");
-        if (_.isObject(_this.model.attributes[params.type]["" + params.model + "_" + params.type])) {
-          localStorage.setObject("" + params.model + "_" + params.type, _this.model.attributes[params.type]["" + params.model + "_" + params.type]);
-          return typeof _this.callback === "function" ? _this.callback() : void 0;
+        _this.publishEvent('log:info', "data with " + params.model + " " + params.type + " fetched ok");
+        if (_.isObject(_this.model.attributes[params.model])) {
+          return localStorage.setObject("" + params.model, _this.model.attributes[params.model]);
         }
       },
       error: function() {
-        _this.publishEvent('tell_user', 'Brak połączenia z serwerem - formularze nie zostały odświerzone');
-        return typeof _this.callback === "function" ? _this.callback() : void 0;
+        return _this.publishEvent('tell_user', 'Brak połączenia z serwerem - dane nie zostały odświerzone');
       }
     });
   };
 
-  RefreshController.prototype.refresh_dependencies = function(model) {
-    var self;
-    self = this;
-    return async.series([
-      function(callback) {
-        return self.refresh_model('flat_rent/schema', callback);
-      }, function(callback) {
-        return self.refresh_model('flat_sell/schema', callback);
-      }, function(callback) {
-        return self.refresh_model('house_rent/schema', callback);
-      }, function(callback) {
-        return self.refresh_model('house_sell/schema', callback);
-      }
-    ]);
-  };
-
-  return RefreshController;
+  return SingleRefreshController;
 
 })(Controller);
 
@@ -1801,7 +1782,12 @@ module.exports = Client = (function(_super) {
   };
 
   Client.prototype.onChange = function() {
-    return this.publishEvent('modelchanged', 'client');
+    var self;
+    self = this;
+    return _.delay(function() {
+      self.publishEvent('modelchanged', 'client');
+      return self.publishEvent('refresh_localstorage', 'clients');
+    }, 30);
   };
 
   Client.prototype.onAdd = function() {

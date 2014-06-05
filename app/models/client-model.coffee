@@ -26,8 +26,16 @@ module.exports = class Client extends Chaplin.Model
         @on('add', @onAdd)
         @on('remove', @onRemove)
         @on('destroy', @onDestory)
+
+
     onChange: ->
-        @publishEvent('modelchanged', 'client')
+        # after change in name need to regenerate forms and localStorage
+        # all needs to take off with a slight delay so that model has a chance to save itself
+        self = @
+        _.delay(->
+            self.publishEvent('modelchanged', 'client')
+            self.publishEvent('refresh_localstorage', 'clients')
+        , 30)
     onAdd: ->
         console.log('--> model add')
     onDestroy: ->
@@ -37,3 +45,4 @@ module.exports = class Client extends Chaplin.Model
     module_name: ['klient', 'klienci']
     get_url: ->
         return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
+
