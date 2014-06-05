@@ -2294,6 +2294,7 @@ module.exports = Login = (function(_super) {
     localStorage.setObject('latest', this.get('latest'));
     localStorage.setObject('latest_modyfied', this.get('latest_modyfied'));
     localStorage.setObject('update_needed', this.get('update_needed'));
+    localStorage.setObject('portals', this.get('portals'));
     return this.set({
       is_logged: true
     });
@@ -3524,12 +3525,37 @@ module.exports = ExportView = (function(_super) {
 
     this.save_action = __bind(this.save_action, this);
 
+    this.set_export = __bind(this.set_export, this);
+
     this.initialize = __bind(this.initialize, this);
     return ExportView.__super__.constructor.apply(this, arguments);
   }
 
   ExportView.prototype.initialize = function(options) {
-    return ExportView.__super__.initialize.apply(this, arguments);
+    ExportView.__super__.initialize.apply(this, arguments);
+    return this.delegate('change', "#export_select", this.set_export);
+  };
+
+  ExportView.prototype.set_export = function(e) {
+    var i, input, portal, portals, _i, _len, _ref;
+    this.publishEvent('log:info', "set_export called with " + e.target.value);
+    portals = localStorage.getObject('portals');
+    portal = portals[e.target.value];
+    if (portal) {
+      $("[name='name']").val(portal['name']);
+      $("[name='address_ftp']").val(portal['address_ftp']);
+      $("[name='login']").val(portal['login']);
+      $("[name='password']").val(portal['password']);
+      $("[name='folder_ftp']").val(portal['folder_ftp']);
+      $("[name='code_offline']").val(portal['code_offline']);
+      input = $("[name='format_type'] input")[portal['format_type']];
+      _ref = $("[name='format_type'] input");
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        i = _ref[_i];
+        $(i).prop("checked", false).checkboxradio("refresh");
+      }
+      return $(input).prop("checked", true).checkboxradio("refresh");
+    }
   };
 
   ExportView.prototype.save_action = function(url) {

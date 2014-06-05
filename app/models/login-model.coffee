@@ -16,6 +16,7 @@ module.exports = class Login extends Chaplin.Model
         localStorage.setObject('latest', @.get('latest'))
         localStorage.setObject('latest_modyfied', @.get('latest_modyfied'))
         localStorage.setObject('update_needed', @.get('update_needed'))
+        localStorage.setObject('portals', @.get('portals'))
         @.set({is_logged:true})
 
 
