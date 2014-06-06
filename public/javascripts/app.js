@@ -1204,6 +1204,96 @@ module.exports = LoginController = (function(_super) {
 
 });
 
+;require.register("controllers/refresh-controller", function(exports, require, module) {
+var Controller, Model, RefreshController, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Controller = require('controllers/auth-controller');
+
+Model = require('models/refresh-model');
+
+mediator = require('mediator');
+
+module.exports = RefreshController = (function(_super) {
+
+  __extends(RefreshController, _super);
+
+  function RefreshController() {
+    this.refresh_dependencies = __bind(this.refresh_dependencies, this);
+    return RefreshController.__super__.constructor.apply(this, arguments);
+  }
+
+  RefreshController.prototype.initialize = function() {
+    this.subscribeEvent('refreshmodel', this.refresh_model);
+    return this.subscribeEvent('modelchanged', this.refresh_dependencies);
+  };
+
+  RefreshController.prototype.refresh_model = function(model, callback) {
+    var data, params,
+      _this = this;
+    this.callback = callback;
+    data = model.split('/');
+    params = {};
+    params['model'] = data[0];
+    params['type'] = data[1];
+    this.model = new Model;
+    return this.model.fetch({
+      data: params,
+      success: function() {
+        _this.publishEvent('log:info', "data with " + params.model + "_" + params.type + " fetched ok");
+        console.log(_this.model.attributes, _this.model.attributes[params.type]);
+        if (_.isObject(_this.model.attributes[params.type]["" + params.model + "_" + params.type])) {
+          localStorage.setObject("" + params.model + "_" + params.type, _this.model.attributes[params.type]["" + params.model + "_" + params.type]);
+          return typeof _this.callback === "function" ? _this.callback() : void 0;
+        }
+      },
+      error: function() {
+        _this.publishEvent('tell_user', 'Brak połączenia z serwerem - formularze nie zostały odświerzone');
+        return typeof _this.callback === "function" ? _this.callback() : void 0;
+      }
+    });
+  };
+
+  RefreshController.prototype.refresh_dependencies = function(model) {
+    var self;
+    self = this;
+    return async.series([
+      function(callback) {
+        return self.refresh_model('flat_rent/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('flat_sell/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('house_rent/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('house_sell/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('land_rent/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('land_sell/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('object_rent/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('object_sell/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('warehouse_rent/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('warehouse_sell/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('commercial_rent/schema', callback);
+      }, function(callback) {
+        return self.refresh_model('commercial_sell/schema', callback);
+      }
+    ]);
+  };
+
+  return RefreshController;
+
+})(Controller);
+
+});
+
 ;require.register("controllers/single-refresh-controller", function(exports, require, module) {
 var Controller, Model, SingleRefreshController, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1783,6 +1873,7 @@ module.exports = Client = (function(_super) {
 
   Client.prototype.onChange = function() {
     var self;
+    this.publishEvent('log:info', "--> " + this.module_name[0] + " changed");
     self = this;
     return _.delay(function() {
       self.publishEvent('modelchanged', 'client');
@@ -1791,15 +1882,16 @@ module.exports = Client = (function(_super) {
   };
 
   Client.prototype.onAdd = function() {
-    return console.log('--> model add');
+    return this.publishEvent('log:info', "--> " + this.module_name[0] + " add");
   };
 
   Client.prototype.onDestroy = function() {
+    this.publishEvent('log:info', "--> " + this.module_name[0] + " destroyed");
     return this.publishEvent('modelchanged', 'client');
   };
 
   Client.prototype.onRemove = function() {
-    return console.log('--> model remove');
+    return this.publishEvent('log:info', "--> " + this.module_name[0] + " removed");
   };
 
   Client.prototype.module_name = ['klient', 'klienci'];
@@ -1927,6 +2019,35 @@ module.exports = Export = (function(_super) {
 
   Export.prototype.get_url = function() {
     return "<a href=\'/" + this.module_name[1] + "/" + (this.get('id')) + "\'>" + (this.module_name[0].toUpperCase()) + " #" + (this.get('id')) + "</a>";
+  };
+
+  Export.prototype.initialize = function() {
+    this.on('change:name', this.onChange);
+    this.on('add', this.onAdd);
+    this.on('remove', this.onRemove);
+    return this.on('destroy', this.onDestory);
+  };
+
+  Export.prototype.onChange = function() {
+    var self;
+    this.publishEvent('log:info', "--> " + this.module_name[0] + " changed");
+    self = this;
+    return _.delay(function() {
+      return self.publishEvent('modelchanged', 'client');
+    }, 30);
+  };
+
+  Export.prototype.onAdd = function() {
+    return this.publishEvent('log:info', "--> " + this.module_name[0] + " add");
+  };
+
+  Export.prototype.onDestroy = function() {
+    this.publishEvent('log:info', "--> " + this.module_name[0] + " destroyed");
+    return this.publishEvent('modelchanged', 'client');
+  };
+
+  Export.prototype.onRemove = function() {
+    return this.publishEvent('log:info', "--> " + this.module_name[0] + " removed");
   };
 
   return Export;
@@ -3468,16 +3589,58 @@ module.exports = ExportListView = (function(_super) {
 
   function ExportListView() {
     this.attach = __bind(this.attach, this);
+
+    this.make_ajax_request = __bind(this.make_ajax_request, this);
+
+    this.delete_all_for_export = __bind(this.delete_all_for_export, this);
+
+    this.select_all_for_export = __bind(this.select_all_for_export, this);
     return ExportListView.__super__.constructor.apply(this, arguments);
   }
 
   ExportListView.prototype.initialize = function(params) {
-    return ExportListView.__super__.initialize.apply(this, arguments);
+    ExportListView.__super__.initialize.apply(this, arguments);
+    this.delegate('click', "#select_all_for_export", this.select_all_for_export);
+    this.delegate('click', "#delete_all_for_export", this.delete_all_for_export);
+    return this.module_name = 'ExportListView';
+  };
+
+  ExportListView.prototype.select_all_for_export = function(e) {
+    this.publishEvent('log:info', "" + this.module_name + " select_all_for_export id:" + e.target.id + " data:" + e.target.dataset["export"]);
+    this.make_ajax_request(e, 'zaznacz', 'POST');
+    return e.preventDefault();
+  };
+
+  ExportListView.prototype.delete_all_for_export = function(e) {
+    this.publishEvent('log:info', "" + this.module_name + " delete_all_for_export id:" + e.target.id + " data:" + e.target.dataset["export"]);
+    e.preventDefault();
+    return this.make_ajax_request(e, 'usun', 'POST');
+  };
+
+  ExportListView.prototype.make_ajax_request = function(e, action, request_type) {
+    var self, url,
+      _this = this;
+    this.model = this.collection_hard.get(e.target.dataset["export"]);
+    url = "" + this.model.urlRoot + "/" + e.target.dataset["export"] + "/" + action;
+    self = this;
+    return $.ajax({
+      url: url,
+      beforeSend: function(xhr) {
+        return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token(url));
+      },
+      type: request_type,
+      success: function(data, textStatus, jqXHR) {
+        return self.publishEvent("tell_user", 'Wszystkie oferty spełnające kryteria eksportu zostały zaznaczone/usunięte');
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        return self.publishEvent("tell_user", jqXHR.responseJSON.title || errorThrown);
+      }
+    });
   };
 
   ExportListView.prototype.attach = function() {
     ExportListView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'view: export list view afterRender()');
+    return this.publishEvent('log:info', "" + this.module_name + " afterRender()");
   };
 
   return ExportListView;
@@ -3723,7 +3886,6 @@ module.exports = FooterView = (function(_super) {
 
   FooterView.prototype.attach = function() {
     FooterView.__super__.attach.apply(this, arguments);
-    console.log(this.el);
     this.publishEvent('log:info', 'FooterView:attach');
     return this.publishEvent('jqm_footer_refersh:render');
   };
@@ -7043,7 +7205,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th>ID</th>\n         <th>Nazwa&nbsp;&nbsp;</th>\n         <th>Adres ftp&nbsp;&nbsp;</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="5">Data&nbsp;&nbsp;</th>\n         <th data-priority="5">Limit ofert&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th data-priority="6">ID</th>\n         <th>Nazwa&nbsp;&nbsp;</th>\n         <th>Adres ftp&nbsp;&nbsp;</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="5">Data&nbsp;&nbsp;</th>\n         <th data-priority="5">Limit ofert&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>\n         <th><abbr title="Dodaj <b>wszystkie</b> oferty do tego eksportu">Dodaj oferty</abbr>&nbsp;&nbsp;</th>\n         <th><abbr title="Usuń <b>wszystkie</b> oferty z tego eksportu">Usuń oferty</abbr>&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -7054,9 +7216,11 @@ module.exports = function (__obj) {
         __out.push(__sanitize(item['id']));
         __out.push('" data-mini="true" type="checkbox"></label></td>\n         <td>');
         __out.push(__sanitize(item['id']));
-        __out.push('</td>\n         <td>');
-        __out.push(item['name']);
         __out.push('</td>\n         <td><a href=\'/eksporty/');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>');
+        __out.push(item['name']);
+        __out.push('</a></td>\n         <td><a href=\'/eksporty/');
         __out.push(__sanitize(item['id']));
         __out.push('\'>');
         __out.push(__sanitize(item['address_ftp']));
@@ -7078,7 +7242,11 @@ module.exports = function (__obj) {
         __out.push(__sanitize(item['id']));
         __out.push('\'>');
         __out.push(__sanitize(item['is_active_func']));
-        __out.push('</a></td>\n       </tr>\n      ');
+        __out.push('</a></td>\n         <th><a href="#" class="ui-btn" id=\'select_all_for_export\' data-export=\'');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>Zaznacz oferty</a></th>\n         <th><a href="#" class="ui-btn" id=\'delete_all_for_export\' data-export=\'');
+        __out.push(__sanitize(item['id']));
+        __out.push('\'>Usuń oferty</a></th>\n       </tr>\n      ');
       }
     
       __out.push('\n     </tbody>\n</table>\n');

@@ -3,7 +3,7 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
      <thead>
        <tr class='th-groups'>
          <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>
-         <th>ID</th>
+         <th data-priority="6">ID</th>
          <th>Nazwa&nbsp;&nbsp;</th>
          <th>Adres ftp&nbsp;&nbsp;</th>
          <th>Oddział&nbsp;&nbsp;</th>
@@ -11,6 +11,8 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
          <th data-priority="5">Data&nbsp;&nbsp;</th>
          <th data-priority="5">Limit ofert&nbsp;&nbsp;</th>
          <th data-priority="5">Aktywny&nbsp;&nbsp;</th>
+         <th><abbr title="Dodaj <b>wszystkie</b> oferty do tego eksportu">Dodaj oferty</abbr>&nbsp;&nbsp;</th>
+         <th><abbr title="Usuń <b>wszystkie</b> oferty z tego eksportu">Usuń oferty</abbr>&nbsp;&nbsp;</th>
        </tr>
      </thead>
      <tbody>
@@ -19,13 +21,15 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
        <tr>
          <td><label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
          <td><%= item['id'] %></td>
-         <td><%- item['name'] %></td>
+         <td><a href='/eksporty/<%= item['id'] %>'><%- item['name'] %></a></td>
          <td><a href='/eksporty/<%= item['id'] %>'><%= item['address_ftp'] %></a></td>
          <td><a href='/eksporty/<%= item['id'] %>'><%= item['branch_func'] %></a></td>
          <td><a href='/eksporty/<%= item['id'] %>'><%= item['login'] %></a></td>
          <td><a href='/eksporty/<%= item['id'] %>'><%= item['date_created_func'] %></a></td>
          <td><%= item['limit'] %></td>
          <td><a href='/eksporty/<%= item['id'] %>'><%= item['is_active_func'] %></a></td>
+         <th><a href="#" class="ui-btn" id='select_all_for_export' data-export='<%= item['id'] %>'>Zaznacz oferty</a></th>
+         <th><a href="#" class="ui-btn" id='delete_all_for_export' data-export='<%= item['id'] %>'>Usuń oferty</a></th>
        </tr>
       <% end %>
      </tbody>

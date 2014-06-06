@@ -232,12 +232,12 @@ module.exports = class ListView extends View
         # @collection = @params.collection
         @subview "items", new SubView template: @sub_template, collection: @collection
         @subview("items").render()
-        @publishEvent 'jqm_refersh:render'
+        @publishEvent('jqm_refersh:render')
 
     attach: =>
         super
         @publishEvent('log:info', 'view: list-view afterRender()')
-        @publishEvent 'jqm_refersh:render'
+        @publishEvent('jqm_refersh:render')
         @render_subview()
         @selects_refresh()
 
