@@ -22,6 +22,10 @@ module.exports = class Export extends Chaplin.Model
             if @get('branch') then localStorage.getObject('branches')["#{@get('branch')}"]
         date_created_func: ->
             @get('date_created').substr?(0,10)
+        next_export_func: ->
+            switch parseInt(@get('next_export'))
+                 when 0 then 'Pełny'
+                 when 1 then 'Przyrostowy'
         # image_type_func: ->
         #     switch parseInt(@get('image_type'))
         #          when 0 then 'logo'

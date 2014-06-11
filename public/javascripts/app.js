@@ -2002,6 +2002,14 @@ module.exports = Export = (function(_super) {
     date_created_func: function() {
       var _base;
       return typeof (_base = this.get('date_created')).substr === "function" ? _base.substr(0, 10) : void 0;
+    },
+    next_export_func: function() {
+      switch (parseInt(this.get('next_export'))) {
+        case 0:
+          return 'Pełny';
+        case 1:
+          return 'Przyrostowy';
+      }
     }
   };
 
@@ -2737,11 +2745,13 @@ module.exports = CollectionView = (function(_super) {
 });
 
 ;require.register("views/base/view", function(exports, require, module) {
-var View,
+var View, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 require('lib/view-helper');
+
+mediator = require('mediator');
 
 module.exports = View = (function(_super) {
 
@@ -2753,6 +2763,25 @@ module.exports = View = (function(_super) {
 
   View.prototype.getTemplateFunction = function() {
     return this.template;
+  };
+
+  View.prototype.mp_request = function(model, url, type, msg_success, msg_fail) {
+    var self,
+      _this = this;
+    self = this;
+    return $.ajax({
+      url: url,
+      beforeSend: function(xhr) {
+        return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token(url));
+      },
+      type: type,
+      success: function(data, textStatus, jqXHR) {
+        return self.publishEvent("tell_user", msg_success);
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        return self.publishEvent("tell_user", msg_fail || jqXHR.responseText || errorThrown);
+      }
+    });
   };
 
   return View;
@@ -3590,52 +3619,46 @@ module.exports = ExportListView = (function(_super) {
   function ExportListView() {
     this.attach = __bind(this.attach, this);
 
-    this.make_ajax_request = __bind(this.make_ajax_request, this);
-
     this.delete_all_for_export = __bind(this.delete_all_for_export, this);
 
     this.select_all_for_export = __bind(this.select_all_for_export, this);
+
+    this.set_full_export = __bind(this.set_full_export, this);
     return ExportListView.__super__.constructor.apply(this, arguments);
   }
 
   ExportListView.prototype.initialize = function(params) {
     ExportListView.__super__.initialize.apply(this, arguments);
+    this.delegate('click', "#set_full_export", this.set_full_export);
     this.delegate('click', "#select_all_for_export", this.select_all_for_export);
     this.delegate('click', "#delete_all_for_export", this.delete_all_for_export);
     return this.module_name = 'ExportListView';
   };
 
+  ExportListView.prototype.set_full_export = function(e) {
+    var url;
+    e.preventDefault();
+    this.model = this.collection_hard.get(e.target.dataset["export"]);
+    url = "" + this.model.urlRoot + "/" + e.target.dataset["export"] + "/pelny";
+    return this.mp_request(this.model, url, 'POST', 'Wszystkie oferty spełnające kryteria eksportu zostały zaznaczone');
+  };
+
   ExportListView.prototype.select_all_for_export = function(e) {
+    var url;
     this.publishEvent('log:info', "" + this.module_name + " select_all_for_export id:" + e.target.id + " data:" + e.target.dataset["export"]);
-    this.make_ajax_request(e, 'zaznacz', 'POST');
-    return e.preventDefault();
+    e.preventDefault();
+    this.model = this.collection_hard.get(e.target.dataset["export"]);
+    url = "" + this.model.urlRoot + "/" + e.target.dataset["export"] + "/zaznacz";
+    return this.mp_request(this.model, url, 'POST', 'Wszystkie oferty spełnające kryteria eksportu zostały zaznaczone');
   };
 
   ExportListView.prototype.delete_all_for_export = function(e) {
+    var url;
     this.publishEvent('log:info', "" + this.module_name + " delete_all_for_export id:" + e.target.id + " data:" + e.target.dataset["export"]);
     e.preventDefault();
-    return this.make_ajax_request(e, 'usun', 'POST');
-  };
-
-  ExportListView.prototype.make_ajax_request = function(e, action, request_type) {
-    var self, url,
-      _this = this;
     this.model = this.collection_hard.get(e.target.dataset["export"]);
-    url = "" + this.model.urlRoot + "/" + e.target.dataset["export"] + "/" + action;
-    self = this;
-    return $.ajax({
-      url: url,
-      beforeSend: function(xhr) {
-        return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token(url));
-      },
-      type: request_type,
-      success: function(data, textStatus, jqXHR) {
-        return self.publishEvent("tell_user", 'Wszystkie oferty spełnające kryteria eksportu zostały zaznaczone/usunięte');
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-        return self.publishEvent("tell_user", jqXHR.responseJSON.title || errorThrown);
-      }
-    });
+    url = "" + this.model.urlRoot + "/" + e.target.dataset["export"] + "/odznacz";
+    return this.mp_request(this.model, url, 'POST', 'Wszystkie oferty spełnające kryteria eksportu zostały odznaczone');
   };
 
   ExportListView.prototype.attach = function() {
@@ -5158,8 +5181,7 @@ module.exports = ListView = (function(_super) {
     this.delegate('change', "[data-query]", this.query_action);
     this.delegate('change', "#view-menu [data-filter]", this.filter_action);
     this.delegate('click', "[href='#list-table-popup']", this.open_column_popup);
-    this.publishEvent('log:debug', this.params);
-    return window.collection = this.collection_hard;
+    return this.publishEvent('log:debug', this.params);
   };
 
   ListView.prototype.open_column_popup = function(event) {
@@ -7205,7 +7227,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _len, _ref;
     
-      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th data-priority="6">ID</th>\n         <th>Nazwa&nbsp;&nbsp;</th>\n         <th>Adres ftp&nbsp;&nbsp;</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="5">Data&nbsp;&nbsp;</th>\n         <th data-priority="5">Limit ofert&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>\n         <th><abbr title="Dodaj <b>wszystkie</b> oferty do tego eksportu">Dodaj oferty</abbr>&nbsp;&nbsp;</th>\n         <th><abbr title="Usuń <b>wszystkie</b> oferty z tego eksportu">Usuń oferty</abbr>&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
+      __out.push('<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"\ndata-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >\n     <thead>\n       <tr class=\'th-groups\'>\n         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>\n         <th data-priority="6">ID</th>\n         <th>Nazwa&nbsp;&nbsp;</th>\n         <th>Adres ftp&nbsp;&nbsp;</th>\n         <th>Oddział&nbsp;&nbsp;</th>\n         <th data-priority="2">Login&nbsp;&nbsp;</th>\n         <th data-priority="5">Data&nbsp;&nbsp;</th>\n         <th data-priority="5">Limit ofert&nbsp;&nbsp;</th>\n         <th data-priority="5">Aktywny&nbsp;&nbsp;</th>\n         <th><abbr title="Typ następnego eksportu">Rodzaj eksportu</abbr>&nbsp;&nbsp;</th>\n         <th><abbr title="Dodaj wszystkie oferty do tego eksportu">Zaznacz oferty</abbr>&nbsp;&nbsp;</th>\n         <th><abbr title="Usuń wszystkie oferty z tego eksportu">Odznacz oferty</abbr>&nbsp;&nbsp;</th>\n       </tr>\n     </thead>\n     <tbody>\n      ');
     
       _ref = this.collection;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -7238,15 +7260,17 @@ module.exports = function (__obj) {
         __out.push(__sanitize(item['date_created_func']));
         __out.push('</a></td>\n         <td>');
         __out.push(__sanitize(item['limit']));
-        __out.push('</td>\n         <td><a href=\'/eksporty/');
+        __out.push('</td>\n         <td>');
+        __out.push(__sanitize(item['is_active_func']));
+        __out.push('</td>\n         <th><a href="#" class="ui-btn" id=\'set_full_export\' data-export=\'');
         __out.push(__sanitize(item['id']));
         __out.push('\'>');
-        __out.push(__sanitize(item['is_active_func']));
-        __out.push('</a></td>\n         <th><a href="#" class="ui-btn" id=\'select_all_for_export\' data-export=\'');
+        __out.push(__sanitize(item['next_export_func']));
+        __out.push('</a></th>\n         <th><a href="#" class="ui-btn" id=\'select_all_for_export\' data-export=\'');
         __out.push(__sanitize(item['id']));
         __out.push('\'>Zaznacz oferty</a></th>\n         <th><a href="#" class="ui-btn" id=\'delete_all_for_export\' data-export=\'');
         __out.push(__sanitize(item['id']));
-        __out.push('\'>Usuń oferty</a></th>\n       </tr>\n      ');
+        __out.push('\'>Odznacz oferty</a></th>\n       </tr>\n      ');
       }
     
       __out.push('\n     </tbody>\n</table>\n');
@@ -7943,7 +7967,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty?category=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty?category=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty?category=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty?category=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty?category=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty?category=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty?category=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty?category=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty?category=warehouse_rent"    >Hale Wynajem</a></li>\n                        <li><a href="/oferty?category=warehouse_sell"   >Hale Sprzedaż</a></li>\n                        <li><a href="/oferty?category=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty?category=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_rent"    >Hale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Hale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n                        <!--\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="/oferty?status=4" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=3" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=1" >Nieaktywna<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=5" >Sprzedana<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=6" >Wynajęta<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=7" >Umowa przedstępna<span class=\'ui-li-count\'>34</span></a> </li>\n                    </ul>\n                </div>\n                        -->\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a id=\'agent-config-link\' href="" >Dane Profilu</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="/grafiki" >Logo/Znaki wodne</a></li>\n                        <!--\n                        <li ><a href="" >Importy</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        -->\n                        <li ><a href="/eksporty" >Eksporty</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n   <!--\n   <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="http://www.oferty.malopolska.pl/" target="_blank" >OfertyMałopolska</a></li>\n                        <li><a href="http://www.gumtree.pl/" target="_blank" >Gumtree</a></li>\n                        <li><a href="http://www.tablica.pl/" target="_blank" >Tablica</a></li>\n                        <li><a href="http://dom.gratka.pl/" target="_blank" >Gratka</a></li>\n                        <li><a href="http://www.domiporta.pl/" target="_blank" >Domiporta</a></li>\n                        <li><a href="http://alegratka.pl/nieruchomosci/" target="_blank" >AleGratka</a></li>\n                        <li><a href="http://www.krn.pl/" target="_blank" >KRN</a></li>\n                        <li><a href="http://www.morizon.pl/" target="_blank" >Morizon</a></li>\n                        <li><a href="http://www.szybko.pl/" target="_blank" >Szybko</a></li>\n                        <li><a href="http://nieruchomosci.multiple.pl" target="_blank" >Multiple</a></li>\n                        <li><a href="http://oferty.net" target="_blank" >OfertyNet</a></li>\n                        <li><a href="http://otodom.pl" target="_blank" >Otodom</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n   -->\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="https://www.google.com/calendar/" target="_blank" >Kalendarz</a></li>\n                        <li><a href="https://maps.google.com/" target="_blank" >MapyGoogle</a></li>\n                        <li><a href="http://www.openstreetmap.org" target="_blank" >OpenStreet</a></li>\n                        <li><a href="/iframe/kw" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>\n                        <!--\n                        <li><a href="/iframe/calendar">Kalendarz</a></li>\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        -->\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" >Kalkulator kosztów</a></li>\n                        <!--\n                        <li><a href="http://pfrn.pl/" >PFRN</a></li>\n                        -->\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
+      __out.push('<!-- ##################################  PANEL -->\n\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>\n\t\t\t\t\t\t<li data-icon="home" > <a href="/" >Początek</a> </li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">\n                    <h4>Przeglądaj oferty</h4>\n                    <ul data-role="listview" >\n                        <li><a href="/oferty?category=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty?category=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty?category=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty?category=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty?category=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty?category=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty?category=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty?category=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty?category=warehouse_rent"    >Hale Wynajem</a></li>\n                        <li><a href="/oferty?category=warehouse_sell"   >Hale Sprzedaż</a></li>\n                        <li><a href="/oferty?category=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty?category=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n                <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">\n                    <h4>Dodaj ofertę</h4>\n                    <ul data-role="listview">\n                        <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=house_rent"    >Domy Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=house_sell"    >Domy Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=land_rent"    >Grunty Dzierżawa</a></li>\n                        <li><a href="/oferty/dodaj?type=land_sell"    >Grunty Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_rent"    >Lokale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=commercial_sell"    >Lokale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_rent"    >Hale Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=warehouse_sell"   >Hale Sprzedaż</a></li>\n                        <li><a href="/oferty/dodaj?type=object_rent"   >Obiekty Wynajem</a></li>\n                        <li><a href="/oferty/dodaj?type=object_sell"   >Obiekty Sprzedaż</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n                        <!--\n    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">\n                    <h3>Etykiety</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="" >Dodaj Etykietę</a></li>\n                        <li><a href="/oferty?status=4" >Robocze<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=3" >Archiwalne<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=1" >Nieaktywna<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=5" >Sprzedana<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=6" >Wynajęta<span class=\'ui-li-count\'>34</span></a> </li>\n                        <li><a href="/oferty?status=7" >Umowa przedstępna<span class=\'ui-li-count\'>34</span></a> </li>\n                    </ul>\n                </div>\n                        -->\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">\n                    <h3>Kontrahenci</h3>\n                    <ul data-role="listview" >\n                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>\n                        <li ><a href="/klienci" >Moi</a></li>\n                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">\n                    <h3>Ustawienia</h3>\n                    <ul data-role="listview" >\n                        <li ><a id=\'bon-config-link\' href="" >Dane Biura Nieruchomości</a></li>\n                        <li ><a id=\'agent-config-link\' href="" >Dane Profilu</a></li>\n                        <li ><a href="/agenci" >Agenci</a></li>\n                        <li ><a href="/oddzialy" >Oddziały</a></li>\n                        <li ><a href="/grafiki" >Logo/Znaki wodne</a></li>\n                        <!--\n                        <li ><a href="" >Importy</a></li>\n                        <li><a href="" >Portale zewnętrzne</a></li>\n                        -->\n                        <li ><a href="/eksporty" >Eksporty</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n   <!--\n   <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">\n                    <h3>Wyszukiwania</h3>\n                    <ul data-role="listview">\n                        <li data-role=\'list-divider\' >Portale Zewnętrzne </li>\n                        <li><a href="http://www.oferty.malopolska.pl/" target="_blank" >OfertyMałopolska</a></li>\n                        <li><a href="http://www.gumtree.pl/" target="_blank" >Gumtree</a></li>\n                        <li><a href="http://www.tablica.pl/" target="_blank" >Tablica</a></li>\n                        <li><a href="http://dom.gratka.pl/" target="_blank" >Gratka</a></li>\n                        <li><a href="http://www.domiporta.pl/" target="_blank" >Domiporta</a></li>\n                        <li><a href="http://alegratka.pl/nieruchomosci/" target="_blank" >AleGratka</a></li>\n                        <li><a href="http://www.krn.pl/" target="_blank" >KRN</a></li>\n                        <li><a href="http://www.morizon.pl/" target="_blank" >Morizon</a></li>\n                        <li><a href="http://www.szybko.pl/" target="_blank" >Szybko</a></li>\n                        <li><a href="http://nieruchomosci.multiple.pl" target="_blank" >Multiple</a></li>\n                        <li><a href="http://oferty.net" target="_blank" >OfertyNet</a></li>\n                        <li><a href="http://otodom.pl" target="_blank" >Otodom</a></li>\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n   -->\n    <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">\n                    <h3>Narzędzia</h3>\n                    <ul data-role="listview" >\n                        <li><a href="https://www.google.com/calendar/" target="_blank" >Kalendarz</a></li>\n                        <li><a href="https://maps.google.com/" target="_blank" >MapyGoogle</a></li>\n                        <li><a href="http://www.openstreetmap.org" target="_blank" >OpenStreet</a></li>\n                        <li><a href="/iframe/kw" >Księgi wieczyste</a></li>\n                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>\n                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>\n                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>\n                        <!--\n                        <li><a href="/iframe/calendar">Kalendarz</a></li>\n                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>\n                        -->\n                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" target="_blank">Kalkulator kosztów</a></li>\n                        <!--\n                        <li><a href="http://pfrn.pl/" >PFRN</a></li>\n                        -->\n                        <li data-role=\'list-divider\' > </li>\n                    </ul>\n                </div>\n\n\n<!-- ##################################  PANEL -->\n');
     
     }).call(this);
     

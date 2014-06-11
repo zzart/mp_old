@@ -41,7 +41,7 @@ module.exports = class ListView extends View
         #    $("#list-table-popup").popup('open')
         #table_create: (event) =>
         #    @publishEvent 'table_refresh'
-        window.collection = @collection_hard
+        # window.collection = @collection_hard
 
     open_column_popup:(event) =>
         @publishEvent("log:info", "coumn toggle popup")

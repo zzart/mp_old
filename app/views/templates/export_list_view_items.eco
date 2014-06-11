@@ -11,8 +11,9 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
          <th data-priority="5">Data&nbsp;&nbsp;</th>
          <th data-priority="5">Limit ofert&nbsp;&nbsp;</th>
          <th data-priority="5">Aktywny&nbsp;&nbsp;</th>
-         <th><abbr title="Dodaj <b>wszystkie</b> oferty do tego eksportu">Dodaj oferty</abbr>&nbsp;&nbsp;</th>
-         <th><abbr title="Usuń <b>wszystkie</b> oferty z tego eksportu">Usuń oferty</abbr>&nbsp;&nbsp;</th>
+         <th><abbr title="Typ następnego eksportu">Rodzaj eksportu</abbr>&nbsp;&nbsp;</th>
+         <th><abbr title="Dodaj wszystkie oferty do tego eksportu">Zaznacz oferty</abbr>&nbsp;&nbsp;</th>
+         <th><abbr title="Usuń wszystkie oferty z tego eksportu">Odznacz oferty</abbr>&nbsp;&nbsp;</th>
        </tr>
      </thead>
      <tbody>
@@ -27,9 +28,10 @@ data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Wybier
          <td><a href='/eksporty/<%= item['id'] %>'><%= item['login'] %></a></td>
          <td><a href='/eksporty/<%= item['id'] %>'><%= item['date_created_func'] %></a></td>
          <td><%= item['limit'] %></td>
-         <td><a href='/eksporty/<%= item['id'] %>'><%= item['is_active_func'] %></a></td>
+         <td><%= item['is_active_func'] %></td>
+         <th><a href="#" class="ui-btn" id='set_full_export' data-export='<%= item['id'] %>'><%= item['next_export_func'] %></a></th>
          <th><a href="#" class="ui-btn" id='select_all_for_export' data-export='<%= item['id'] %>'>Zaznacz oferty</a></th>
-         <th><a href="#" class="ui-btn" id='delete_all_for_export' data-export='<%= item['id'] %>'>Usuń oferty</a></th>
+         <th><a href="#" class="ui-btn" id='delete_all_for_export' data-export='<%= item['id'] %>'>Odznacz oferty</a></th>
        </tr>
       <% end %>
      </tbody>
