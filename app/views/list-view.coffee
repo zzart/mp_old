@@ -62,7 +62,7 @@ module.exports = class ListView extends View
         @publishEvent("log:info", "select action")
         #get all selected offers
         selected = $('#list-table>tbody input:checked')
-        console.log(selected)
+        # console.log(selected)
         self = @
         clean_after_action = (selected) =>
             #Once action is done clear selected items checkboxes
@@ -124,12 +124,27 @@ module.exports = class ListView extends View
                     # so @value is list item 'value' attribute
                     for i in selected
                         # TODO: this might take a while so we could do progress bar of some sorts....
-                        console.log(@value, i.id)
+                        # console.log(@value, i.id)
                         model = self.collection_hard.get(i.id)
                         # set (change:agent) will trigger sync on model
                         model.set('agent', @value)
                     self.render_subview()
                 clean_after_action(selected)
+
+            if event.target.value == 'wydruk-wewnetrzny' or  event.target.value == 'wydruk-klienta'
+                # get model
+                for item in selected
+                    model = @collection_hard.get(item.id)
+                    if event.target.value == 'wydruk-wewnetrzny'
+                        url = "#{model.urlRoot}/#{item.id}/#{mediator.models.user.get('company_name')}?private=true"
+                    if event.target.value == 'wydruk-klienta'
+                        url = "#{model.urlRoot}/#{item.id}/#{mediator.models.user.get('company_name')}?private=false"
+                        # NOTE: instead of doing ajax request we need to do window.location
+                        # and set the right db
+                        # Ajax would just swallow the response from serwer .....
+                    window.location = url
+                clean_after_action(selected)
+
 
         else
             @publishEvent 'tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)'

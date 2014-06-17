@@ -5203,11 +5203,10 @@ module.exports = ListView = (function(_super) {
   };
 
   ListView.prototype.select_action = function(event) {
-    var $ul, clean_after_action, k, selected, self, str, v, val, _ref,
+    var $ul, clean_after_action, item, k, model, selected, self, str, url, v, val, _i, _len, _ref,
       _this = this;
     this.publishEvent("log:info", "select action");
     selected = $('#list-table>tbody input:checked');
-    console.log(selected);
     self = this;
     clean_after_action = function(selected) {
       $('#list-table>tbody input:checkbox').prop('checked', false).checkboxradio("refresh");
@@ -5271,12 +5270,25 @@ module.exports = ListView = (function(_super) {
           $('#popgeneric').popup('close');
           for (_i = 0, _len = selected.length; _i < _len; _i++) {
             i = selected[_i];
-            console.log(this.value, i.id);
             model = self.collection_hard.get(i.id);
             model.set('agent', this.value);
           }
           return self.render_subview();
         });
+        clean_after_action(selected);
+      }
+      if (event.target.value === 'wydruk-wewnetrzny' || event.target.value === 'wydruk-klienta') {
+        for (_i = 0, _len = selected.length; _i < _len; _i++) {
+          item = selected[_i];
+          model = this.collection_hard.get(item.id);
+          if (event.target.value === 'wydruk-wewnetrzny') {
+            url = "" + model.urlRoot + "/" + item.id + "/" + (mediator.models.user.get('company_name')) + "?private=true";
+          }
+          if (event.target.value === 'wydruk-klienta') {
+            url = "" + model.urlRoot + "/" + item.id + "/" + (mediator.models.user.get('company_name')) + "?private=false";
+          }
+          window.location = url;
+        }
         return clean_after_action(selected);
       }
     } else {
@@ -8107,7 +8119,7 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.listing_type));
     
-      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="drukuj">Drukuj</option>\n            <option value="zmien_agenta">Zmień Agenta</option>\n            <option value="email">Email</option>\n            <option value="usun">Usuń</option>\n            <option value="eksport" disabled>Eksport do pliku</option>\n        </select>\n\n        <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="status-query" id="status-query" data-query=\'status\'>\n            <option selected disabled>Status</option>\n            <option value="">Wszystkie</option>\n            <option value="1">Aktywne</option>\n            <option value="0">Nieaktywne</option>\n            <option value="2">Archiwalne</option>\n            <option value="3">Robocze</option>\n            <option value="4">Sprzedane</option>\n            <option value="5">Wynajęte</option>\n            <option value="6">Umowa przedwstępna</option>\n            <option value="7">Usunięte</option>\n        </select>\n\n        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="agent-query" id="agent-query" data-query=\'agent\'>\n            <option selected disabled>Agent</option>\n            <option value="">Wszyscy</option>\n            ');
+      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="wydruk-wewnetrzny">Wydruk wewnętrzyny</option>\n            <option value="wydruk-klienta">Wydruk dla klienta</option>\n            <option value="zmien_agenta">Zmień Agenta</option>\n            <option value="email">Wyślij ofertę</option>\n            <option value="usun">Usuń</option>\n            <option value="eksport" disabled>Eksport do pliku</option>\n        </select>\n\n        <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="status-query" id="status-query" data-query=\'status\'>\n            <option selected disabled>Status</option>\n            <option value="">Wszystkie</option>\n            <option value="1">Aktywne</option>\n            <option value="0">Nieaktywne</option>\n            <option value="2">Archiwalne</option>\n            <option value="3">Robocze</option>\n            <option value="4">Sprzedane</option>\n            <option value="5">Wynajęte</option>\n            <option value="6">Umowa przedwstępna</option>\n            <option value="7">Usunięte</option>\n        </select>\n\n        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="agent-query" id="agent-query" data-query=\'agent\'>\n            <option selected disabled>Agent</option>\n            <option value="">Wszyscy</option>\n            ');
     
       _ref = this.agents;
       for (key in _ref) {

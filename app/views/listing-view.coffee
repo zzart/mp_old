@@ -37,9 +37,6 @@ module.exports = class AddView extends View
             @render()
             @render_subview()
 
-
-
-
     save_action: (url) =>
         super
         @publishEvent('log:info','commmit form')
