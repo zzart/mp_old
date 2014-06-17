@@ -102,6 +102,7 @@ module.exports = class ListView extends View
                                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
+                    self.render_subview()
                     #clean only after the CLICK event
                     clean_after_action(selected)
 
@@ -128,6 +129,63 @@ module.exports = class ListView extends View
                         model = self.collection_hard.get(i.id)
                         # set (change:agent) will trigger sync on model
                         model.set('agent', @value)
+                    # Remove click event !!!!!!!!!!!!!!!!!
+                    $(@).off('click')
+                    self.render_subview()
+                clean_after_action(selected)
+
+            # send email to client
+            if event.target.value == 'send-listing-client'
+                str = ""
+                for k,v of localStorage.getObject('clients')
+                    str = "#{str}<li value='#{k}'><a id='#{k}'>#{v}</a></li>"
+                val = "<h4>Wybierz Klienta</h4><br /><ul data-role='listview' id='client-choose'>#{str}</ul>"
+                try
+                    $('#popgeneric').html(val).enhanceWithin()
+                catch error
+                    @publishEvent("log:warn", error)
+                $('#popgeneric').popup('open',{ transition:"fade" })
+                # unbind is for stopping it firing multiple times
+                $("#client-choose li").unbind().click ->
+                    $('#popgeneric').popup('close')
+                    # inside click f() we can reference attributes of element on which click was established
+                    # so @value is list item 'value' attribute
+                    for item in selected
+                        # console.log(@value, i.id)
+                        model = self.collection_hard.get(item.id)
+                        url = "#{model.urlRoot}/#{item.id}/email/#{@value}?private=false"
+                        self.mp_request(model, url, 'GET', 'Email wysłany', 'Email nie został wysłany')
+                    # Remove click event !!!!!!!!!!!!!!!!!
+                    $(@).off('click')
+                    self.render_subview()
+                clean_after_action(selected)
+
+            if event.target.value == 'send-listing-address'
+                console.log(1)
+                form = '''
+                    <form>
+                    <label for="email_send" class="ui-hidden-accessible">Email:</label>
+                    <input name="email_send" id="email_send" placeholder="Wprowadź email" value="" type="text" />
+                    <button data-icon="mail" id="address_submit">Wyślij</button>
+                    </form>
+                '''
+                try
+                    $('#popgeneric').html(form).enhanceWithin()
+                catch error
+                    @publishEvent("log:warn", error)
+                $('#popgeneric').popup('open',{ transition:"fade" })
+                # # unbind is for stopping it firing multiple times
+                $("#address_submit").unbind().click (e)->
+                    e.preventDefault()
+                    $('#popgeneric').popup('close')
+                    # inside click f() we can reference attributes of element on which click was established
+                    # so @value is list item 'value' attribute
+                    for item in selected
+                        model = self.collection_hard.get(item.id)
+                        url = "#{model.urlRoot}/#{item.id}/email/#{$("#email_send").val()}?private=false"
+                        self.mp_request(model, url, 'GET', 'Email wysłany', 'Email nie został wysłany')
+                    # Remove click event !!!!!!!!!!!!!!!!!
+                    $(@).off('click')
                     self.render_subview()
                 clean_after_action(selected)
 
@@ -143,11 +201,14 @@ module.exports = class ListView extends View
                         # and set the right db
                         # Ajax would just swallow the response from serwer .....
                     window.location = url
+                    # Remove click event !!!!!!!!!!!!!!!!!
+                    $(@).off('click')
+                    self.render_subview()
                 clean_after_action(selected)
 
 
         else
-            @publishEvent 'tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)'
+            @publishEvent 'tell_user', 'Musisz zaznaczyć przynajmniej jeden element!'
             clean_after_action(selected)
 
     filter_action: (event) =>
@@ -182,7 +243,7 @@ module.exports = class ListView extends View
         @publishEvent('log:debug', key)
         @publishEvent('log:debug', value)
 
-        console.log(@filter)
+        # console.log(@filter)
         if _.isEmpty(@filter)
             #TODO: test this
             @render_subview()

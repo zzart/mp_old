@@ -5,11 +5,12 @@
 
         <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
         <select name="select-action" id="select-action">
-            <option selected disabled>Akcja</option>
+            <option selected value=''>Akcja</option>
             <option value="wydruk-wewnetrzny">Wydruk wewnętrzyny</option>
             <option value="wydruk-klienta">Wydruk dla klienta</option>
             <option value="zmien_agenta">Zmień Agenta</option>
-            <option value="email">Wyślij ofertę</option>
+            <option value="send-listing-client">Wyślij ofertę klientowi</option>
+            <option value="send-listing-address">Wyślij ofertę ...</option>
             <option value="usun">Usuń</option>
             <option value="eksport" disabled>Eksport do pliku</option>
         </select>

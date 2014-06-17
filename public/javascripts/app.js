@@ -5203,7 +5203,7 @@ module.exports = ListView = (function(_super) {
   };
 
   ListView.prototype.select_action = function(event) {
-    var $ul, clean_after_action, item, k, model, selected, self, str, url, v, val, _i, _len, _ref,
+    var $ul, clean_after_action, form, item, k, model, selected, self, str, url, v, val, _i, _len, _ref, _ref1,
       _this = this;
     this.publishEvent("log:info", "select action");
     selected = $('#list-table>tbody input:checked');
@@ -5244,6 +5244,7 @@ module.exports = ListView = (function(_super) {
             });
           }
           $(this).off('click');
+          self.render_subview();
           return clean_after_action(selected);
         });
       }
@@ -5273,6 +5274,63 @@ module.exports = ListView = (function(_super) {
             model = self.collection_hard.get(i.id);
             model.set('agent', this.value);
           }
+          $(this).off('click');
+          return self.render_subview();
+        });
+        clean_after_action(selected);
+      }
+      if (event.target.value === 'send-listing-client') {
+        str = "";
+        _ref1 = localStorage.getObject('clients');
+        for (k in _ref1) {
+          v = _ref1[k];
+          str = "" + str + "<li value='" + k + "'><a id='" + k + "'>" + v + "</a></li>";
+        }
+        val = "<h4>Wybierz Klienta</h4><br /><ul data-role='listview' id='client-choose'>" + str + "</ul>";
+        try {
+          $('#popgeneric').html(val).enhanceWithin();
+        } catch (error) {
+          this.publishEvent("log:warn", error);
+        }
+        $('#popgeneric').popup('open', {
+          transition: "fade"
+        });
+        $("#client-choose li").unbind().click(function() {
+          var item, model, url, _i, _len;
+          $('#popgeneric').popup('close');
+          for (_i = 0, _len = selected.length; _i < _len; _i++) {
+            item = selected[_i];
+            model = self.collection_hard.get(item.id);
+            url = "" + model.urlRoot + "/" + item.id + "/email/" + this.value + "?private=false";
+            self.mp_request(model, url, 'GET', 'Email wysłany', 'Email nie został wysłany');
+          }
+          $(this).off('click');
+          return self.render_subview();
+        });
+        clean_after_action(selected);
+      }
+      if (event.target.value === 'send-listing-address') {
+        console.log(1);
+        form = '<form>\n<label for="email_send" class="ui-hidden-accessible">Email:</label>\n<input name="email_send" id="email_send" placeholder="Wprowadź email" value="" type="text" />\n<button data-icon="mail" id="address_submit">Wyślij</button>\n</form>';
+        try {
+          $('#popgeneric').html(form).enhanceWithin();
+        } catch (error) {
+          this.publishEvent("log:warn", error);
+        }
+        $('#popgeneric').popup('open', {
+          transition: "fade"
+        });
+        $("#address_submit").unbind().click(function(e) {
+          var item, model, url, _i, _len;
+          e.preventDefault();
+          $('#popgeneric').popup('close');
+          for (_i = 0, _len = selected.length; _i < _len; _i++) {
+            item = selected[_i];
+            model = self.collection_hard.get(item.id);
+            url = "" + model.urlRoot + "/" + item.id + "/email/" + ($("#email_send").val()) + "?private=false";
+            self.mp_request(model, url, 'GET', 'Email wysłany', 'Email nie został wysłany');
+          }
+          $(this).off('click');
           return self.render_subview();
         });
         clean_after_action(selected);
@@ -5288,11 +5346,13 @@ module.exports = ListView = (function(_super) {
             url = "" + model.urlRoot + "/" + item.id + "/" + (mediator.models.user.get('company_name')) + "?private=false";
           }
           window.location = url;
+          $(this).off('click');
+          self.render_subview();
         }
         return clean_after_action(selected);
       }
     } else {
-      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element ;)');
+      this.publishEvent('tell_user', 'Musisz zaznaczyć przynajmniej jeden element!');
       return clean_after_action(selected);
     }
   };
@@ -5323,7 +5383,6 @@ module.exports = ListView = (function(_super) {
     }
     this.publishEvent('log:debug', key);
     this.publishEvent('log:debug', value);
-    console.log(this.filter);
     if (_.isEmpty(this.filter)) {
       return this.render_subview();
     } else {
@@ -8119,7 +8178,7 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.listing_type));
     
-      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected disabled>Akcja</option>\n            <option value="wydruk-wewnetrzny">Wydruk wewnętrzyny</option>\n            <option value="wydruk-klienta">Wydruk dla klienta</option>\n            <option value="zmien_agenta">Zmień Agenta</option>\n            <option value="email">Wyślij ofertę</option>\n            <option value="usun">Usuń</option>\n            <option value="eksport" disabled>Eksport do pliku</option>\n        </select>\n\n        <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="status-query" id="status-query" data-query=\'status\'>\n            <option selected disabled>Status</option>\n            <option value="">Wszystkie</option>\n            <option value="1">Aktywne</option>\n            <option value="0">Nieaktywne</option>\n            <option value="2">Archiwalne</option>\n            <option value="3">Robocze</option>\n            <option value="4">Sprzedane</option>\n            <option value="5">Wynajęte</option>\n            <option value="6">Umowa przedwstępna</option>\n            <option value="7">Usunięte</option>\n        </select>\n\n        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="agent-query" id="agent-query" data-query=\'agent\'>\n            <option selected disabled>Agent</option>\n            <option value="">Wszyscy</option>\n            ');
+      __out.push('\' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>\n\n        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>\n        <select name="select-action" id="select-action">\n            <option selected value=\'\'>Akcja</option>\n            <option value="wydruk-wewnetrzny">Wydruk wewnętrzyny</option>\n            <option value="wydruk-klienta">Wydruk dla klienta</option>\n            <option value="zmien_agenta">Zmień Agenta</option>\n            <option value="send-listing-client">Wyślij ofertę klientowi</option>\n            <option value="send-listing-address">Wyślij ofertę ...</option>\n            <option value="usun">Usuń</option>\n            <option value="eksport" disabled>Eksport do pliku</option>\n        </select>\n\n        <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="status-query" id="status-query" data-query=\'status\'>\n            <option selected disabled>Status</option>\n            <option value="">Wszystkie</option>\n            <option value="1">Aktywne</option>\n            <option value="0">Nieaktywne</option>\n            <option value="2">Archiwalne</option>\n            <option value="3">Robocze</option>\n            <option value="4">Sprzedane</option>\n            <option value="5">Wynajęte</option>\n            <option value="6">Umowa przedwstępna</option>\n            <option value="7">Usunięte</option>\n        </select>\n\n        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>\n        <select name="agent-query" id="agent-query" data-query=\'agent\'>\n            <option selected disabled>Agent</option>\n            <option value="">Wszyscy</option>\n            ');
     
       _ref = this.agents;
       for (key in _ref) {
