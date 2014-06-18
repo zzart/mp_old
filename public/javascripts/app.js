@@ -8289,25 +8289,25 @@ module.exports = function (__obj) {
         if (item['town']) {
           __out.push('\n                ');
           __out.push(__sanitize(item['town']));
-          __out.push('\n            ');
+          __out.push('&nbsp;\n            ');
         }
         __out.push('\n            ');
         if (item['street']) {
-          __out.push('\n                ,');
+          __out.push('\n                ');
           __out.push(__sanitize(item['street']));
-          __out.push('\n            ');
+          __out.push('&nbsp;\n            ');
         }
         __out.push('\n            ');
         if (item['number']) {
-          __out.push('\n                &nbsp;');
+          __out.push('\n                ');
           __out.push(__sanitize(item['number']));
-          __out.push('\n            ');
+          __out.push('&nbsp;\n            ');
         }
         __out.push('\n            ');
         if (item['street_district']) {
-          __out.push('\n                ,');
+          __out.push('\n                ');
           __out.push(__sanitize(item['street_district']));
-          __out.push('\n            ');
+          __out.push('&nbsp;\n            ');
         }
         __out.push('\n            </td>\n         <td>');
         __out.push(__sanitize(item['client_func']));

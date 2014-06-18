@@ -28,16 +28,16 @@ data-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz
          <td><%= item['agent_func'] %></td>
          <td><a href='/oferty/<%= item['id'] %>'>
             <% if item['town']: %>
-                <%= item['town'] %>
+                <%= item['town'] %>&nbsp;
             <% end %>
             <% if item['street']: %>
-                ,<%= item['street'] %>
+                <%= item['street'] %>&nbsp;
             <% end %>
             <% if item['number']: %>
-                &nbsp;<%= item['number'] %>
+                <%= item['number'] %>&nbsp;
             <% end %>
             <% if item['street_district']: %>
-                ,<%= item['street_district'] %>
+                <%= item['street_district'] %>&nbsp;
             <% end %>
             </td>
          <td><%= item['client_func'] %></td>
