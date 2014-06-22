@@ -2,10 +2,13 @@ mediator =  require 'mediator'
 module.exports = class Layout extends Chaplin.Layout
     initialize: ->
         super
-        # TODO: logging decide what to do !
-        @log = log4javascript.getDefaultLogger()
-        # ajaxAppender = new log4javascript.AjaxAppender('http://localhost:8080/logging')
-        # @log.addAppender(ajaxAppender)
+        if mediator.online
+            @log = console
+        else
+            @log = console
+            #@log = log4javascript.getDefaultLogger()
+            #ajaxAppender = new log4javascript.AjaxAppender("#{mediator.server_url}/logging")
+            #@log.addAppender(ajaxAppender)
         @log.info('layout init')
         jqm = true
 

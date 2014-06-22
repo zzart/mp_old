@@ -223,7 +223,7 @@ var Form = Backbone.View.extend({
       //Add them
       _.each(keys, function(key) {
         var field = fields[key];
-        console.log(key);
+        //console.log(key);
 
         $container.append(field.render().el);
       });

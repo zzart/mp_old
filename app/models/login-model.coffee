@@ -1,5 +1,8 @@
+mediator = require 'mediator'
+
 module.exports = class Login extends Chaplin.Model
-    url: 'http://localhost:8080/v1/login'
+    #url: 'http://localhost:8080/v1/login'
+    url: "#{mediator.server_url}v1/login"
     update_db: =>
         localStorage.clear() #clear old rubbish
         for key, val of @.get('schemas')

@@ -3857,7 +3857,7 @@
 
   return require('chai');
 });
-;;(function(){
+;(function(){
 
 
 // CommonJS require()
@@ -8857,7 +8857,7 @@ process.on = function(e, fn){
 })();
 })();
 
-;/**
+/**
  * Sinon.JS 1.5.2, 2012/11/27
  *
  * @author Christian Johansen (christian@cjohansen.no)
@@ -13011,7 +13011,7 @@ if (typeof module == "object" && typeof require == "function") {
 
 return sinon;}.call(typeof window != 'undefined' && window || {}));
 
-;(function (sinonChai) {
+(function (sinonChai) {
     "use strict";
 
     // Module systems magic dance.
@@ -13118,11 +13118,11 @@ return sinon;}.call(typeof window != 'undefined' && window || {}));
     exceptionalSinonMethod("thrown", "threw", "thrown %1");
 }));
 
-;// Create `window.describe` etc. for our BDD-like tests.
+// Create `window.describe` etc. for our BDD-like tests.
 mocha.setup({ui: 'bdd'});
 
 // Create another global variable for simpler syntax.
 window.expect = chai.expect;
 
-;
+
 //# sourceMappingURL=test-vendor.js.map

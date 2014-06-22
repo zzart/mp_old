@@ -1,8 +1,10 @@
 Model = require 'models/export-model'
+mediator = require 'mediator'
 
 module.exports = class ExportList extends Chaplin.Collection
     model: Model
-    url: 'http://localhost:8080/v1/eksporty'
+    #url: 'http://localhost:8080/v1/eksporty'
+    url: "#{mediator.server_url}v1/eksporty"
     #initialize: ->
     #    @on('change', @onChange)
     #    @on('add', @onAdd)

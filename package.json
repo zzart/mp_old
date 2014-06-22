@@ -18,10 +18,8 @@
   "dependencies": {
     "javascript-brunch": ">= 1.0 < 1.6",
     "coffee-script-brunch": ">= 1.0 < 1.6",
-
     "css-brunch": ">= 1.0 < 1.6",
-    "less-brunch":      ">= 1.0 < 1.4",
-
+    "less-brunch": ">= 1.0 < 1.4",
     "uglify-js-brunch": ">= 1.0 < 1.6",
     "clean-css-brunch": ">= 1.0 < 1.6",
     "eco-brunch": ">= 1.0 < 1.4"
@@ -29,6 +27,7 @@
   "devDependencies": {
     "chai": "1.2.0",
     "sinon": "1.4.2",
-    "sinon-chai": "2.1.2"
+    "sinon-chai": "2.1.2",
+    "dotenv": "~0.2.8"
   }
 }

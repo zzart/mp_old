@@ -23,7 +23,7 @@ module.exports = class RefreshController extends Controller
             success: =>
                 @publishEvent('log:info', "data with #{params.model}_#{params.type} fetched ok" )
                 #NOTE: @model.get() doesn't work here as returned is an object
-                console.log(@model.attributes, @model.attributes[params.type])
+                #console.log(@model.attributes, @model.attributes[params.type])
                 if _.isObject(@model.attributes[params.type]["#{params.model}_#{params.type}"])
                     localStorage.setObject("#{params.model}_#{params.type}",
                     @model.attributes[params.type]["#{params.model}_#{params.type}"])

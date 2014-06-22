@@ -7,7 +7,8 @@ module.exports = class ListingList extends Chaplin.Collection
         @query_add(@query_defaults())
 
     model: Model
-    url: 'http://localhost:8080/v1/oferty'
+    #url: 'http://localhost:8080/v1/oferty'
+    url: "#{mediator.server_url}v1/oferty"
 
     query_defaults: ->
         branch: mediator.models.user.get('branch_id')

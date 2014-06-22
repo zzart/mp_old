@@ -35,16 +35,23 @@ Backbone.sync = (method, model, options) ->
     # console.log('options data: ',  options.data )
     # console.log('is new?:',  model.isNew?())
     $.mobile.loading('show')
+    self = @
     #$.mobile.loading('show')
     # -------- let's find general hook event for recieving request
     # lets do this once logged in
     if Chaplin.mediator.models.user?.get('is_logged')
         # check if we have a collection wirh url or model with urlRoot
         if model.urlRoot
-            if model.isNew()
-                url = model.urlRoot
+            #check if urlRoot is a function !
+            if _.isFunction(model.urlRoot)
+                clean_url = model.urlRoot()
             else
-                url = "#{model.urlRoot}/#{model.id}"
+                clean_url = model.urlRoot
+
+            if model.isNew()
+                url = clean_url
+            else
+                url = "#{clean_url}/#{model.id}"
         else
             url = model.url
         if not _.isEmpty(options.data)
@@ -68,6 +75,6 @@ Backbone.sync = (method, model, options) ->
     request.fail((jqXHR, textStatus) ->
         console.log(jqXHR, textStatus)
         $.mobile.loading('hide')
-        @publishEvent('tell_user', "Błąd #{jqXHR}, #{textStatus}")
+        self.publishEvent('tell_user', "Błąd #{jqXHR}, #{textStatus}")
     )
 #AUTH -----------------------------------------------------------------------

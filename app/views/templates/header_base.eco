@@ -1,9 +1,9 @@
     <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-left">
-        <a href='#left-panel' class='ui-btn ui-icon-grid ui-btn-icon-left' data-theme="b">Menu</a>
+        <a href='#left-panel' class='ui-btn ui-icon-bars ui-btn-icon-left' data-theme="b"></a>
         <button data-rel="popup" data-transition="pop" data-iconpos="notext" id='viewed-btn' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-eye ui-btn-icon-notext">Icon only</button>
     </div>
 
-    <h1>Mobilny Pośrednik</h1>
+    <h1>MP</h1>
 
     <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">
         <button data-rel="popup" data-transition="pop" data-iconpos="notext" id='account-status-btn' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-shop ui-btn-icon-notext">Icon only</button>

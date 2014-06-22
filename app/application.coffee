@@ -67,13 +67,18 @@ module.exports = class Application extends Chaplin.Application
   initMediator: ->
     # Add additional application-specific properties and methods
     # e.g. mediator.prop = null
+    mediator.online = true
     mediator.models = {}
     mediator.collections = {}
     mediator.schemas = {}
     mediator.last_query = {}
     mediator.info = []
     mediator.viewed = []
-    mediator.server_url = 'http://localhost:8080/'
+    if mediator.online is true
+        mediator.server_url = 'http://mps.mobilnyposrednik.pl/'
+    else
+        mediator.server_url = 'http://localhost:8080/'
+    console.log(mediator.server_url)
     mediator.upload_url = "#{mediator.server_url}v1/pliki"
     mediator.app_key = 'mp'
     mediator.app = '4ba2b78a-5675-42d9-8aab-f65ecf3ce9ba'

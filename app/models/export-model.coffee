@@ -1,6 +1,8 @@
 mediator = require 'mediator'
+
 module.exports = class Export extends Chaplin.Model
-    urlRoot: 'http://localhost:8080/v1/eksporty'
+    #urlRoot: 'http://localhost:8080/v1/eksporty'
+    urlRoot: "#{mediator.server_url}v1/eksporty"
     schema: {}
     get: (attr) ->
         value = Backbone.Model::get.call(this, attr)

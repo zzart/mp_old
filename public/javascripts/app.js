@@ -137,13 +137,19 @@ module.exports = Application = (function(_super) {
 
   Application.prototype.initMediator = function() {
     var _this = this;
+    mediator.online = true;
     mediator.models = {};
     mediator.collections = {};
     mediator.schemas = {};
     mediator.last_query = {};
     mediator.info = [];
     mediator.viewed = [];
-    mediator.server_url = 'http://localhost:8080/';
+    if (mediator.online === true) {
+      mediator.server_url = 'http://mps.mobilnyposrednik.pl/';
+    } else {
+      mediator.server_url = 'http://localhost:8080/';
+    }
+    console.log(mediator.server_url);
     mediator.upload_url = "" + mediator.server_url + "v1/pliki";
     mediator.app_key = 'mp';
     mediator.app = '4ba2b78a-5675-42d9-8aab-f65ecf3ce9ba';
@@ -174,7 +180,7 @@ module.exports = Application = (function(_super) {
 
 });
 
-;require.register("controllers/agent-controller", function(exports, require, module) {
+require.register("controllers/agent-controller", function(exports, require, module) {
 var AgentController, Collection, Controller, EditView, ListView, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -343,7 +349,7 @@ module.exports = AgentController = (function(_super) {
 
 });
 
-;require.register("controllers/auth-controller", function(exports, require, module) {
+require.register("controllers/auth-controller", function(exports, require, module) {
 var AuthController, StructureController, mediator, _sync,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -381,14 +387,20 @@ module.exports = AuthController = (function(_super) {
 _sync = Backbone.sync;
 
 Backbone.sync = function(method, model, options) {
-  var hash, params, request, url, _ref;
+  var clean_url, hash, params, request, self, url, _ref;
   $.mobile.loading('show');
+  self = this;
   if ((_ref = Chaplin.mediator.models.user) != null ? _ref.get('is_logged') : void 0) {
     if (model.urlRoot) {
-      if (model.isNew()) {
-        url = model.urlRoot;
+      if (_.isFunction(model.urlRoot)) {
+        clean_url = model.urlRoot();
       } else {
-        url = "" + model.urlRoot + "/" + model.id;
+        clean_url = model.urlRoot;
+      }
+      if (model.isNew()) {
+        url = clean_url;
+      } else {
+        url = "" + clean_url + "/" + model.id;
       }
     } else {
       url = model.url;
@@ -409,13 +421,13 @@ Backbone.sync = function(method, model, options) {
   return request.fail(function(jqXHR, textStatus) {
     console.log(jqXHR, textStatus);
     $.mobile.loading('hide');
-    return this.publishEvent('tell_user', "Błąd " + jqXHR + ", " + textStatus);
+    return self.publishEvent('tell_user', "Błąd " + jqXHR + ", " + textStatus);
   });
 };
 
 });
 
-;require.register("controllers/base/controller", function(exports, require, module) {
+require.register("controllers/base/controller", function(exports, require, module) {
 var Controller,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -434,7 +446,7 @@ module.exports = Controller = (function(_super) {
 
 });
 
-;require.register("controllers/bon-controller", function(exports, require, module) {
+require.register("controllers/bon-controller", function(exports, require, module) {
 var BonController, Controller, Model, View, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -503,7 +515,7 @@ module.exports = BonController = (function(_super) {
 
 });
 
-;require.register("controllers/branch-controller", function(exports, require, module) {
+require.register("controllers/branch-controller", function(exports, require, module) {
 var BranchController, Collection, Controller, ListView, Model, View, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -596,7 +608,7 @@ module.exports = BranchController = (function(_super) {
 
 });
 
-;require.register("controllers/client-controller", function(exports, require, module) {
+require.register("controllers/client-controller", function(exports, require, module) {
 var ClientListController, ClientView, Collection, Controller, ListView, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -688,7 +700,7 @@ module.exports = ClientListController = (function(_super) {
 
 });
 
-;require.register("controllers/client-public-controller", function(exports, require, module) {
+require.register("controllers/client-public-controller", function(exports, require, module) {
 var ClientPublicController, ClientView, Collection, Controller, ListView, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -763,7 +775,7 @@ module.exports = ClientPublicController = (function(_super) {
 
 });
 
-;require.register("controllers/export-controller", function(exports, require, module) {
+require.register("controllers/export-controller", function(exports, require, module) {
 var Collection, Controller, ExportController, ListView, Model, View, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -855,7 +867,7 @@ module.exports = ExportController = (function(_super) {
 
 });
 
-;require.register("controllers/graphic-controller", function(exports, require, module) {
+require.register("controllers/graphic-controller", function(exports, require, module) {
 var Collection, Controller, GraphicController, ListView, Model, View, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -947,7 +959,7 @@ module.exports = GraphicController = (function(_super) {
 
 });
 
-;require.register("controllers/header-controller", function(exports, require, module) {
+require.register("controllers/header-controller", function(exports, require, module) {
 var Controller, HeaderController, HeaderView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -975,7 +987,7 @@ module.exports = HeaderController = (function(_super) {
 
 });
 
-;require.register("controllers/home-controller", function(exports, require, module) {
+require.register("controllers/home-controller", function(exports, require, module) {
 var Controller, HomeController, HomePageView, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1007,7 +1019,7 @@ module.exports = HomeController = (function(_super) {
 
 });
 
-;require.register("controllers/iframe-controller", function(exports, require, module) {
+require.register("controllers/iframe-controller", function(exports, require, module) {
 var Controller, IFrameController, View, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1040,7 +1052,7 @@ module.exports = IFrameController = (function(_super) {
 
 });
 
-;require.register("controllers/listing-controller", function(exports, require, module) {
+require.register("controllers/listing-controller", function(exports, require, module) {
 var Collection, Controller, ListView, ListingController, Model, View, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1169,14 +1181,14 @@ module.exports = ListingController = (function(_super) {
 
 });
 
-;require.register("controllers/login-controller", function(exports, require, module) {
+require.register("controllers/login-controller", function(exports, require, module) {
 var LoginController, LoginView, Model, StructureController, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 StructureController = require('controllers/structure-controller');
 
-LoginView = require('views/autologin-view');
+LoginView = require('views/login-view');
 
 Model = require('models/login-model');
 
@@ -1204,7 +1216,7 @@ module.exports = LoginController = (function(_super) {
 
 });
 
-;require.register("controllers/refresh-controller", function(exports, require, module) {
+require.register("controllers/refresh-controller", function(exports, require, module) {
 var Controller, Model, RefreshController, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -1243,7 +1255,6 @@ module.exports = RefreshController = (function(_super) {
       data: params,
       success: function() {
         _this.publishEvent('log:info', "data with " + params.model + "_" + params.type + " fetched ok");
-        console.log(_this.model.attributes, _this.model.attributes[params.type]);
         if (_.isObject(_this.model.attributes[params.type]["" + params.model + "_" + params.type])) {
           localStorage.setObject("" + params.model + "_" + params.type, _this.model.attributes[params.type]["" + params.model + "_" + params.type]);
           return typeof _this.callback === "function" ? _this.callback() : void 0;
@@ -1294,7 +1305,7 @@ module.exports = RefreshController = (function(_super) {
 
 });
 
-;require.register("controllers/single-refresh-controller", function(exports, require, module) {
+require.register("controllers/single-refresh-controller", function(exports, require, module) {
 var Controller, Model, SingleRefreshController, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -1346,7 +1357,7 @@ module.exports = SingleRefreshController = (function(_super) {
 
 });
 
-;require.register("controllers/structure-controller", function(exports, require, module) {
+require.register("controllers/structure-controller", function(exports, require, module) {
 var ConfirmView, Controller, Footer, Header, InfoView, LeftPanelView, ListFooter, NavFooter, PopGenericView, StructureController, StructureView, ViewedView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1427,7 +1438,7 @@ module.exports = StructureController = (function(_super) {
 
 });
 
-;require.register("initialize", function(exports, require, module) {
+require.register("initialize", function(exports, require, module) {
 var Application, routes;
 
 Application = require('application');
@@ -1452,7 +1463,7 @@ $(function() {
 
 });
 
-;require.register("lib/support", function(exports, require, module) {
+require.register("lib/support", function(exports, require, module) {
 var Chaplin, support, utils;
 
 Chaplin = require('chaplin');
@@ -1465,7 +1476,7 @@ module.exports = support;
 
 });
 
-;require.register("lib/utils", function(exports, require, module) {
+require.register("lib/utils", function(exports, require, module) {
 var Chaplin, utils;
 
 Chaplin = require('chaplin');
@@ -1476,26 +1487,28 @@ module.exports = utils;
 
 });
 
-;require.register("lib/view-helper", function(exports, require, module) {
+require.register("lib/view-helper", function(exports, require, module) {
 var mediator;
 
 mediator = require('mediator');
 
 });
 
-;require.register("mediator", function(exports, require, module) {
+require.register("mediator", function(exports, require, module) {
 var mediator;
 
 mediator = module.exports = Chaplin.mediator;
 
 });
 
-;require.register("models/agent-collection", function(exports, require, module) {
-var AgentList, Model,
+require.register("models/agent-collection", function(exports, require, module) {
+var AgentList, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Model = require('models/agent-model');
+
+mediator = require('mediator');
 
 module.exports = AgentList = (function(_super) {
 
@@ -1507,7 +1520,7 @@ module.exports = AgentList = (function(_super) {
 
   AgentList.prototype.model = Model;
 
-  AgentList.prototype.url = 'http://localhost:8080/v1/agenci';
+  AgentList.prototype.url = "" + mediator.server_url + "v1/agenci";
 
   return AgentList;
 
@@ -1515,7 +1528,7 @@ module.exports = AgentList = (function(_super) {
 
 });
 
-;require.register("models/agent-model", function(exports, require, module) {
+require.register("models/agent-model", function(exports, require, module) {
 var Agent, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1530,7 +1543,7 @@ module.exports = Agent = (function(_super) {
     return Agent.__super__.constructor.apply(this, arguments);
   }
 
-  Agent.prototype.urlRoot = 'http://localhost:8080/v1/agenci';
+  Agent.prototype.urlRoot = "" + mediator.server_url + "v1/agenci";
 
   Agent.prototype.schema = {};
 
@@ -1601,7 +1614,7 @@ module.exports = Agent = (function(_super) {
 
 });
 
-;require.register("models/base/collection", function(exports, require, module) {
+require.register("models/base/collection", function(exports, require, module) {
 var Chaplin, Collection, Model,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1626,7 +1639,7 @@ module.exports = Collection = (function(_super) {
 
 });
 
-;require.register("models/base/model", function(exports, require, module) {
+require.register("models/base/model", function(exports, require, module) {
 var Chaplin, Model,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1647,7 +1660,7 @@ module.exports = Model = (function(_super) {
 
 });
 
-;require.register("models/bon-model", function(exports, require, module) {
+require.register("models/bon-model", function(exports, require, module) {
 var Bon, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1662,7 +1675,7 @@ module.exports = Bon = (function(_super) {
     return Bon.__super__.constructor.apply(this, arguments);
   }
 
-  Bon.prototype.urlRoot = 'http://localhost:8080/v1/biura';
+  Bon.prototype.urlRoot = "" + mediator.server_url + "v1/biura";
 
   Bon.prototype.schema = {};
 
@@ -1698,12 +1711,14 @@ module.exports = Bon = (function(_super) {
 
 });
 
-;require.register("models/branch-collection", function(exports, require, module) {
-var BranchList, Model,
+require.register("models/branch-collection", function(exports, require, module) {
+var BranchList, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Model = require('models/branch-model');
+
+mediator = require('mediator');
 
 module.exports = BranchList = (function(_super) {
 
@@ -1715,7 +1730,7 @@ module.exports = BranchList = (function(_super) {
 
   BranchList.prototype.model = Model;
 
-  BranchList.prototype.url = 'http://localhost:8080/v1/oddzialy';
+  BranchList.prototype.url = "" + mediator.server_url + "v1/oddzialy";
 
   return BranchList;
 
@@ -1723,7 +1738,7 @@ module.exports = BranchList = (function(_super) {
 
 });
 
-;require.register("models/branch-model", function(exports, require, module) {
+require.register("models/branch-model", function(exports, require, module) {
 var Branch, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1738,7 +1753,7 @@ module.exports = Branch = (function(_super) {
     return Branch.__super__.constructor.apply(this, arguments);
   }
 
-  Branch.prototype.urlRoot = 'http://localhost:8080/v1/oddzialy';
+  Branch.prototype.urlRoot = "" + mediator.server_url + "v1/oddzialy";
 
   Branch.prototype.schema = {};
 
@@ -1784,12 +1799,14 @@ module.exports = Branch = (function(_super) {
 
 });
 
-;require.register("models/client-collection", function(exports, require, module) {
-var ClientList, Model,
+require.register("models/client-collection", function(exports, require, module) {
+var ClientList, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Model = require('models/client-model');
+
+mediator = require('mediator');
 
 module.exports = ClientList = (function(_super) {
 
@@ -1801,7 +1818,7 @@ module.exports = ClientList = (function(_super) {
 
   ClientList.prototype.model = Model;
 
-  ClientList.prototype.url = 'http://localhost:8080/v1/klienci';
+  ClientList.prototype.url = "" + mediator.server_url + "v1/klienci";
 
   return ClientList;
 
@@ -1809,7 +1826,7 @@ module.exports = ClientList = (function(_super) {
 
 });
 
-;require.register("models/client-model", function(exports, require, module) {
+require.register("models/client-model", function(exports, require, module) {
 var Client, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1824,7 +1841,7 @@ module.exports = Client = (function(_super) {
     return Client.__super__.constructor.apply(this, arguments);
   }
 
-  Client.prototype.urlRoot = 'http://localhost:8080/v1/klienci';
+  Client.prototype.urlRoot = "" + mediator.server_url + "v1/klienci";
 
   Client.prototype.schema = {};
 
@@ -1906,12 +1923,14 @@ module.exports = Client = (function(_super) {
 
 });
 
-;require.register("models/client-public-collection", function(exports, require, module) {
-var ClientList, Model,
+require.register("models/client-public-collection", function(exports, require, module) {
+var ClientList, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Model = require('models/client-model');
+
+mediator = require('mediator');
 
 module.exports = ClientList = (function(_super) {
 
@@ -1923,7 +1942,7 @@ module.exports = ClientList = (function(_super) {
 
   ClientList.prototype.model = Model;
 
-  ClientList.prototype.url = 'http://localhost:8080/v1/klienci-wspolni';
+  ClientList.prototype.url = "" + mediator.server_url + "v1/klienci-wspolni";
 
   return ClientList;
 
@@ -1931,12 +1950,14 @@ module.exports = ClientList = (function(_super) {
 
 });
 
-;require.register("models/export-collection", function(exports, require, module) {
-var ExportList, Model,
+require.register("models/export-collection", function(exports, require, module) {
+var ExportList, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Model = require('models/export-model');
+
+mediator = require('mediator');
 
 module.exports = ExportList = (function(_super) {
 
@@ -1948,7 +1969,7 @@ module.exports = ExportList = (function(_super) {
 
   ExportList.prototype.model = Model;
 
-  ExportList.prototype.url = 'http://localhost:8080/v1/eksporty';
+  ExportList.prototype.url = "" + mediator.server_url + "v1/eksporty";
 
   return ExportList;
 
@@ -1956,7 +1977,7 @@ module.exports = ExportList = (function(_super) {
 
 });
 
-;require.register("models/export-model", function(exports, require, module) {
+require.register("models/export-model", function(exports, require, module) {
 var Export, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1971,7 +1992,7 @@ module.exports = Export = (function(_super) {
     return Export.__super__.constructor.apply(this, arguments);
   }
 
-  Export.prototype.urlRoot = 'http://localhost:8080/v1/eksporty';
+  Export.prototype.urlRoot = "" + mediator.server_url + "v1/eksporty";
 
   Export.prototype.schema = {};
 
@@ -2064,12 +2085,14 @@ module.exports = Export = (function(_super) {
 
 });
 
-;require.register("models/graphic-collection", function(exports, require, module) {
-var GraphicList, Model,
+require.register("models/graphic-collection", function(exports, require, module) {
+var GraphicList, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Model = require('models/graphic-model');
+
+mediator = require('mediator');
 
 module.exports = GraphicList = (function(_super) {
 
@@ -2081,7 +2104,7 @@ module.exports = GraphicList = (function(_super) {
 
   GraphicList.prototype.model = Model;
 
-  GraphicList.prototype.url = 'http://localhost:8080/v1/grafiki';
+  GraphicList.prototype.url = "" + mediator.server_url + "v1/grafiki";
 
   return GraphicList;
 
@@ -2089,7 +2112,7 @@ module.exports = GraphicList = (function(_super) {
 
 });
 
-;require.register("models/graphic-model", function(exports, require, module) {
+require.register("models/graphic-model", function(exports, require, module) {
 var Graphic, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2104,7 +2127,7 @@ module.exports = Graphic = (function(_super) {
     return Graphic.__super__.constructor.apply(this, arguments);
   }
 
-  Graphic.prototype.urlRoot = 'http://localhost:8080/v1/grafiki';
+  Graphic.prototype.urlRoot = "" + mediator.server_url + "v1/grafiki";
 
   Graphic.prototype.schema = {};
 
@@ -2189,7 +2212,7 @@ module.exports = Graphic = (function(_super) {
 
 });
 
-;require.register("models/listing-collection", function(exports, require, module) {
+require.register("models/listing-collection", function(exports, require, module) {
 var ListingList, Model, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2213,7 +2236,7 @@ module.exports = ListingList = (function(_super) {
 
   ListingList.prototype.model = Model;
 
-  ListingList.prototype.url = 'http://localhost:8080/v1/oferty';
+  ListingList.prototype.url = "" + mediator.server_url + "v1/oferty";
 
   ListingList.prototype.query_defaults = function() {
     return {
@@ -2237,10 +2260,12 @@ module.exports = ListingList = (function(_super) {
 
 });
 
-;require.register("models/listing-model", function(exports, require, module) {
-var Listing,
+require.register("models/listing-model", function(exports, require, module) {
+var Listing, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+mediator = require('mediator');
 
 module.exports = Listing = (function(_super) {
 
@@ -2250,7 +2275,7 @@ module.exports = Listing = (function(_super) {
     return Listing.__super__.constructor.apply(this, arguments);
   }
 
-  Listing.prototype.urlRoot = 'http://localhost:8080/v1/oferty';
+  Listing.prototype.urlRoot = "" + mediator.server_url + "v1/oferty";
 
   Listing.prototype.schema = {};
 
@@ -2369,11 +2394,13 @@ module.exports = Listing = (function(_super) {
 
 });
 
-;require.register("models/login-model", function(exports, require, module) {
-var Login,
+require.register("models/login-model", function(exports, require, module) {
+var Login, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+mediator = require('mediator');
 
 module.exports = Login = (function(_super) {
 
@@ -2384,7 +2411,7 @@ module.exports = Login = (function(_super) {
     return Login.__super__.constructor.apply(this, arguments);
   }
 
-  Login.prototype.url = 'http://localhost:8080/v1/login';
+  Login.prototype.url = "" + mediator.server_url + "v1/login";
 
   Login.prototype.update_db = function() {
     var key, val, _ref, _ref1;
@@ -2421,8 +2448,9 @@ module.exports = Login = (function(_super) {
 
 });
 
-;require.register("models/refresh-model", function(exports, require, module) {
+require.register("models/refresh-model", function(exports, require, module) {
 var Refresh, mediator,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -2433,10 +2461,13 @@ module.exports = Refresh = (function(_super) {
   __extends(Refresh, _super);
 
   function Refresh() {
+    this.urlRoot = __bind(this.urlRoot, this);
     return Refresh.__super__.constructor.apply(this, arguments);
   }
 
-  Refresh.prototype.urlRoot = 'http://localhost:8080/v1/refresh';
+  Refresh.prototype.urlRoot = function() {
+    return "" + mediator.server_url + "v1/refresh";
+  };
 
   return Refresh;
 
@@ -2444,7 +2475,7 @@ module.exports = Refresh = (function(_super) {
 
 });
 
-;require.register("routes", function(exports, require, module) {
+require.register("routes", function(exports, require, module) {
 
 module.exports = function(match) {
   match('', 'home#show');
@@ -2475,7 +2506,7 @@ module.exports = function(match) {
 
 });
 
-;require.register("views/agent-list-view", function(exports, require, module) {
+require.register("views/agent-list-view", function(exports, require, module) {
 var ListView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -2509,7 +2540,7 @@ module.exports = ListView = (function(_super) {
 
 });
 
-;require.register("views/agent-view", function(exports, require, module) {
+require.register("views/agent-view", function(exports, require, module) {
 var View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -2617,7 +2648,7 @@ module.exports = View = (function(_super) {
 
 });
 
-;require.register("views/autologin-view", function(exports, require, module) {
+require.register("views/autologin-view", function(exports, require, module) {
 var LoginView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -2719,7 +2750,7 @@ module.exports = LoginView = (function(_super) {
 
 });
 
-;require.register("views/base/collection-view", function(exports, require, module) {
+require.register("views/base/collection-view", function(exports, require, module) {
 var Chaplin, CollectionView, View,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2744,7 +2775,7 @@ module.exports = CollectionView = (function(_super) {
 
 });
 
-;require.register("views/base/view", function(exports, require, module) {
+require.register("views/base/view", function(exports, require, module) {
 var View, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2790,7 +2821,7 @@ module.exports = View = (function(_super) {
 
 });
 
-;require.register("views/bon-view", function(exports, require, module) {
+require.register("views/bon-view", function(exports, require, module) {
 var BonEditView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -2873,7 +2904,7 @@ module.exports = BonEditView = (function(_super) {
 
 });
 
-;require.register("views/branch-list-view", function(exports, require, module) {
+require.register("views/branch-list-view", function(exports, require, module) {
 var BranchListView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -2907,7 +2938,7 @@ module.exports = BranchListView = (function(_super) {
 
 });
 
-;require.register("views/branch-view", function(exports, require, module) {
+require.register("views/branch-view", function(exports, require, module) {
 var BranchView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3000,7 +3031,7 @@ module.exports = BranchView = (function(_super) {
 
 });
 
-;require.register("views/client-list-view", function(exports, require, module) {
+require.register("views/client-list-view", function(exports, require, module) {
 var ClientListView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3034,7 +3065,7 @@ module.exports = ClientListView = (function(_super) {
 
 });
 
-;require.register("views/client-public-list-view", function(exports, require, module) {
+require.register("views/client-public-list-view", function(exports, require, module) {
 var ClientListView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3068,7 +3099,7 @@ module.exports = ClientListView = (function(_super) {
 
 });
 
-;require.register("views/client-public-view", function(exports, require, module) {
+require.register("views/client-public-view", function(exports, require, module) {
 var ClientView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3129,7 +3160,7 @@ module.exports = ClientView = (function(_super) {
 
 });
 
-;require.register("views/client-view", function(exports, require, module) {
+require.register("views/client-view", function(exports, require, module) {
 var ClientAddView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3244,7 +3275,7 @@ module.exports = ClientAddView = (function(_super) {
 
 });
 
-;require.register("views/confirm-view", function(exports, require, module) {
+require.register("views/confirm-view", function(exports, require, module) {
 var ConfirmView, View, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3286,7 +3317,7 @@ module.exports = ConfirmView = (function(_super) {
 
 });
 
-;require.register("views/edit-view", function(exports, require, module) {
+require.register("views/edit-view", function(exports, require, module) {
 var EditView, View, mediator, upload_template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3602,7 +3633,7 @@ module.exports = EditView = (function(_super) {
 
 });
 
-;require.register("views/export-list-view", function(exports, require, module) {
+require.register("views/export-list-view", function(exports, require, module) {
 var ExportListView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3672,7 +3703,7 @@ module.exports = ExportListView = (function(_super) {
 
 });
 
-;require.register("views/export-view", function(exports, require, module) {
+require.register("views/export-view", function(exports, require, module) {
 var ExportView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3805,7 +3836,7 @@ module.exports = ExportView = (function(_super) {
 
 });
 
-;require.register("views/footer-edit-view", function(exports, require, module) {
+require.register("views/footer-edit-view", function(exports, require, module) {
 var FooterView, View, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3876,7 +3907,7 @@ module.exports = FooterView = (function(_super) {
 
 });
 
-;require.register("views/footer-list-view", function(exports, require, module) {
+require.register("views/footer-list-view", function(exports, require, module) {
 var FooterView, View, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3919,7 +3950,7 @@ module.exports = FooterView = (function(_super) {
 
 });
 
-;require.register("views/footer-view", function(exports, require, module) {
+require.register("views/footer-view", function(exports, require, module) {
 var FooterView, View, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -3968,7 +3999,7 @@ module.exports = FooterView = (function(_super) {
 
 });
 
-;require.register("views/graphic-list-view", function(exports, require, module) {
+require.register("views/graphic-list-view", function(exports, require, module) {
 var GraphicListView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -4002,7 +4033,7 @@ module.exports = GraphicListView = (function(_super) {
 
 });
 
-;require.register("views/graphic-view", function(exports, require, module) {
+require.register("views/graphic-view", function(exports, require, module) {
 var GraphicView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -4112,7 +4143,7 @@ module.exports = GraphicView = (function(_super) {
 
 });
 
-;require.register("views/header-view", function(exports, require, module) {
+require.register("views/header-view", function(exports, require, module) {
 var HeaderView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -4235,7 +4266,7 @@ module.exports = HeaderView = (function(_super) {
 
 });
 
-;require.register("views/home-page-view", function(exports, require, module) {
+require.register("views/home-page-view", function(exports, require, module) {
 var Collection, HomePageView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -4301,7 +4332,7 @@ module.exports = HomePageView = (function(_super) {
 
 });
 
-;require.register("views/iframe-view", function(exports, require, module) {
+require.register("views/iframe-view", function(exports, require, module) {
 var IFrameView, View, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -4380,7 +4411,7 @@ module.exports = IFrameView = (function(_super) {
 
 });
 
-;require.register("views/info-view", function(exports, require, module) {
+require.register("views/info-view", function(exports, require, module) {
 var InfoView, View, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -4425,7 +4456,7 @@ module.exports = InfoView = (function(_super) {
 
 });
 
-;require.register("views/layout", function(exports, require, module) {
+require.register("views/layout", function(exports, require, module) {
 var Layout, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -4483,7 +4514,11 @@ module.exports = Layout = (function(_super) {
   Layout.prototype.initialize = function() {
     var jqm;
     Layout.__super__.initialize.apply(this, arguments);
-    this.log = log4javascript.getDefaultLogger();
+    if (mediator.online) {
+      this.log = console;
+    } else {
+      this.log = console;
+    }
     this.log.info('layout init');
     jqm = true;
     if (jqm) {
@@ -4688,7 +4723,7 @@ module.exports = Layout = (function(_super) {
 
 });
 
-;require.register("views/left-panel-view", function(exports, require, module) {
+require.register("views/left-panel-view", function(exports, require, module) {
 var LeftPanelView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -4774,7 +4809,7 @@ module.exports = LeftPanelView = (function(_super) {
 
 });
 
-;require.register("views/list-items-view", function(exports, require, module) {
+require.register("views/list-items-view", function(exports, require, module) {
 var View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -4847,7 +4882,7 @@ module.exports = View = (function(_super) {
 
 });
 
-;require.register("views/list-view-collection", function(exports, require, module) {
+require.register("views/list-view-collection", function(exports, require, module) {
 var CollectionView, ListView, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -5110,7 +5145,7 @@ module.exports = ListView = (function(_super) {
 
 });
 
-;require.register("views/list-view", function(exports, require, module) {
+require.register("views/list-view", function(exports, require, module) {
 var ListView, SubView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -5481,7 +5516,7 @@ module.exports = ListView = (function(_super) {
 
 });
 
-;require.register("views/listing-list-view", function(exports, require, module) {
+require.register("views/listing-list-view", function(exports, require, module) {
 var ListingListView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -5546,7 +5581,7 @@ module.exports = ListingListView = (function(_super) {
 
 });
 
-;require.register("views/listing-tab-view", function(exports, require, module) {
+require.register("views/listing-tab-view", function(exports, require, module) {
 var View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -5595,7 +5630,7 @@ module.exports = View = (function(_super) {
 
 });
 
-;require.register("views/listing-view", function(exports, require, module) {
+require.register("views/listing-view", function(exports, require, module) {
 var AddView, TabView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -5995,7 +6030,7 @@ module.exports = AddView = (function(_super) {
 
 });
 
-;require.register("views/login-view", function(exports, require, module) {
+require.register("views/login-view", function(exports, require, module) {
 var LoginView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -6110,7 +6145,7 @@ module.exports = LoginView = (function(_super) {
 
 });
 
-;require.register("views/popgeneric-view", function(exports, require, module) {
+require.register("views/popgeneric-view", function(exports, require, module) {
 var PopGenericView, View, template,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -6148,7 +6183,7 @@ module.exports = PopGenericView = (function(_super) {
 
 });
 
-;require.register("views/structure-view", function(exports, require, module) {
+require.register("views/structure-view", function(exports, require, module) {
 var FooterView, StructureView, View, mediator, template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -6206,7 +6241,7 @@ module.exports = StructureView = (function(_super) {
 
 });
 
-;require.register("views/templates/add_offer", function(exports, require, module) {
+require.register("views/templates/add_offer", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
   var __out = [], __capture = function(callback) {
@@ -7395,7 +7430,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<h4>Projekt i wykonanie <a href=\'pixey.pl\'>Pixey.pl</a> &copy;</h4>\n\n');
+      __out.push('<h4>Mobilny Pośrednik <a href=\'pixey.pl\'>Pixey.pl</a> &copy;</h4>\n\n');
     
     }).call(this);
     
@@ -7736,7 +7771,7 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-left">\n        <a href=\'#left-panel\' class=\'ui-btn ui-icon-grid ui-btn-icon-left\' data-theme="b">Menu</a>\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'viewed-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-eye ui-btn-icon-notext">Icon only</button>\n    </div>\n\n    <h1>Mobilny Pośrednik</h1>\n\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'account-status-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-shop ui-btn-icon-notext">Icon only</button>\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</button>\n        <button id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-power"></button>\n    </div>\n');
+      __out.push('    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-left">\n        <a href=\'#left-panel\' class=\'ui-btn ui-icon-bars ui-btn-icon-left\' data-theme="b"></a>\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'viewed-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-eye ui-btn-icon-notext">Icon only</button>\n    </div>\n\n    <h1>MP</h1>\n\n    <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'account-status-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-shop ui-btn-icon-notext">Icon only</button>\n        <button data-rel="popup" data-transition="pop" data-iconpos="notext" id=\'info-btn\' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-info ui-btn-icon-notext">Icon only</button>\n        <button id=\'first-name-placeholder\' class="ui-btn ui-btn-b ui-btn-icon-right ui-icon-power"></button>\n    </div>\n');
     
     }).call(this);
     
@@ -8738,5 +8773,5 @@ module.exports = ViewedView = (function(_super) {
 
 });
 
-;
+
 //# sourceMappingURL=app.js.map
