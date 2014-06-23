@@ -1,5 +1,5 @@
 <div id="view-menu">
-    <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b'>
+    <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b' data-mini="true">
         <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
         <a href='/oferty/dodaj?type=<%= @listing_type %>' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
 

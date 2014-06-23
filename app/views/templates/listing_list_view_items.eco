@@ -1,11 +1,11 @@
 <table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
-data-filter="true" data-input="#filterTable-input" data-column-btn-text="Wybierz kolumny" data-column-btn-theme="b" data-column-popup-theme="a" >
+data-filter="true" data-input="#filterTable-input" data-column-btn-text="Kolumny" data-mini="true" data-column-btn-theme="b" data-column-popup-theme="a" >
      <thead>
        <tr class='th-groups'>
          <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>
          <th>Zdjęcie&nbsp;&nbsp;</th>
          <th>ID</th>
-         <th>Agent&nbsp;&nbsp;</th>
+         <th data-priority="3">Agent&nbsp;&nbsp;</th>
          <th>Adres&nbsp;&nbsp;</th>
          <th data-priority="2">Klient&nbsp;&nbsp;</th>
          <th data-priority="2">Cena&nbsp;&nbsp;</th>

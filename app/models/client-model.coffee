@@ -15,6 +15,9 @@ module.exports = class Client extends Chaplin.Model
                  when 2 then 'sprzedający'
                  when 3 then 'wynajmujący'
                  when 4 then 'najemca'
+        agent_func: ->
+            localStorage.getObject('agents')["#{@get('agent')}"]
+
     toJSON: ->
         data = {}
         json = Backbone.Model::toJSON.call(this)
