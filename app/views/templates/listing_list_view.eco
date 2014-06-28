@@ -1,66 +1,58 @@
-<div id="view-menu">
-    <fieldset data-role="controlgroup" data-type="horizontal" data-theme='b' data-mini="true">
-        <button data-icon="refresh" data-iconpos="notext" id='refresh' >Odśwież</button>
-        <a href='/oferty/dodaj?type=<%= @listing_type %>' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
-
-        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
-        <select name="select-action" id="select-action">
-            <option selected value=''>Akcja</option>
-            <option value="wydruk-wewnetrzny">Wydruk wewnętrzyny</option>
-            <option value="wydruk-klienta">Wydruk dla klienta</option>
-            <option value="zmien_agenta">Zmień Agenta</option>
-            <option value="send-listing-client">Wyślij ofertę klientowi</option>
-            <option value="send-listing-address">Wyślij ofertę ...</option>
-            <option value="usun">Usuń</option>
-            <option value="eksport" disabled>Eksport do pliku</option>
-        </select>
-
-        <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
-        <select name="status-query" id="status-query" data-query='status'>
-            <option selected disabled>Status</option>
-            <option value="">Wszystkie</option>
-            <option value="1">Aktywne</option>
-            <option value="0">Nieaktywne</option>
-            <option value="2">Archiwalne</option>
-            <option value="3">Robocze</option>
-            <option value="4">Sprzedane</option>
-            <option value="5">Wynajęte</option>
-            <option value="6">Umowa przedwstępna</option>
-            <option value="7">Usunięte</option>
-        </select>
-
-        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
-        <select name="agent-query" id="agent-query" data-query='agent'>
-            <option selected disabled>Agent</option>
-            <option value="">Wszyscy</option>
-            <% for key , val of @agents : %>
-            <option value="<%= key %>"><%= val %></option>
+<table data-role="table" id="list-table" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
+data-filter="true" data-input="#filterTable-input">
+     <thead>
+       <tr class='th-groups'>
+         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>
+         <th>Zdjęcie&nbsp;&nbsp;</th>
+         <th>ID</th>
+         <th data-priority="3">Agent&nbsp;&nbsp;</th>
+         <th>Adres&nbsp;&nbsp;</th>
+         <th data-priority="2">Klient&nbsp;&nbsp;</th>
+         <th data-priority="2">Cena&nbsp;&nbsp;</th>
+         <th data-priority="5"><abbr title="Powierzchnia całkowita">Pow. cał.</abbr>&nbsp;&nbsp;</th>
+         <th data-priority="4">Pok.&nbsp;&nbsp;</th>
+         <th data-priority="7"><abbr title="Piętro">Pt.</abbr>&nbsp;&nbsp;</th>
+         <th data-priority="6">Status&nbsp;&nbsp;</th>
+         <th data-priority="6">Rynek&nbsp;&nbsp;</th>
+         <th data-priority="6"><abbr title="Wyłączność">Wył.</abbr>&nbsp;&nbsp;</th>
+         <th data-priority="6"><abbr title="Ostatnia modyfikacja">Modyfi.</abbr>&nbsp;&nbsp;</th>
+         <th data-priority="6"><abbr title="Data wprowadzenia">Wprowadz.&nbsp;&nbsp;</th>
+       </tr>
+     </thead>
+     <tbody>
+      <% for item in @collection : %>
+       <tr>
+         <td><label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
+         <td><%- item['thumbnail_func'] %></td>
+         <td><a href='/oferty/<%= item['id'] %>'><%= item['remote_id'] %></td>
+         <td><%= item['agent_func'] %></td>
+         <td><a href='/oferty/<%= item['id'] %>'>
+            <% if item['town']: %>
+                <%= item['town'] %>&nbsp;
             <% end %>
-        </select>
-        <label for="client-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
-        <select name="client-query" id="client-query" data-query='client'>
-            <option selected disabled>Klient</option>
-            <option value="">Wszyscy</option>
-            <% for key , val of @clients : %>
-            <option value="<%= key %>"><%= val %></option>
+            <% if item['street']: %>
+                <%= item['street'] %>&nbsp;
             <% end %>
-        </select>
-        <label for="branch-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
-        <select name="branch-query" id="branch-query" data-query='branch'>
-            <option selected disabled>Oddział</option>
-            <option value="">Wszystkie</option>
-            <% for key , val of @branches : %>
-            <option value="<%= key %>"><%= val %></option>
+            <% if item['number']: %>
+                <%= item['number'] %>&nbsp;
             <% end %>
-        </select>
-
-            <input name="wylacznosc" id="wylacznosc" type="checkbox" data-filter='wylacznosc'>
-                <label for="wylacznosc">Wyłączność</label>
-
-        <input name="radio-choice-b" id="radio-choice-c" value="pierwotny"  type="radio" data-filter='rynek_func'>
-        <label for="radio-choice-c">Pierwotny</label>
-        <input name="radio-choice-b" id="radio-choice-d" value="wtórny" type="radio" data-filter='rynek_func'>
-        <label for="radio-choice-d">Wtórny</label>
-
-    </fieldset>
-</div>
+            <% if item['street_district']: %>
+                <%= item['street_district'] %>&nbsp;
+            <% end %>
+            </td>
+         <td><%= item['client_func'] %></td>
+         <td><%= item['cena'] %><%= item['waluta_func'] %></td>
+         <td><%= item['powierzchnia_calkowita'] %> m2</td>
+         <td><%= item['liczba_pokoi'] %> pk</td>
+         <td><%= item['pietro'] %> pt</td>
+         <td><%= item['status_func'] %></td>
+         <td><%= item['rynek_func'] %></td>
+         <td><%= item['wylacznosc_func'] %></td>
+         <td><%= item['date_created_func'] %></td>
+         <td><%= item['date_modyfied_func'] %></td>
+         <td style="display:none;" ><%= item['tytul'] %></td>
+         <td style="display:none;" ><%= item['opis'] %></td>
+       </tr>
+      <% end %>
+     </tbody>
+   </table>

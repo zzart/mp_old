@@ -1,9 +1,9 @@
-<!-- ##################################  PANEL -->
+<!-- #################################  #  PANEL -->
 
 					<ul data-role="listview" >
-						<li data-icon="delete" > <a href="#header" data-rel="close">Zamknij menu</a> </li>
-						<li data-icon="home" > <a href="/" >Początek</a> </li>
-                        <li data-role='list-divider' > </li>
+						<li data-icon="delete"> <a href="#header" data-rel="close">Zamknij menu</a></li>
+						<li data-icon="home"> <a href="/" >Początek</a></li>
+                        <li data-role='list-divider'></li>
                     </ul>
     <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">
                     <h4>Przeglądaj oferty</h4>
@@ -124,7 +124,13 @@
                         -->
                         <li data-role='list-divider' > </li>
                     </ul>
-                </div>
+</div>
+<br />
+    <ul data-role="listview" >
+        <li data-icon="shop">
+            <a href='#' data-rel="popup" data-transition="pop" id='account-status-btn' data-position-to="window" >Status Konta</a>
+        </li>
+    </ul>
 
 
 <!-- ##################################  PANEL -->

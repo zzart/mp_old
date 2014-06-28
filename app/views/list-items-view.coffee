@@ -19,8 +19,8 @@ module.exports = class View extends View
         #NOTE: not calling SUPER here so we can manually append EL to CONTAINER the way we want it
         #and we need it inside the form element
         ## clear any previous lists
-        $('#view-list').remove()
-        $('#view-menu').after(@$el)
+        #$('#view-list').remove()
+        #$('#view-menu').after(@$el)
         #initialize sorting tables  http://tablesorter.com/docs/
         #można sortować wielokolumnowo przytrzymując shift ;)
         if @collection.length > 1

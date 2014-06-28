@@ -198,8 +198,10 @@ module.exports = class EditView extends View
 
     delete_action: =>
         @publishEvent('log:info', 'delete  caught')
+
     save_action: (url) =>
         @publishEvent('log:info', 'save_action  caught')
+
     back_action: (event) =>
         @publishEvent('log:info', 'back_action  caught')
 
@@ -220,7 +222,6 @@ module.exports = class EditView extends View
     save_action: =>
         @publishEvent('log:debug', 'save_action caugth')
 
-
     render: =>
         super
         @publishEvent('log:info', 'view: edit-view beforeRender()')
@@ -231,7 +232,6 @@ module.exports = class EditView extends View
             @$el.append(@form.el)
             # console.log(@$el, @form.el, @template, @form_name)
             @publishEvent('log:info', 'view: edit-view RenderEnd()')
-
 
     attach: =>
         super

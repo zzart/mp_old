@@ -1,0 +1,12 @@
+<div id="view-menu">
+            <fieldset data-role="controlgroup" data-type="vertical" data-theme="b">
+                <button data-icon="refresh" id='refresh'>Odśwież</button>
+                <a href='/oddzialy/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>
+
+                <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
+                <select name="select-action" id="select-action">
+                    <option selected disabled>Akcja</option>
+                    <option value="usun">Usuń</option>
+                </select>
+            </fieldset>
+</div>

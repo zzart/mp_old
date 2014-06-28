@@ -34,8 +34,8 @@
 	</div>
 </div><!-- /grid-b -->
 
-<table data-role="table" id="table-list" data-mode="columntoggle reflow" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
-data-filter="true" data-input="#filterTable-input"  data-column-btn-text="Kolumny"  >
+<table data-role="table" id="table-list" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
+data-filter="true" data-input="#filterTable-input" >
      <thead>
        <tr>
          <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>

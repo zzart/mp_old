@@ -4,11 +4,12 @@ Header =        require 'views/header-view'
 Footer =        require 'views/footer-view'
 NavFooter =     require 'views/footer-edit-view'
 ListFooter =    require 'views/footer-list-view'
-LeftPanelView = require 'views/left-panel-view'
 InfoView =      require 'views/info-view'
 ConfirmView =   require 'views/confirm-view'
 ViewedView =    require 'views/viewed-view'
 PopGenericView =require 'views/popgeneric-view'
+LeftPanelView = require 'views/left-panel-view'
+RightPanelView = require 'views/right-panel-view'
 
 module.exports = class StructureController extends Controller
     beforeAction: (params, route) ->
@@ -48,6 +49,8 @@ module.exports = class StructureController extends Controller
             @compose 'footer-list', ListFooter, region:'footer'
         else
             @compose 'footer', Footer, region:'footer'
+
+        @compose 'panel-right', RightPanelView
         @compose 'panel-left', LeftPanelView
         @compose 'info', InfoView, region:'info'
         @compose 'viewed', ViewedView, region:'viewed'

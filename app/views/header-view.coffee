@@ -7,24 +7,11 @@ module.exports = class HeaderView extends View
     containerMethod : 'html'
     id: 'header'
     attributes: { 'data-role':'header', 'data-theme':'b' }
+
     initialize: ->
         super
-        @delegate 'click', '#first-name-placeholder', @login_screen
         @delegate 'click', '#info-btn', @info_screen
         @delegate 'click', '#viewed-btn', @viewed_screen
-        @delegate 'click', '#account-status-btn', @account_status
-
-    login_screen: ->
-        mediator.user = {}
-        mediator.controllers = {}
-        mediator.models = {}
-        Chaplin.utils.redirectTo {url: '/login'}
-
-    account_status: ->
-        as = localStorage.getObject('account')
-        val = "<h4>Konto</h4><p>Liczba ofert: <b>#{as.total_listings}</b><br />Przestrzeń dysku: <b>#{as.disk_usage}</b><br />Status konta: <b>#{as.status}</b></p>"
-        $('#info').html(val)
-        $('#info').popup('open',{ positionTo: "#account-status-btn", transition:"fade" })
 
     info_screen: ->
         str = ""
@@ -51,9 +38,6 @@ module.exports = class HeaderView extends View
         catch error
             @publishEvent("log:warn", error)
         $('#viewed').popup('open',{ positionTo: "#viewed-btn", transition:"fade" })
-
-    getTemplateData: =>
-        disk_usage: localStorage.getItem('disk_usage')
 
     attach: =>
         super

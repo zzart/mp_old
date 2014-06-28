@@ -1,0 +1,19 @@
+<div id="view-menu">
+    <fieldset data-role="controlgroup" data-type="vertical" data-theme='b'>
+        <button data-icon="refresh" id='refresh' >Odśwież</button>
+        <a href='/grafiki/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
+
+        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
+        <select name="select-action" id="select-action">
+            <option selected disabled>Akcja</option>
+            <option value="usun">Usuń</option>
+        </select>
+        <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+        <select name="select-filter" id="select-filter" data-filter='image_type'>
+            <option selected disabled>Filtr</option>
+            <option value="">Wszystko</option>
+            <option value="0">Logo</option>
+            <option value="1">Znak wodny</option>
+        </select>
+    </fieldset>
+</div>

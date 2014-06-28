@@ -1,0 +1,23 @@
+<div id="view-menu">
+    <fieldset data-role="controlgroup" data-type="vertical" data-theme='b'>
+        <button data-icon="refresh" id='refresh' >Odśwież</button>
+        <a href='/klienci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
+
+        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
+        <select name="select-action" id="select-action">
+            <option selected disabled>Akcja</option>
+            <option value="usun">Usuń</option>
+            <option value="drukuj" disabled>Drukuj</option>
+            <option value="eksport" disabled>Eksport do pliku</option>
+        </select>
+        <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+        <select name="select-filter" id="select-filter" data-filter='client_type'>
+            <option selected disabled>Filtr</option>
+            <option value="">Wszyscy</option>
+            <option value="1">Kupujący</option>
+            <option value="2">Sprzedający</option>
+            <option value="3">Najemca</option>
+            <option value="4">Wynajmujący</option>
+        </select>
+    </fieldset>
+</div>

@@ -14,7 +14,8 @@ module.exports = class Layout extends Chaplin.Layout
 
         if jqm
             @subscribeEvent('structureController:render', @jqm_init)
-            @subscribeEvent('leftpanel:render', @jqm_leftpanel)
+            #@subscribeEvent('leftpanel:render', @jqm_leftpanel)
+            #@subscribeEvent('rightpanel:render', @jqm_rightpanel)
             #@subscribeEvent('index:render', @jqm_init)
             #@subscribeEvent('login:render', @jqm_init)
             #@subscribeEvent('addofferview:render', @jqm_refersh)
@@ -110,7 +111,8 @@ module.exports = class Layout extends Chaplin.Layout
             $.mobile.loading('hide')
             #need to init panel and all its components
             $("#left-panel").panel()
-            $( "body > [data-role='panel'] [data-role='listview']" ).listview()
+            $("#right-panel").panel()
+            $("body > [data-role='panel'] [data-role='listview']" ).listview()
             $("body > [data-role='panel'] [data-role='collapsible']").collapsible()
             #{ history: false } needs to be there since popup will support back button hence change URL which we don't want !!!!
             $("#info").popup({ history: false })

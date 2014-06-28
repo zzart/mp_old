@@ -1,5 +1,6 @@
 View = require 'views/base/view'
-SubView = require 'views/list-items-view'
+#SubView = require 'views/list-items-view'
+NavigationView = require 'views/navigation-view'
 mediator = require 'mediator'
 
 module.exports = class ListView extends View
@@ -17,49 +18,153 @@ module.exports = class ListView extends View
         # @collection = @params.collection
         @collection = _.clone(@params.collection)
         @listing_type = @params.listing_type ? false
+        @navigation = require "views/templates/#{@params.template}_navigation"
         @template = require "views/templates/#{@params.template}"
-        @sub_template = require "views/templates/#{@params.template}_items"
 
-        @delegate 'change', '#select-action', @select_action
+        # NOTE: this catches clicks from navigation subview!
+        @subscribeEvent('navigation:refresh', @refresh_action)
+        @subscribeEvent('navigation:filter_action', @filter_action)
+        @subscribeEvent('navigation:query_action', @query_action)
+        @subscribeEvent('navigation:select_action', @select_action)
+
         @delegate 'change', '#all', @select_all_action
-
-        @delegate 'click',  '#refresh', @refresh_action
-        @delegate 'change', "[data-query]", @query_action
-        @delegate 'change', "#view-menu [data-filter]", @filter_action
-        @delegate 'click',  "[href='#list-table-popup']", @open_column_popup
         #@delegate 'click',  ".ui-table-columntoggle-btn", @column_action
         #@delegate 'tablecreate' , @table_create
 
+        #for column toggle
+        #@delegate 'click',  "[href='#list-table-popup']", @open_column_popup
         @publishEvent('log:debug', @params)
+        @navigation_rendered = false
         #init_events: =>
         #    @delegate 'click',  ".ui-table-columntoggle-btn", @column_action
         #    @delegate 'click',  "[href='#list-table-popup']", @column_action
 
-        #column_action: (event) =>
-        #    console.log('click')
-        #    event.preventDefault()
-        #    $("#list-table-popup").popup('open')
-        #table_create: (event) =>
-        #    @publishEvent 'table_refresh'
-        # window.collection = @collection_hard
 
-    open_column_popup:(event) =>
-        @publishEvent("log:info", "coumn toggle popup")
-        event.preventDefault()
-        $('#list-table-popup').popup('open')
+    filter_action: (event) =>
+        @publishEvent("log:debug", "filter_action_called")
+        # event.stopPropagation()
+        # event.stopImmediatePropagation()
+        # always start with fresh collection
+        @collection = _.clone(@collection_hard)
+        # needs data-filter attribute on select emelemt
+        # we can apply one or more filters
+        key = event.target.dataset.filter
+        id = event.target.id
+        @undelegate 'change', "##{id}", @filter_action
+        #@unsubscribeEvent('navigation:filter_action', @)
+        #for booleans
+        if event.target.type == 'checkbox'
+            @publishEvent("log:info", event.target.type )
+            value = event.target.checked
+        else if event.target.type == 'select-one'
+            @publishEvent("log:info", event.target.type )
+            value = parseInt(event.target.value)
+        else
+            value = event.target.value
+
+        if _.isNaN(value)
+            @filter = _.omit(@filter, key)
+            @publishEvent("log:info", "omiting #{key}" )
+            @publishEvent("log:info", @filter)
+        else
+            @filter[key] = value
+
+        @publishEvent('log:debug', key)
+        @publishEvent('log:debug', value)
+
+        # console.log(@filter)
+        if _.isEmpty(@filter)
+            #TODO: test this
+            @render()
+        else
+            list_of_models = @collection_hard.where(@filter)
+            @collection.reset(list_of_models)
+            #$("input[type='radio'] ##{id}" ).prop( "checked", value ).checkboxradio( "refresh" )
+            #$("input[type='checkbox'] ##{id}" ).prop( "checked", value ).checkboxradio( "refresh" )
+            @render()
 
     query_action: (event) =>
-        @publishEvent("log:info", "query_action called")
+        @publishEvent("log:debug", "query_action called")
         #reset filter
         @filter= {}
+        # NOTE: to be inherited from list views
+
+    selects_refresh: =>
+        if @collection.query
+            for k,v of @collection.query
+                $("[data-query=\'#{k}\']").val(v)
+                $("[data-query=\'#{k}\']").selectmenu('refresh')
 
     select_all_action: =>
-        @publishEvent("log:info", "select all action")
+        @publishEvent("log:debug", "select all action")
         selected = $('#list-table>thead input:checkbox').prop('checked')
         $('#list-table>tbody input:checkbox').prop('checked', selected).checkboxradio("refresh")
 
+    filter_apply: =>
+        @publishEvent('log:debug', 'filter apply')
+        #TODO: doesn't work for multiple filter objects
+        if obj[@filter] isnt false
+            @publishEvent("log:info", obj)
+            @publishEvent('log:debug', 'filter apply')
+            list_of_models = @collection_hard.where(obj)
+            @collection.reset(list_of_models)
+        else
+            @publishEvent('log:debug', 'filter reset')
+            @collection = _.clone(@collection_hard)
+        @render()
+
+    refresh_action: (event) =>
+        event.preventDefault()
+        @publishEvent('log:debug', 'refresh_action cougth')
+        @collection_hard.fetch
+            data: @collection_hard.query or {}
+            success: =>
+                @publishEvent 'tell_user', 'Odświeżam listę elementów'
+                @collection = _.clone(@collection_hard)
+                @render()
+            error:(model, response, options) =>
+                if response.responseJSON?
+                    Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                else
+                    Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
+
+    getTemplateData: =>
+        collection: @collection.toJSON()
+        listing_type: @listing_type
+        agents: localStorage.getObject('agents')
+        clients: localStorage.getObject('clients')
+        branches: localStorage.getObject('branches')
+
+    render: =>
+        super
+        #remove any previously created table column toggle popups ( important for new rendering )
+        #$("#list-table-popup").remove()
+        #$("#list-table-popup-popup").remove()
+        if @navigation_rendered is false
+            @render_subview()
+
+
+    render_subview: =>
+        @publishEvent('log:debug', "render sub_view")
+        @subview "navigation", new NavigationView template: @navigation, listing_type: @listing_type
+        @subview("navigation").render()
+        @publishEvent('jqm_refersh:render')
+        #so we only render nav once !
+        @navigation_rendered = true
+
+    attach: =>
+        super
+        @publishEvent('log:debug', 'view: list-view afterRender()')
+        #initialize sorting tables  http://tablesorter.com/docs/
+        #można sortować wielokolumnowo przytrzymując shift ;)
+        if @collection.length > 1
+            $("#list-table").tablesorter({sortList:[[4,0]], headers:{0:{'sorter':false}, 1:{'sorter':false}}})
+        @publishEvent('jqm_refersh:render')
+        @selects_refresh()
+        @publishEvent 'table_refresh'
+
     select_action: (event) =>
-        @publishEvent("log:info", "select action")
+        @publishEvent("log:debug", "select action")
         #get all selected offers
         selected = $('#list-table>tbody input:checked')
         # console.log(selected)
@@ -78,7 +183,7 @@ module.exports = class ListView extends View
             @publishEvent 'jqm_refersh:render'
             return
 
-        @publishEvent('log:info', "performing action #{event.target.value} for offers #{selected}")
+        @publishEvent('log:debug', "performing action #{event.target.value} for offers #{selected}")
         if selected.length > 0
             if event.target.value == 'usun'
                 $("#confirm").popup('open')
@@ -93,7 +198,7 @@ module.exports = class ListView extends View
                             success: (event) =>
                                 Chaplin.EventBroker.publishEvent('log:info', "Element usunięty id#{model.get('id')}")
                                 self.collection_hard.remove(model)
-                                self.render_subview()
+                                self.render()
                                 Chaplin.EventBroker.publishEvent 'tell_user', 'Element został usunięty'
                             error:(model, response, options) =>
                                 if response.responseJSON?
@@ -102,7 +207,7 @@ module.exports = class ListView extends View
                                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
-                    self.render_subview()
+                    self.render()
                     #clean only after the CLICK event
                     clean_after_action(selected)
 
@@ -131,7 +236,7 @@ module.exports = class ListView extends View
                         model.set('agent', @value)
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
-                    self.render_subview()
+                    self.render()
                 clean_after_action(selected)
 
             # send email to client
@@ -157,7 +262,7 @@ module.exports = class ListView extends View
                         self.mp_request(model, url, 'GET', 'Email wysłany', 'Email nie został wysłany')
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
-                    self.render_subview()
+                    self.render()
                 clean_after_action(selected)
 
             if event.target.value == 'send-listing-address'
@@ -186,7 +291,7 @@ module.exports = class ListView extends View
                         self.mp_request(model, url, 'GET', 'Email wysłany', 'Email nie został wysłany')
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
-                    self.render_subview()
+                    self.render()
                 clean_after_action(selected)
 
             if event.target.value == 'wydruk-wewnetrzny' or  event.target.value == 'wydruk-klienta'
@@ -203,118 +308,20 @@ module.exports = class ListView extends View
                     window.location = url
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
-                    self.render_subview()
+                    self.render()
                 clean_after_action(selected)
-
-
         else
             @publishEvent 'tell_user', 'Musisz zaznaczyć przynajmniej jeden element!'
             clean_after_action(selected)
+        #column_action: (event) =>
+        #    console.log('click')
+        #    event.preventDefault()
+        #    $("#list-table-popup").popup('open')
+        #table_create: (event) =>
+        #    @publishEvent 'table_refresh'
+        # window.collection = @collection_hard
 
-    filter_action: (event) =>
-        @publishEvent("log:info", "filter_action_called")
-        event.preventDefault()
-        # event.stopPropagation()
-        # event.stopImmediatePropagation()
-        # always start with fresh collection
-        @collection = _.clone(@collection_hard)
-        # needs data-filter attribute on select emelemt
-        # we can apply one or more filters
-        key = event.target.dataset.filter
-        id = event.target.id
-        @undelegate 'change', "##{id}", @filter_action
-        #for booleans
-        if event.target.type == 'checkbox'
-            @publishEvent("log:info", event.target.type )
-            value = event.target.checked
-        else if event.target.type == 'select-one'
-            @publishEvent("log:info", event.target.type )
-            value = parseInt(event.target.value)
-        else
-            value = event.target.value
-
-        if _.isNaN(value)
-            @filter = _.omit(@filter, key)
-            @publishEvent("log:info", "omiting #{key}" )
-            @publishEvent("log:info", @filter)
-        else
-            @filter[key] = value
-
-        @publishEvent('log:debug', key)
-        @publishEvent('log:debug', value)
-
-        # console.log(@filter)
-        if _.isEmpty(@filter)
-            #TODO: test this
-            @render_subview()
-        else
-            list_of_models = @collection_hard.where(@filter)
-            @collection.reset(list_of_models)
-            #$("input[type='radio'] ##{id}" ).prop( "checked", value ).checkboxradio( "refresh" )
-            #$("input[type='checkbox'] ##{id}" ).prop( "checked", value ).checkboxradio( "refresh" )
-            @render_subview()
-
-
-    filter_apply: =>
-        @publishEvent('log:debug', 'filter apply')
-        #TODO: doesn't work for multiple filter objects
-        if obj[@filter] isnt false
-            console.log(obj)
-            @publishEvent('log:debug', 'filter apply')
-            list_of_models = @collection_hard.where(obj)
-            @collection.reset(list_of_models)
-        else
-            @publishEvent('log:debug', 'filter reset')
-            @collection = _.clone(@collection_hard)
-        @render_subview()
-
-
-    refresh_action: (event) =>
-        event.preventDefault()
-        @publishEvent('log:debug', 'refresh')
-        @collection_hard.fetch
-            data: @collection_hard.query or {}
-            success: =>
-                @publishEvent 'tell_user', 'Odświeżam listę elementów'
-                @collection = _.clone(@collection_hard)
-                @render_subview()
-            error:(model, response, options) =>
-                if response.responseJSON?
-                    Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
-                else
-                    Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
-
-    selects_refresh: =>
-        if @collection.query
-            for k,v of @collection.query
-                $("[data-query=\'#{k}\']").val(v)
-                $("[data-query=\'#{k}\']").selectmenu('refresh')
-
-    getTemplateData: =>
-        #collection: @collection.toJSON()
-        listing_type: @listing_type
-        agents: localStorage.getObject('agents')
-        clients: localStorage.getObject('clients')
-        branches: localStorage.getObject('branches')
-
-    render: =>
-        super
-        #remove any previously created table column toggle popups ( important for new rendering )
-        $("#list-table-popup").remove()
-        $("#list-table-popup-popup").remove()
-
-    render_subview: =>
-        @publishEvent('log:info', "render sub_view")
-        # @collection = @params.collection
-        @subview "items", new SubView template: @sub_template, collection: @collection
-        @subview("items").render()
-        @publishEvent('jqm_refersh:render')
-
-    attach: =>
-        super
-        @publishEvent('log:info', 'view: list-view afterRender()')
-        @publishEvent('jqm_refersh:render')
-        @render_subview()
-        @selects_refresh()
-
-
+        #open_column_popup:(event) =>
+        #    @publishEvent("log:debug", "coumn toggle popup")
+        #    event.preventDefault()
+        #    $('#list-table-popup').popup('open')

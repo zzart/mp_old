@@ -75,6 +75,9 @@ Backbone.sync = (method, model, options) ->
     request.fail((jqXHR, textStatus) ->
         console.log(jqXHR, textStatus)
         $.mobile.loading('hide')
-        self.publishEvent('tell_user', "Błąd #{jqXHR}, #{textStatus}")
+        if _.isObject(jqXHR)
+            self.publishEvent('tell_user', "Błąd #{JSON.stringify(jqXHR)}, #{textStatus}")
+        else
+            self.publishEvent('tell_user', "Błąd #{jqXHR}, #{textStatus}")
     )
 #AUTH -----------------------------------------------------------------------
