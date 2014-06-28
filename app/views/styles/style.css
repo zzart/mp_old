@@ -33,4 +33,5 @@ border-style:none;
 .auto_height {
 min-height: 150px; /* !important is used to force override. */
 }
-.ui-panel{z-index:3 !important} /* for jqm panel as it shows elements on the list */
+.ui-panel {z-index:3 !important} /* for jqm panel as it shows elements on the list */
+.ui-btn-b {background-color: #333 !important}

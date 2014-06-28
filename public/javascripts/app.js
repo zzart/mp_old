@@ -119,6 +119,12 @@ module.exports = Application = (function(_super) {
 
   Application.prototype.initialize = function() {
     Application.__super__.initialize.apply(this, arguments);
+    if (!bowser.a) {
+      alert('Mamy podejrzenia że używasz przeglądarki, która jest stara albo nie wspiera wszystkich funkcjonalności Mobilnego Pośrednika!\nProszę wejdz na stronę http://www.mozilla.org/pl/firefox/new , pobierz i zainstaluj najnowszego Firefoxa (dostępny też dla iPhona, Android etc.)');
+    }
+    if (!(bowser.name === 'Firefox' && parseInt(bowser.version) >= 30) && !(bowser.name === 'Chrome' && parseInt(bowser.version) >= 35)) {
+      alert('Mamy podejrzenia, że nie używasz przeglądarki Firefox lub Chrome w najnowszej wersji ...\nProszę wejdz na stronę http://www.mozilla.org/pl/firefox/new , pobierz i zainstaluj najnowszego Firefoxa (dostępny też dla iPhona, Android etc.)');
+    }
     this.initControllers();
     return typeof Object.freeze === "function" ? Object.freeze(this) : void 0;
   };
@@ -419,12 +425,17 @@ Backbone.sync = function(method, model, options) {
     return $.mobile.loading('hide');
   });
   return request.fail(function(jqXHR, textStatus) {
+    var _ref1, _ref2;
     console.log(jqXHR, textStatus);
     $.mobile.loading('hide');
     if (_.isObject(jqXHR)) {
-      return self.publishEvent('tell_user', "Błąd " + (JSON.stringify(jqXHR)) + ", " + textStatus);
+      if (((_ref1 = jqXHR.responseText) != null ? _ref1.title : void 0) || (((_ref2 = jqXHR.responseJSON) != null ? _ref2.title : void 0) != null)) {
+        return self.publishEvent('tell_user', "Błąd! " + (jqXHR.responseJSON.title || jqXHR.responseText.title) + ", " + textStatus);
+      } else {
+        return self.publishEvent('tell_user', "Błąd! " + (JSON.stringify(jqXHR)) + ", " + textStatus);
+      }
     } else {
-      return self.publishEvent('tell_user', "Błąd " + jqXHR + ", " + textStatus);
+      return self.publishEvent('tell_user', "Błąd! " + jqXHR + ", " + textStatus);
     }
   });
 };
@@ -1192,7 +1203,7 @@ var LoginController, LoginView, Model, StructureController, mediator,
 
 StructureController = require('controllers/structure-controller');
 
-LoginView = require('views/login-view');
+LoginView = require('views/autologin-view');
 
 Model = require('models/login-model');
 
@@ -3327,8 +3338,85 @@ module.exports = ConfirmView = (function(_super) {
 
 });
 
+require.register("views/edit-panel-view", function(exports, require, module) {
+var View, mediator, template,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+View = require('views/base/view');
+
+mediator = require('mediator');
+
+template = require('views/templates/edit-panel');
+
+module.exports = View = (function(_super) {
+
+  __extends(View, _super);
+
+  function View() {
+    this.attach = __bind(this.attach, this);
+
+    this.getTemplateData = __bind(this.getTemplateData, this);
+
+    this.render = __bind(this.render, this);
+
+    this.show_to_client = __bind(this.show_to_client, this);
+
+    this.show_history = __bind(this.show_history, this);
+
+    this.initialize = __bind(this.initialize, this);
+    return View.__super__.constructor.apply(this, arguments);
+  }
+
+  View.prototype.autoRender = true;
+
+  View.prototype.containerMethod = 'html';
+
+  View.prototype.container = '#right-panel';
+
+  View.prototype.initialize = function(options) {
+    this.panel_type = options.panel_type;
+    this.template = template;
+    this.delegate('click', '#history', this.show_history);
+    return this.delegate('change', "[data-query]", this.show_to_client);
+  };
+
+  View.prototype.show_history = function(event) {
+    event.preventDefault();
+    return this.publishEvent("edit_panel:show_history", event);
+  };
+
+  View.prototype.show_to_client = function(event) {
+    event.preventDefault();
+    return this.publishEvent("edit_panel:show_to_client", event);
+  };
+
+  View.prototype.render = function() {
+    View.__super__.render.apply(this, arguments);
+    return this.publishEvent('log:debug', 'EditPanelView: render()');
+  };
+
+  View.prototype.getTemplateData = function() {
+    return {
+      clients: localStorage.getObject('clients')
+    };
+  };
+
+  View.prototype.attach = function() {
+    View.__super__.attach.apply(this, arguments);
+    this.$el.enhanceWithin();
+    return this.publishEvent('log:debug', 'EditPanelView: afterAttach()');
+  };
+
+  return View;
+
+})(View);
+
+});
+
 require.register("views/edit-view", function(exports, require, module) {
-var EditView, View, mediator, upload_template,
+var EditPanelView, EditView, View, mediator, upload_template,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -3339,12 +3427,16 @@ mediator = require('mediator');
 
 upload_template = require('views/templates/upload');
 
+EditPanelView = require('views/edit-panel-view');
+
 module.exports = EditView = (function(_super) {
 
   __extends(EditView, _super);
 
   function EditView() {
     this.attach = __bind(this.attach, this);
+
+    this.render_edit_panel = __bind(this.render_edit_panel, this);
 
     this.render = __bind(this.render, this);
 
@@ -3376,6 +3468,10 @@ module.exports = EditView = (function(_super) {
 
     this.popup_position = __bind(this.popup_position, this);
 
+    this.show_history = __bind(this.show_history, this);
+
+    this.show_to_client = __bind(this.show_to_client, this);
+
     this.initialize = __bind(this.initialize, this);
     return EditView.__super__.constructor.apply(this, arguments);
   }
@@ -3398,12 +3494,16 @@ module.exports = EditView = (function(_super) {
     this.params = params;
     this.model = this.params.model;
     this.form_name = this.params.form_name;
+    this.edit_panel_template = this.params.form_name;
     this.can_edit = this.params.can_edit;
     this.edit_type = this.params.edit_type;
     this.listing_type = (_ref = this.params.listing_type) != null ? _ref : false;
     this.delete_only = (_ref1 = this.params.delete_only) != null ? _ref1 : false;
     this.upload_multiple = true;
+    this.edit_panel_rendered = false;
     this.publishEvent('log:debug', "form_name:" + this.form_name + ", can_edit:" + this.can_edit + ", listing_type:" + this.listing_type + ", delete_only:" + this.delete_only + " ");
+    this.subscribeEvent('edit_panel:show_to_client', this.show_to_client);
+    this.subscribeEvent('edit_panel:show_history', this.show_history);
     this.subscribeEvent('delete:clicked', this.delete_action);
     this.subscribeEvent('popupbeforeposition', this.popup_position);
     this.subscribeEvent('save:clicked', this.save_action);
@@ -3413,8 +3513,16 @@ module.exports = EditView = (function(_super) {
     return this.delegate('click', "[name='resources'] li a:first-child", this.resource_preview);
   };
 
+  EditView.prototype.show_to_client = function(e) {
+    return this.publishEvent("log:debug", "show_to_client cought");
+  };
+
+  EditView.prototype.show_history = function(e) {
+    return this.publishEvent("log:debug", "show_history cought");
+  };
+
   EditView.prototype.popup_position = function() {
-    return console.log('popup position fired');
+    return this.publishEvent("log:debug", "popup positon fired");
   };
 
   EditView.prototype.resource_preview = function(e) {
@@ -3617,8 +3725,21 @@ module.exports = EditView = (function(_super) {
     if (!this.form_name.match('rent|sell')) {
       this.get_form();
       this.$el.append(this.form.el);
-      return this.publishEvent('log:info', 'view: edit-view RenderEnd()');
+      this.publishEvent('log:info', 'view: edit-view RenderEnd()');
     }
+    if (this.edit_panel_rendered === false) {
+      return this.render_edit_panel();
+    }
+  };
+
+  EditView.prototype.render_edit_panel = function() {
+    this.publishEvent('log:debug', "render edit_panel");
+    this.subview("edit_panel", new EditPanelView({
+      panel_type: this.edit_panel_template
+    }));
+    this.subview("edit_panel").render();
+    this.publishEvent('jqm_refersh:render');
+    return this.edit_panel_rendered = true;
   };
 
   EditView.prototype.attach = function() {
@@ -3976,6 +4097,8 @@ module.exports = FooterView = (function(_super) {
 
   function FooterView() {
     this.attach = __bind(this.attach, this);
+
+    this.getTemplateData = __bind(this.getTemplateData, this);
     return FooterView.__super__.constructor.apply(this, arguments);
   }
 
@@ -3989,6 +4112,14 @@ module.exports = FooterView = (function(_super) {
     'data-role': 'footer',
     'data-position': 'fixed',
     'data-theme': 'b'
+  };
+
+  FooterView.prototype.getTemplateData = function() {
+    return {
+      browser_name: bowser.name,
+      browser_version: bowser.version,
+      browser_mobile: bowser.mobile || ''
+    };
   };
 
   FooterView.prototype.attach = function() {
@@ -7425,6 +7556,70 @@ module.exports = function (__obj) {
 }
 });
 
+;require.register("views/templates/edit-panel", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var key, val, _ref;
+    
+      __out.push('<!-- #################################  #  PANEL -->\n    <fieldset data-role="controlgroup" data-type="vertical" data-theme=\'b\'>\n\t\t\t\t\t<ul data-role="listview" >\n\t\t\t\t\t\t<li data-icon="delete"> <a href="#header" data-rel="close">Zamknij menu</a></li>\n\t\t\t\t\t\t<li data-icon="power"> <a href="#" id=\'first-name-placeholder\' >Początek</a></li>\n\t\t\t\t\t\t<li data-icon="clock"> <a href="#" id=\'history\' >Pokaż historię</a></li>\n                    </ul>\n        <label for="show-to-client" class="ui-hidden-accessible ui-icon-user">Pokaż klientowi</label>\n        <select name="show-to-client" id="show-to-client" data-query=\'show-to-client\'>\n            <option value="">Pokaż klientowi</option>\n            ');
+    
+      _ref = this.clients;
+      for (key in _ref) {
+        val = _ref[key];
+        __out.push('\n            <option value="');
+        __out.push(__sanitize(key));
+        __out.push('">');
+        __out.push(__sanitize(val));
+        __out.push('</option>\n            ');
+      }
+    
+      __out.push('\n        </select>\n    </fieldset>\n<!-- ##################################  PANEL -->\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
 ;require.register("views/templates/export_list_view", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
@@ -7628,7 +7823,19 @@ module.exports = function (__obj) {
   (function() {
     (function() {
     
-      __out.push('<h4>Mobilny Pośrednik <a href=\'pixey.pl\'>Pixey.pl</a> &copy;</h4>\n\n');
+      __out.push('<h5><a href=\'pixey.pl\'>Pixey.pl</a> &copy; ');
+    
+      __out.push(__sanitize(this.browser_name));
+    
+      __out.push('/');
+    
+      __out.push(__sanitize(this.browser_version));
+    
+      __out.push(' ');
+    
+      __out.push(__sanitize(this.browser_mobile));
+    
+      __out.push('</h5>\n\n');
     
     }).call(this);
     

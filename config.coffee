@@ -19,6 +19,7 @@ exports.config =
                 # even if they aren't specified in order.before.
                 before: [
                     'vendor/scripts/console-helper.js',
+                    'vendor/scripts/bowser.js',
                     #'vendor/scripts/log4javascript.js',
                     'vendor/scripts/jquery-1.10.2.min.js',
                     'vendor/scripts/jquery-ui-1.10.4.custom.js',

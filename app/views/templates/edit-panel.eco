@@ -1,0 +1,16 @@
+<!-- #################################  #  PANEL -->
+    <fieldset data-role="controlgroup" data-type="vertical" data-theme='b'>
+					<ul data-role="listview" >
+						<li data-icon="delete"> <a href="#header" data-rel="close">Zamknij menu</a></li>
+						<li data-icon="power"> <a href="#" id='first-name-placeholder' >Początek</a></li>
+						<li data-icon="clock"> <a href="#" id='history' >Pokaż historię</a></li>
+                    </ul>
+        <label for="show-to-client" class="ui-hidden-accessible ui-icon-user">Pokaż klientowi</label>
+        <select name="show-to-client" id="show-to-client" data-query='show-to-client'>
+            <option value="">Pokaż klientowi</option>
+            <% for key , val of @clients : %>
+            <option value="<%= key %>"><%= val %></option>
+            <% end %>
+        </select>
+    </fieldset>
+<!-- ##################################  PANEL -->

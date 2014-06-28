@@ -14,7 +14,13 @@ module.exports = class Application extends Chaplin.Application
 
   initialize: ->
     super
-
+    # check for browser compatybilty
+    if not bowser.a
+        alert('''Mamy podejrzenia że używasz przeglądarki, która jest stara albo nie wspiera wszystkich funkcjonalności Mobilnego Pośrednika!
+        Proszę wejdz na stronę http://www.mozilla.org/pl/firefox/new , pobierz i zainstaluj najnowszego Firefoxa (dostępny też dla iPhona, Android etc.)''')
+    if not (bowser.name is 'Firefox' and parseInt(bowser.version) >= 30)  and not (bowser.name is 'Chrome' and parseInt(bowser.version) >= 35)
+        alert('''Mamy podejrzenia, że nie używasz przeglądarki Firefox lub Chrome w najnowszej wersji ...
+        Proszę wejdz na stronę http://www.mozilla.org/pl/firefox/new , pobierz i zainstaluj najnowszego Firefoxa (dostępny też dla iPhona, Android etc.)''')
     # Initialize core components
     #@initDispatcher controllerSuffix: '-controller'
     #initDispatcher: (options = {}) ->

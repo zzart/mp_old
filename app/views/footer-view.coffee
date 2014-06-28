@@ -6,6 +6,13 @@ module.exports = class FooterView extends View
     containerMethod : 'html'
     id: 'footer'
     attributes: { 'data-role':'footer', 'data-position':'fixed' , 'data-theme':'b' }
+
+    getTemplateData: =>
+        # model: @model
+        browser_name: bowser.name
+        browser_version: bowser.version
+        browser_mobile: bowser.mobile or ''
+
     attach: =>
         super
         # this is FIX for annoying footer behaviour on HOMEPAGE

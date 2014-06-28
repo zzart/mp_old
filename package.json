@@ -1,9 +1,9 @@
 {
-  "author": "Your Name",
-  "name": "package-name",
-  "description": "Package description",
+  "author": "Mariusz Raczynski @ Pixey",
+  "name": "mp",
+  "description": "",
   "version": "0.0.1",
-  "homepage": "",
+  "homepage": "http://mobilnyposrednik.pl",
   "repository": {
     "type": "git",
     "url": ""
@@ -16,13 +16,13 @@
     "test": "brunch test"
   },
   "dependencies": {
-    "javascript-brunch": ">= 1.0 < 1.6",
-    "coffee-script-brunch": ">= 1.0 < 1.6",
-    "css-brunch": ">= 1.0 < 1.6",
-    "less-brunch": ">= 1.0 < 1.4",
-    "uglify-js-brunch": ">= 1.0 < 1.6",
-    "clean-css-brunch": ">= 1.0 < 1.6",
-    "eco-brunch": ">= 1.0 < 1.4"
+    "javascript-brunch": "*",
+    "coffee-script-brunch": "*",
+    "css-brunch": "*",
+    "less-brunch": "*",
+    "uglify-js-brunch": "*",
+    "clean-css-brunch": "*",
+    "eco-brunch": "*"
   },
   "devDependencies": {
     "chai": "1.2.0",

@@ -1,6 +1,8 @@
 View = require 'views/base/view'
 mediator = require 'mediator'
 upload_template = require 'views/templates/upload'
+EditPanelView = require 'views/edit-panel-view'
+
 module.exports = class EditView extends View
     autoRender: true
     containerMethod: "html"
@@ -12,13 +14,18 @@ module.exports = class EditView extends View
         @params = params
         @model = @params.model
         @form_name = @params.form_name
+        @edit_panel_template = @params.form_name
         @can_edit = @params.can_edit
         @edit_type = @params.edit_type
         @listing_type = @params.listing_type ? false
         @delete_only = @params.delete_only ? false
         @upload_multiple = true
+        @edit_panel_rendered = false
         @publishEvent('log:debug', "form_name:#{@form_name}, can_edit:#{@can_edit}, listing_type:#{@listing_type}, delete_only:#{@delete_only} ")
         # events
+        @subscribeEvent('edit_panel:show_to_client', @show_to_client)
+        @subscribeEvent('edit_panel:show_history', @show_history)
+
         @subscribeEvent('delete:clicked', @delete_action)
         @subscribeEvent('popupbeforeposition', @popup_position)
         @subscribeEvent('save:clicked', @save_action)
@@ -28,9 +35,16 @@ module.exports = class EditView extends View
         # @delegate('DOMSubtreeModified','#resource_list', @refresh_resource )
         @delegate('click',"[name='resources'] li a:first-child", @resource_preview )
 
+
+    show_to_client: (e) =>
+        @publishEvent("log:debug", "show_to_client cought")
+
+    show_history: (e) =>
+        @publishEvent("log:debug", "show_history cought")
+
     # resource --------------------------------------------
     popup_position:=>
-        console.log('popup position fired')
+        @publishEvent("log:debug", "popup positon fired")
 
     resource_preview:(e)=>
         e.preventDefault()
@@ -232,6 +246,18 @@ module.exports = class EditView extends View
             @$el.append(@form.el)
             # console.log(@$el, @form.el, @template, @form_name)
             @publishEvent('log:info', 'view: edit-view RenderEnd()')
+        #so we only render nav once !
+        if @edit_panel_rendered is false
+            @render_edit_panel()
+
+    render_edit_panel: =>
+        @publishEvent('log:debug', "render edit_panel")
+        # NOTE: at the time of writing edit_panel_template is not required as we only using one template
+        @subview "edit_panel", new EditPanelView panel_type: @edit_panel_template
+        @subview("edit_panel").render()
+        @publishEvent('jqm_refersh:render')
+        #so we only render nav once !
+        @edit_panel_rendered = true
 
     attach: =>
         super
