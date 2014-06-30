@@ -5,6 +5,6 @@ mediator = require 'mediator'
 
 module.exports = class HomeController extends Controller
     show: ->
-        @publishEvent('log:info', 'controller:home')
+        @publishEvent('log:debug', 'HomeController')
         @view = new HomePageView {region: 'content'}
 

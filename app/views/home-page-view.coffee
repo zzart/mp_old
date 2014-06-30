@@ -3,6 +3,7 @@ View = require 'views/base/view'
 Collection = require 'models/listing-collection'
 # Footer = require 'views/footer-view'
 mediator = require 'mediator'
+
 module.exports = class HomePageView extends View
     autoRender: true
     containerMethod: "html"
@@ -10,14 +11,9 @@ module.exports = class HomePageView extends View
     id: 'content'
     template: template
     className: 'ui-content'
-    # initialize: ->
-    #    @delegate 'mouseenter', @route_change
-    #     @delegate 'panelclose', @panel_close
 
-    #route_change:(e) ->
-    #    console.log('hover')
-    #    @publishEvent('refreshmodel', 'flat_rent/form')
-
+    initialize: ->
+        @latest_exist = false
 
     getTemplateData: =>
         # lets create collections so that we can use all the models goodies in the templates
@@ -27,7 +23,9 @@ module.exports = class HomePageView extends View
         listings1.set(JSON.parse(localStorage.getObject('latest')))
         listings2.set(JSON.parse(localStorage.getObject('latest_modyfied')))
         listings3.set(JSON.parse(localStorage.getObject('update_needed')))
-
+        @publishEvent('log:debug', "latest: #{listings1.length}")
+        if listings1.length > 0
+            @latest_exist = true
         #first_name: mediator.models.user.get('first_name')
         latest :            listings1.toJSON()
         latest_modyfied :   listings2.toJSON()
@@ -35,6 +33,8 @@ module.exports = class HomePageView extends View
 
     attach: =>
         super
+        if @latest_exist is false
+            @publishEvent 'tell_user', 'Witaj w programie MobilnyPośrednik!<br /> Menu <a class="ui-btn ui-shadow ui-corner-all ui-icon-bars ui-btn-icon-notext ui-btn-inline">bars</a>jest do nawigacji <br /> Menu <a class="ui-btn ui-shadow ui-corner-all ui-icon-grid ui-btn-icon-notext ui-btn-inline">bars</a>jest do dodawania ofert'
         @publishEvent('log:info', 'HomeView: attach()')
         @publishEvent 'jqm_refersh:render'
 

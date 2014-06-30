@@ -35,6 +35,10 @@ module.exports = class ListView extends View
         #@delegate 'click',  "[href='#list-table-popup']", @open_column_popup
         @publishEvent('log:debug', @params)
         @navigation_rendered = false
+        # --- debug
+        window.col_hard = @collection_hard if mediator.online is false
+        window.col = @collection if mediator.online is false
+
         #init_events: =>
         #    @delegate 'click',  ".ui-table-columntoggle-btn", @column_action
         #    @delegate 'click',  "[href='#list-table-popup']", @column_action
@@ -143,7 +147,6 @@ module.exports = class ListView extends View
         if @navigation_rendered is false
             @render_subview()
 
-
     render_subview: =>
         @publishEvent('log:debug', "render sub_view")
         @subview "navigation", new NavigationView template: @navigation, listing_type: @listing_type
@@ -157,8 +160,11 @@ module.exports = class ListView extends View
         @publishEvent('log:debug', 'view: list-view afterRender()')
         #initialize sorting tables  http://tablesorter.com/docs/
         #można sortować wielokolumnowo przytrzymując shift ;)
-        if @collection.length > 1
+        @publishEvent('log:info', "collection has a length of : #{@collection.length}")
+        if @collection.length >= 1
             $("#list-table").tablesorter({sortList:[[4,0]], headers:{0:{'sorter':false}, 1:{'sorter':false}}})
+        else
+            @publishEvent 'tell_user', 'Nic nie znaleźiono!<br />Kliknij na menu <a class="ui-btn ui-shadow ui-corner-all ui-icon-grid ui-btn-icon-notext ui-btn-inline">menu</a>aby wprowadzić pierwszy element'
         @publishEvent('jqm_refersh:render')
         @selects_refresh()
         @publishEvent 'table_refresh'

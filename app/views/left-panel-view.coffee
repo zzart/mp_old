@@ -26,10 +26,14 @@ module.exports = class LeftPanelView extends View
         #@delegate 'click', '#left-panel', @panel_self_close
         #@delegate 'click', @panel_self_close
         @delegate 'click', '#account-status-btn', @account_status
+        @delegate 'click', 'a', @close_panel
 
         #panel_self_close: =>
         #    @publishEvent('log:debug', 'panel self close')
         #    $('#left-panel').panel('close')
+
+    close_panel: =>
+        @$el.panel('close')
 
     account_status: ->
         as = localStorage.getObject('account')
@@ -63,4 +67,4 @@ module.exports = class LeftPanelView extends View
 
     attach: =>
         super
-        @publishEvent('log:info', 'LeftPanelView: attach()')
+        @publishEvent('log:debug', 'LeftPanelView: attach()')

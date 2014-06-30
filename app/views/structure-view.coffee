@@ -11,7 +11,7 @@ module.exports = class StructureView extends View
     attributes: { 'data-role':'page' }
     template: template
     regions:
-        'page': '#page-region'
+        #'page': '#page-region'
         'content': '#content-region'
         'header': '#header-region'
         'footer': '#footer-region'
@@ -23,6 +23,11 @@ module.exports = class StructureView extends View
 
     attach: =>
         super
-        @publishEvent('log:info', 'structureView: attach()')
+        @publishEvent('log:debug', 'StructureView: attach()')
+        #check if we have all divs in markup debug --
+        for key, val of @regions
+            if $(val).length is 0
+                @publishEvent('log:error', "No div present #{val}!! Doom!")
+
 
 

@@ -6,9 +6,10 @@ mediator = require 'mediator'
 module.exports = class AuthController extends StructureController
     beforeAction: (params, route) ->
         super # call StructureController beforeAction
-        @publishEvent('log:info', 'AuthController#beforeAction()')
-        @publishEvent('log:info',  window.location.pathname)
-        @publishEvent('log:info',  mediator.models.user?.toJSON())
+        @publishEvent('log:debug', 'AuthController#beforeAction()')
+        if mediator.online is false
+            @publishEvent('log:debug',  window.location.pathname)
+            @publishEvent('log:debug',  mediator.models.user?.toJSON())
         # @publishEvent('tell_user', 'Pracuje ...')
 
         if _.isEmpty(mediator.models.user)
@@ -73,7 +74,7 @@ Backbone.sync = (method, model, options) ->
         #console.log('request done')
     )
     request.fail((jqXHR, textStatus) ->
-        console.log(jqXHR, textStatus)
+        self.publishEvent('log:debug', "#{jqXHR.jqXHR}, #{textStatus}")
         $.mobile.loading('hide')
         if _.isObject(jqXHR)
             # lets check if we have responseText or responseJSON

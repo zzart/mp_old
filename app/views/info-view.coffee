@@ -10,5 +10,5 @@ module.exports = class InfoView extends View
 
     attach: =>
         super
-        @publishEvent('log:info', 'HeaderView:attach()')
+        @publishEvent('log:debug', 'InfoView:attach()')
 

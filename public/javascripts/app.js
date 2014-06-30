@@ -154,8 +154,8 @@ module.exports = Application = (function(_super) {
       mediator.server_url = 'http://mps.mobilnyposrednik.pl/';
     } else {
       mediator.server_url = 'http://localhost:8080/';
+      console.log(mediator.server_url);
     }
-    console.log(mediator.server_url);
     mediator.upload_url = "" + mediator.server_url + "v1/pliki";
     mediator.app_key = 'mp';
     mediator.app = '4ba2b78a-5675-42d9-8aab-f65ecf3ce9ba';
@@ -375,9 +375,11 @@ module.exports = AuthController = (function(_super) {
   AuthController.prototype.beforeAction = function(params, route) {
     var _ref;
     AuthController.__super__.beforeAction.apply(this, arguments);
-    this.publishEvent('log:info', 'AuthController#beforeAction()');
-    this.publishEvent('log:info', window.location.pathname);
-    this.publishEvent('log:info', (_ref = mediator.models.user) != null ? _ref.toJSON() : void 0);
+    this.publishEvent('log:debug', 'AuthController#beforeAction()');
+    if (mediator.online === false) {
+      this.publishEvent('log:debug', window.location.pathname);
+      this.publishEvent('log:debug', (_ref = mediator.models.user) != null ? _ref.toJSON() : void 0);
+    }
     if (_.isEmpty(mediator.models.user)) {
       mediator.redirectUrl = window.location.pathname;
       return this.redirectTo({
@@ -426,7 +428,7 @@ Backbone.sync = function(method, model, options) {
   });
   return request.fail(function(jqXHR, textStatus) {
     var _ref1, _ref2;
-    console.log(jqXHR, textStatus);
+    self.publishEvent('log:debug', "" + jqXHR.jqXHR + ", " + textStatus);
     $.mobile.loading('hide');
     if (_.isObject(jqXHR)) {
       if (((_ref1 = jqXHR.responseText) != null ? _ref1.title : void 0) || (((_ref2 = jqXHR.responseJSON) != null ? _ref2.title : void 0) != null)) {
@@ -1022,7 +1024,7 @@ module.exports = HomeController = (function(_super) {
   }
 
   HomeController.prototype.show = function() {
-    this.publishEvent('log:info', 'controller:home');
+    this.publishEvent('log:debug', 'HomeController');
     return this.view = new HomePageView({
       region: 'content'
     });
@@ -1095,7 +1097,7 @@ module.exports = ListingController = (function(_super) {
   ListingController.prototype.list = function(params, route, options) {
     var listing_type,
       _this = this;
-    this.publishEvent('log:info', "in list property controller" + params + ", " + route + ", " + options);
+    this.publishEvent('log:debug', "in list property controller" + params + ", " + route + ", " + options);
     mediator.last_query = _.clone(options.query);
     listing_type = options.query.category;
     mediator.collections.listings = new Collection;
@@ -1103,7 +1105,7 @@ module.exports = ListingController = (function(_super) {
     return mediator.collections.listings.fetch({
       data: mediator.collections.listings.query,
       success: function() {
-        _this.publishEvent('log:info', "data with " + params + " fetched ok");
+        _this.publishEvent('log:debug', "data with " + params + " fetched ok");
         return _this.view = new ListView({
           collection: mediator.collections.listings,
           template: "listing_list_view",
@@ -1128,7 +1130,7 @@ module.exports = ListingController = (function(_super) {
     this.schema = localStorage.getObject("" + listing_type + "_schema");
     mediator.models.listing = new Model;
     mediator.models.listing.schema = _.clone(this.schema);
-    this.publishEvent('log:info', "init view property controller");
+    this.publishEvent('log:debug', "init view property controller");
     this.view = new View({
       form_name: form,
       model: mediator.models.listing,
@@ -1137,13 +1139,13 @@ module.exports = ListingController = (function(_super) {
       edit_type: 'add',
       region: 'content'
     });
-    return this.publishEvent('log:info', "after init view property controller");
+    return this.publishEvent('log:debug', "after init view property controller");
   };
 
   ListingController.prototype.show = function(params, route, options) {
     var categories, category, form, schema, url, _ref,
       _this = this;
-    this.publishEvent('log:info', 'in listing show controller');
+    this.publishEvent('log:debug', 'in listing show controller');
     url = "/oferty?" + ($.param(mediator.last_query));
     if (_.isObject((_ref = mediator.collections.listings) != null ? _ref.get(params.id) : void 0)) {
       this.model = mediator.collections.listings.get(params.id);
@@ -1412,42 +1414,42 @@ module.exports = StructureController = (function(_super) {
 
   StructureController.prototype.beforeAction = function(params, route) {
     var edit_footer, list_footer, _ref, _ref1;
-    this.publishEvent('log:info', 'StructureController start ------------');
-    this.compose('structure', StructureView);
-    this.compose('header', Header, {
+    this.publishEvent('log:debug', 'StructureController start ------------');
+    this.reuse('structure', StructureView);
+    this.reuse('header', Header, {
       region: 'header'
     });
     edit_footer = ['listing#add', 'listing#show', 'client#add', 'client#show', 'client-public#show', 'branch#add', 'branch#show', 'agent#add', 'agent#show', 'bon#show', 'graphic#add', 'graphic#show', 'export#add', 'export#show'];
     list_footer = ['listing#list', 'client#list', 'client-public#list', 'branch#list', 'agent#list', 'bon#list', 'graphic#list', 'export#list'];
     if (_ref = route.name, __indexOf.call(edit_footer, _ref) >= 0) {
-      this.compose('footer-nav', NavFooter, {
+      this.reuse('footer-nav', NavFooter, {
         region: 'footer'
       });
     } else if (_ref1 = route.name, __indexOf.call(list_footer, _ref1) >= 0) {
-      this.compose('footer-list', ListFooter, {
+      this.reuse('footer-list', ListFooter, {
         region: 'footer'
       });
     } else {
-      this.compose('footer', Footer, {
+      this.reuse('footer', Footer, {
         region: 'footer'
       });
     }
-    this.compose('panel-right', RightPanelView);
-    this.compose('panel-left', LeftPanelView);
-    this.compose('info', InfoView, {
+    this.reuse('panel-right', RightPanelView);
+    this.reuse('panel-left', LeftPanelView);
+    this.reuse('info', InfoView, {
       region: 'info'
     });
-    this.compose('viewed', ViewedView, {
+    this.reuse('viewed', ViewedView, {
       region: 'viewed'
     });
-    this.compose('confirm', ConfirmView, {
+    this.reuse('confirm', ConfirmView, {
       region: 'confirm'
     });
-    this.compose('popgeneric', PopGenericView, {
+    this.reuse('popgeneric', PopGenericView, {
       region: 'popgeneric'
     });
     this.publishEvent('structureController:render');
-    return this.publishEvent('log:info', 'structureController done ----------');
+    return this.publishEvent('log:debug', 'structureController done ----------');
   };
 
   return StructureController;
@@ -2624,7 +2626,7 @@ module.exports = View = (function(_super) {
         }
       });
     } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+      return this.publishEvent('tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.');
     }
   };
 
@@ -2891,7 +2893,7 @@ module.exports = BonEditView = (function(_super) {
         }
       });
     } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+      return this.publishEvent('tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.');
     }
   };
 
@@ -3014,7 +3016,7 @@ module.exports = BranchView = (function(_super) {
         }
       });
     } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+      return this.publishEvent('tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.');
     }
   };
 
@@ -3247,7 +3249,7 @@ module.exports = ClientAddView = (function(_super) {
         }
       });
     } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+      return this.publishEvent('tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.');
     }
   };
 
@@ -3510,7 +3512,10 @@ module.exports = EditView = (function(_super) {
     this.subscribeEvent('back:clicked', this.back_action);
     this.delegate('click', 'a.form-help', this.form_help);
     this.delegate('click', '[data-role=\'navbar\']:first li', this.refresh_resource);
-    return this.delegate('click', "[name='resources'] li a:first-child", this.resource_preview);
+    this.delegate('click', "[name='resources'] li a:first-child", this.resource_preview);
+    if (mediator.online === false) {
+      return window.model = this.model;
+    }
   };
 
   EditView.prototype.show_to_client = function(e) {
@@ -3706,12 +3711,13 @@ module.exports = EditView = (function(_super) {
 
   EditView.prototype.get_form = function() {
     this.publishEvent('log:info', "form name: " + this.form_name);
-    window.model = this.model;
     this.form = new Backbone.Form({
       model: this.model,
       template: _.template(localStorage.getObject(this.form_name))
     });
-    window.form = this.form;
+    if (mediator.online === false) {
+      window.form = this.form;
+    }
     return this.form.render();
   };
 
@@ -3918,7 +3924,7 @@ module.exports = ExportView = (function(_super) {
         }
       });
     } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+      return this.publishEvent('tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.');
     }
   };
 
@@ -4028,7 +4034,7 @@ module.exports = FooterView = (function(_super) {
 
   FooterView.prototype.attach = function() {
     FooterView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', 'FooterEditView:attach()');
+    this.publishEvent('log:debug', 'FooterView:attach()');
     return this.publishEvent('jqm_footer_refersh:render');
   };
 
@@ -4130,7 +4136,7 @@ module.exports = FooterView = (function(_super) {
       $("#footer-region").html('').append(new_el.outerHTML);
       return $("#footer-region").enhanceWithin();
     }, 30);
-    this.publishEvent('log:info', 'FooterView:attach');
+    this.publishEvent('log:debug', 'FooterView:attach');
     return this.publishEvent('jqm_footer_refersh:render');
   };
 
@@ -4234,7 +4240,7 @@ module.exports = GraphicView = (function(_super) {
         }
       });
     } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+      return this.publishEvent('tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.');
     }
   };
 
@@ -4368,7 +4374,7 @@ module.exports = HeaderView = (function(_super) {
 
   HeaderView.prototype.attach = function() {
     HeaderView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'HeaderView:attach()');
+    return this.publishEvent('log:debug', 'HeaderView:attach()');
   };
 
   return HeaderView;
@@ -4416,6 +4422,10 @@ module.exports = HomePageView = (function(_super) {
 
   HomePageView.prototype.className = 'ui-content';
 
+  HomePageView.prototype.initialize = function() {
+    return this.latest_exist = false;
+  };
+
   HomePageView.prototype.getTemplateData = function() {
     var listings1, listings2, listings3;
     listings1 = new Collection;
@@ -4424,6 +4434,10 @@ module.exports = HomePageView = (function(_super) {
     listings1.set(JSON.parse(localStorage.getObject('latest')));
     listings2.set(JSON.parse(localStorage.getObject('latest_modyfied')));
     listings3.set(JSON.parse(localStorage.getObject('update_needed')));
+    this.publishEvent('log:debug', "latest: " + listings1.length);
+    if (listings1.length > 0) {
+      this.latest_exist = true;
+    }
     return {
       latest: listings1.toJSON(),
       latest_modyfied: listings2.toJSON(),
@@ -4433,6 +4447,9 @@ module.exports = HomePageView = (function(_super) {
 
   HomePageView.prototype.attach = function() {
     HomePageView.__super__.attach.apply(this, arguments);
+    if (this.latest_exist === false) {
+      this.publishEvent('tell_user', 'Witaj w programie MobilnyPośrednik!<br /> Menu <a class="ui-btn ui-shadow ui-corner-all ui-icon-bars ui-btn-icon-notext ui-btn-inline">bars</a>jest do nawigacji <br /> Menu <a class="ui-btn ui-shadow ui-corner-all ui-icon-grid ui-btn-icon-notext ui-btn-inline">bars</a>jest do dodawania ofert');
+    }
     this.publishEvent('log:info', 'HomeView: attach()');
     return this.publishEvent('jqm_refersh:render');
   };
@@ -4558,7 +4575,7 @@ module.exports = InfoView = (function(_super) {
 
   InfoView.prototype.attach = function() {
     InfoView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'HeaderView:attach()');
+    return this.publishEvent('log:debug', 'InfoView:attach()');
   };
 
   return InfoView;
@@ -4630,7 +4647,7 @@ module.exports = Layout = (function(_super) {
     } else {
       this.log = console;
     }
-    this.log.info('layout init');
+    this.log.debug('layout init');
     jqm = true;
     if (jqm) {
       this.subscribeEvent('structureController:render', this.jqm_init);
@@ -4662,7 +4679,7 @@ module.exports = Layout = (function(_super) {
   };
 
   Layout.prototype.schema_change = function() {
-    this.log.info('****************refreshing schema');
+    this.log.debug('****************refreshing schema');
     return mediator.models.user.fetch();
   };
 
@@ -4713,7 +4730,7 @@ module.exports = Layout = (function(_super) {
   };
 
   Layout.prototype.disable_buttons = function(can_edit, edit_type, delete_only, no_back) {
-    this.log.info('form buttons disable caught');
+    this.log.debug('form buttons disable caught');
     if (edit_type === 'add') {
       $("#delete-button").attr('disabled', true);
     }
@@ -4746,7 +4763,7 @@ module.exports = Layout = (function(_super) {
   };
 
   Layout.prototype.jqm_init = function() {
-    this.log.info('layout: event jqm_init caugth');
+    this.log.debug('layout: event jqm_init caugth');
     return $(function() {
       $.mobile.initializePage();
       $.mobile.loading('hide');
@@ -4761,7 +4778,7 @@ module.exports = Layout = (function(_super) {
   };
 
   Layout.prototype.jqm_leftpanel = function() {
-    return this.log.info('layout: event jqm_menurender caugth');
+    return this.log.debug('layout: event jqm_menurender caugth');
   };
 
   Layout.prototype.jqm_refersh = function() {
@@ -4811,20 +4828,20 @@ module.exports = Layout = (function(_super) {
   };
 
   Layout.prototype.jqm_page_refersh = function() {
-    this.log.info('layout: event jqm_page_refresh caugth');
+    this.log.debug('layout: event jqm_page_refresh caugth');
     $("#page").enhanceWithin();
     return $.mobile.loading('hide');
   };
 
   Layout.prototype.jqm_footer_refersh = function() {
-    this.log.info('layout: event jqm_footer_refresh caugth');
+    this.log.debug('layout: event jqm_footer_refresh caugth');
     return $("#footer-region").enhanceWithin();
   };
 
   Layout.prototype.jqm_recreate = function() {};
 
   Layout.prototype.jqm_table_refresh = function() {
-    this.log.info('layout: jqm_table_refresh ');
+    this.log.debug('layout: jqm_table_refresh ');
     return $("#list-table").table("refresh");
   };
 
@@ -4862,6 +4879,8 @@ module.exports = LeftPanelView = (function(_super) {
     this.panel_beforeopen = __bind(this.panel_beforeopen, this);
 
     this.getTemplateData = __bind(this.getTemplateData, this);
+
+    this.close_panel = __bind(this.close_panel, this);
     return LeftPanelView.__super__.constructor.apply(this, arguments);
   }
 
@@ -4885,7 +4904,12 @@ module.exports = LeftPanelView = (function(_super) {
     this.delegate('panelbeforeclose', this.panel_beforeclose);
     this.delegate('panelopen', this.panel_open);
     this.delegate('panelclose', this.panel_close);
-    return this.delegate('click', '#account-status-btn', this.account_status);
+    this.delegate('click', '#account-status-btn', this.account_status);
+    return this.delegate('click', 'a', this.close_panel);
+  };
+
+  LeftPanelView.prototype.close_panel = function() {
+    return this.$el.panel('close');
   };
 
   LeftPanelView.prototype.account_status = function() {
@@ -4932,7 +4956,7 @@ module.exports = LeftPanelView = (function(_super) {
 
   LeftPanelView.prototype.attach = function() {
     LeftPanelView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'LeftPanelView: attach()');
+    return this.publishEvent('log:debug', 'LeftPanelView: attach()');
   };
 
   return LeftPanelView;
@@ -5344,7 +5368,13 @@ module.exports = ListView = (function(_super) {
     this.subscribeEvent('navigation:select_action', this.select_action);
     this.delegate('change', '#all', this.select_all_action);
     this.publishEvent('log:debug', this.params);
-    return this.navigation_rendered = false;
+    this.navigation_rendered = false;
+    if (mediator.online === false) {
+      window.col_hard = this.collection_hard;
+    }
+    if (mediator.online === false) {
+      return window.col = this.collection;
+    }
   };
 
   ListView.prototype.filter_action = function(event) {
@@ -5474,7 +5504,8 @@ module.exports = ListView = (function(_super) {
   ListView.prototype.attach = function() {
     ListView.__super__.attach.apply(this, arguments);
     this.publishEvent('log:debug', 'view: list-view afterRender()');
-    if (this.collection.length > 1) {
+    this.publishEvent('log:info', "collection has a length of : " + this.collection.length);
+    if (this.collection.length >= 1) {
       $("#list-table").tablesorter({
         sortList: [[4, 0]],
         headers: {
@@ -5486,6 +5517,8 @@ module.exports = ListView = (function(_super) {
           }
         }
       });
+    } else {
+      this.publishEvent('tell_user', 'Nic nie znaleźiono!<br />Kliknij na menu <a class="ui-btn ui-shadow ui-corner-all ui-icon-grid ui-btn-icon-notext ui-btn-inline">menu</a>aby wprowadzić pierwszy element');
     }
     this.publishEvent('jqm_refersh:render');
     this.selects_refresh();
@@ -5709,7 +5742,7 @@ module.exports = ListingListView = (function(_super) {
 
   ListingListView.prototype.attach = function() {
     ListingListView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'view: listing list view afterRender()');
+    return this.publishEvent('log:debug', 'view: listing list view afterRender()');
   };
 
   return ListingListView;
@@ -5768,7 +5801,7 @@ module.exports = View = (function(_super) {
 });
 
 require.register("views/listing-view", function(exports, require, module) {
-var AddView, TabView, View, mediator,
+var AddView, Collection, TabView, View, mediator,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -5779,6 +5812,8 @@ View = require('views/edit-view');
 TabView = require('views/listing-tab-view');
 
 mediator = require('mediator');
+
+Collection = require('models/listing-collection');
 
 module.exports = AddView = (function(_super) {
 
@@ -5842,10 +5877,50 @@ module.exports = AddView = (function(_super) {
     }
   };
 
+  AddView.prototype.update_local_storage = function() {
+    var created, latest, latest_modyfied, modyfied;
+    this.publishEvent('log:debug', 'update_local_storage');
+    latest_modyfied = new Collection;
+    latest_modyfied.set(JSON.parse(localStorage.getObject('latest_modyfied')));
+    this.publishEvent('log:debug', "check for latest_modyfied: " + (latest_modyfied.get(this.model.id)));
+    if (_.isUndefined(latest_modyfied.get(this.model.id))) {
+      latest_modyfied.pop();
+      latest_modyfied.unshift(this.model);
+      localStorage.setObject('latest_modyfied', JSON.stringify(latest_modyfied));
+    } else {
+      latest_modyfied.remove(this.model.id);
+      latest_modyfied.unshift(this.model);
+      localStorage.setObject('latest_modyfied', JSON.stringify(latest_modyfied));
+    }
+    created = new Date(this.model.get('date_created'));
+    modyfied = new Date(this.model.get('date_modyfied'));
+    this.publishEvent('log:debug', "Compering date " + created + " with " + modyfied + " result: " + (created.getTime() === modyfied.getTime()));
+    if (created.getTime() === modyfied.getTime()) {
+      console.log(1);
+      latest = new Collection;
+      latest.set(JSON.parse(localStorage.getObject('latest')));
+      console.log(2);
+      if (_.isUndefined(latest.get(this.model.id))) {
+        console.log(3);
+        latest.pop();
+        latest.unshift(this.model);
+        localStorage.setObject('latest', JSON.stringify(latest));
+        console.log(4);
+      } else {
+        console.log(5);
+        latest.remove(this.model.id);
+        latest.unshift(this.model);
+        localStorage.setObject('latest', JSON.stringify(latest));
+        console.log(6);
+      }
+    }
+    return console.log(7);
+  };
+
   AddView.prototype.save_action = function(url) {
     var _this = this;
     AddView.__super__.save_action.apply(this, arguments);
-    this.publishEvent('log:info', 'commmit form');
+    this.publishEvent('log:debug', 'commmit form');
     if (_.isUndefined(this.form.commit({
       validate: true
     }))) {
@@ -5858,6 +5933,7 @@ module.exports = AddView = (function(_super) {
           if (mediator.collections.listings != null) {
             mediator.collections.listings.add(_this.model);
           }
+          _this.update_local_storage();
           _this.publishEvent('tell_user', "Rekord " + (_this.model.get_url()) + " zapisany");
           if (((_ref = mediator.collections.listings) != null ? _ref.query : void 0) != null) {
             return Chaplin.utils.redirectTo({
@@ -5878,7 +5954,7 @@ module.exports = AddView = (function(_super) {
         }
       });
     } else {
-      return this.publishEvent('tell_user', 'Błąd w formularzu!');
+      return this.publishEvent('tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.');
     }
   };
 
@@ -5926,7 +6002,7 @@ module.exports = AddView = (function(_super) {
   };
 
   AddView.prototype.copy_address = function(event) {
-    this.publishEvent('log:info', 'copy address event');
+    this.publishEvent('log:debug', 'copy address event');
     event.preventDefault();
     $("[name='internet_postcode']").val($("[name='postcode']").val());
     $("[name='internet_street']").val($("[name='street']").val());
@@ -5940,7 +6016,7 @@ module.exports = AddView = (function(_super) {
   };
 
   AddView.prototype.address_reset = function() {
-    this.publishEvent('log:info', 'address reset');
+    this.publishEvent('log:debug', 'address reset');
     $("[name='internet_postcode']").val('');
     $("[name='postcode']").val('');
     $("[name='internet_street']").val('');
@@ -5964,7 +6040,7 @@ module.exports = AddView = (function(_super) {
 
   AddView.prototype.fill_address = function(event) {
     var $ul, borough, county, full_name, item, newPx, obj, openlayers_projection, position, projection, zoom, _i, _len;
-    this.publishEvent('log:info', 'fill address event');
+    this.publishEvent('log:debug', 'fill address event');
     this.address_reset();
     obj = this.response[event.target.value];
     $("[name='postcode']").val(obj.address.postcode);
@@ -5984,7 +6060,7 @@ module.exports = AddView = (function(_super) {
         borough = item;
       }
     }
-    this.publishEvent('log:info', "county:" + county + ", borough:" + borough + ", address.county:" + obj.address.county + ", address.borough:" + obj.address.borough);
+    this.publishEvent('log:debug', "county:" + county + ", borough:" + borough + ", address.county:" + obj.address.county + ", address.borough:" + obj.address.borough);
     $("[name='borough']").val(borough || obj.address.borough || obj.address.village || obj.address.city);
     $("[name='county']").val(county || obj.address.county || '');
     $ul = $('ul#autocomplete.ui-listview');
@@ -6007,7 +6083,9 @@ module.exports = AddView = (function(_super) {
     value = $input.val();
     html = "";
     $ul.html("");
-    window.ul = $ul;
+    if (mediator.online === false) {
+      window.ul = $ul;
+    }
     if (value && value.length > 2) {
       $ul.html("<li><div class='ui-loader'><span class='ui-icon ui-icon-loading'></span></div></li>");
       $ul.listview("refresh");
@@ -6045,7 +6123,7 @@ module.exports = AddView = (function(_super) {
   };
 
   AddView.prototype.init_openstreet = function() {
-    this.publishEvent('log:info', 'init openstreet map');
+    this.publishEvent('log:debug', 'init openstreet map');
     return this.openstreet();
   };
 
@@ -6117,9 +6195,8 @@ module.exports = AddView = (function(_super) {
     base_template = this.form.template();
     $bt = $(base_template);
     $bt.find('.ui-grid-a').remove();
-    window.bt = $bt;
     this.$el.append($bt);
-    return this.publishEvent('log:info', 'view: edit-view RenderEnd()');
+    return this.publishEvent('log:debug', 'view: edit-view RenderEnd()');
   };
 
   AddView.prototype.render_subview = function(tab_id) {
@@ -6127,10 +6204,9 @@ module.exports = AddView = (function(_super) {
     if (tab_id == null) {
       tab_id = 'tab_1';
     }
-    this.publishEvent('log:info', "render sub_view " + tab_id);
+    this.publishEvent('log:debug', "render sub_view " + tab_id);
     if (__indexOf.call(this.rendered_tabs, tab_id) < 0) {
       $temp = $(this.form.el).find("#" + tab_id);
-      window.form = this.form;
       this.subview(tab_id, new TabView({
         container: this.el,
         template: $temp,
@@ -6157,7 +6233,7 @@ module.exports = AddView = (function(_super) {
 
   AddView.prototype.attach = function() {
     AddView.__super__.attach.apply(this, arguments);
-    this.publishEvent('log:info', "listing-add attach");
+    this.publishEvent('log:debug', "listing-add attach");
     return this.render_subview();
   };
 
@@ -6503,7 +6579,7 @@ module.exports = RightPanelView = (function(_super) {
 
   RightPanelView.prototype.attach = function() {
     RightPanelView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'RightPanelView: attach()');
+    return this.publishEvent('log:debug', 'RightPanelView: attach()');
   };
 
   return RightPanelView;
@@ -6548,7 +6624,6 @@ module.exports = StructureView = (function(_super) {
   StructureView.prototype.template = template;
 
   StructureView.prototype.regions = {
-    'page': '#page-region',
     'content': '#content-region',
     'header': '#header-region',
     'footer': '#footer-region',
@@ -6560,8 +6635,20 @@ module.exports = StructureView = (function(_super) {
   };
 
   StructureView.prototype.attach = function() {
+    var key, val, _ref, _results;
     StructureView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'structureView: attach()');
+    this.publishEvent('log:debug', 'StructureView: attach()');
+    _ref = this.regions;
+    _results = [];
+    for (key in _ref) {
+      val = _ref[key];
+      if ($(val).length === 0) {
+        _results.push(this.publishEvent('log:error', "No div present " + val + "!! Doom!"));
+      } else {
+        _results.push(void 0);
+      }
+    }
+    return _results;
   };
 
   return StructureView;
@@ -8228,7 +8315,7 @@ module.exports = function (__obj) {
     (function() {
       var item, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
     
-      __out.push('<ul data-role="listview" data-inset="true" data-divider-theme="a">\n<li data-role="list-divider">Ostatio Dodane</li>\n\n      ');
+      __out.push('<ul data-role="listview" data-inset="true" data-divider-theme="a">\n<li data-role="list-divider">Ostatnio Dodane</li>\n\n      ');
     
       _ref = this.latest;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -9214,7 +9301,7 @@ module.exports = ViewedView = (function(_super) {
 
   ViewedView.prototype.attach = function() {
     ViewedView.__super__.attach.apply(this, arguments);
-    return this.publishEvent('log:info', 'HeaderView:attach()');
+    return this.publishEvent('log:debug', 'ViewedView:attach()');
   };
 
   return ViewedView;

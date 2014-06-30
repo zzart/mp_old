@@ -1,5 +1,5 @@
 <ul data-role="listview" data-inset="true" data-divider-theme="a">
-<li data-role="list-divider">Ostatio Dodane</li>
+<li data-role="list-divider">Ostatnio Dodane</li>
 
       <% for item in @latest: %>
             <li><a href="#oferty/<%= item['id'] %>">

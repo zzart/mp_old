@@ -8,7 +8,7 @@ mediator =  require 'mediator'
 
 module.exports = class ListingController extends Controller
     list:(params, route, options) ->
-        @publishEvent('log:info', "in list property controller#{params}, #{route}, #{options}" )
+        @publishEvent('log:debug', "in list property controller#{params}, #{route}, #{options}" )
         mediator.last_query = _.clone(options.query)
         listing_type = options.query.category
         mediator.collections.listings = new Collection
@@ -18,7 +18,7 @@ module.exports = class ListingController extends Controller
             #beforeSend: =>
             #    @publishEvent 'tell_user', 'Ładuje oferty...'
             success: =>
-                @publishEvent('log:info', "data with #{params} fetched ok" )
+                @publishEvent('log:debug', "data with #{params} fetched ok" )
                 @view = new ListView {
                     collection:mediator.collections.listings
                     template: "listing_list_view"
@@ -39,7 +39,7 @@ module.exports = class ListingController extends Controller
         @schema =localStorage.getObject("#{listing_type}_schema")
         mediator.models.listing = new Model
         mediator.models.listing.schema = _.clone(@schema)
-        @publishEvent('log:info', "init view property controller" )
+        @publishEvent('log:debug', "init view property controller" )
         @view = new View {
             form_name: form,
             model:mediator.models.listing
@@ -48,11 +48,11 @@ module.exports = class ListingController extends Controller
             edit_type: 'add'
             region: 'content'
         }
-        @publishEvent('log:info', "after init view property controller" )
+        @publishEvent('log:debug', "after init view property controller" )
 
 
     show:(params, route, options) ->
-        @publishEvent('log:info', 'in listing show controller')
+        @publishEvent('log:debug', 'in listing show controller')
         url = "/oferty?#{$.param(mediator.last_query)}"
         # @redirectTo {url} unless _.isObject(mediator.collections.listings.get(params.id))
         if _.isObject(mediator.collections.listings?.get(params.id))

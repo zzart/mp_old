@@ -5,7 +5,6 @@ module.exports = class ListingListView extends View
     initialize: (params) ->
         super
 
-
     query_action: (event) =>
         super
 
@@ -33,10 +32,9 @@ module.exports = class ListingListView extends View
             error: =>
                 @publishEvent 'server_error'
 
-
     attach: =>
         super
-        @publishEvent('log:info', 'view: listing list view afterRender()')
+        @publishEvent('log:debug', 'view: listing list view afterRender()')
 
 
 

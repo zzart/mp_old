@@ -1,6 +1,8 @@
 View = require 'views/edit-view'
 TabView = require 'views/listing-tab-view'
 mediator = require 'mediator'
+Collection = require 'models/listing-collection'
+
 module.exports = class AddView extends View
     initialize: (params) =>
         super
@@ -37,9 +39,62 @@ module.exports = class AddView extends View
             @render()
             @render_subview()
 
+    update_local_storage: ->
+        @publishEvent('log:debug','update_local_storage')
+        # if model has been saved we will most probably need to refresh HOMEPAGE view
+        # instead of doing another fetch and putting it to localstorage we can do it now
+        # look for ids in localstorage and replace or add this new model
+        # NOTE: JSON.stringify to comply with a server response ( which is a string type )
+        # for LATEST_MODYFIED models on home page
+        latest_modyfied = new Collection
+        latest_modyfied.set(JSON.parse(localStorage.getObject('latest_modyfied')))
+        @publishEvent('log:debug', "check for latest_modyfied: #{latest_modyfied.get(@model.id)}")
+        if _.isUndefined(latest_modyfied.get(@model.id))
+            #remove one form the back
+            latest_modyfied.pop()
+            # append new one to the beginning
+            latest_modyfied.unshift(@model)
+            localStorage.setObject('latest_modyfied', JSON.stringify(latest_modyfied))
+        else
+            #get rid of old model
+            latest_modyfied.remove(@model.id)
+            # append new one to the beginning
+            latest_modyfied.unshift(@model)
+            localStorage.setObject('latest_modyfied', JSON.stringify(latest_modyfied))
+
+        # for NEW models on home page
+        # if model's modyfication_date == creation_date then we are dealing with new model
+        # and may as well put it on the HOMEPAGE
+        created = new Date(@model.get('date_created'))
+        modyfied = new Date(@model.get('date_modyfied'))
+        @publishEvent('log:debug', "Compering date #{created} with #{modyfied} result: #{created.getTime() is modyfied.getTime()}")
+        if created.getTime() is modyfied.getTime()
+            console.log(1)
+            latest = new Collection
+            latest.set(JSON.parse(localStorage.getObject('latest')))
+            console.log(2)
+            if _.isUndefined(latest.get(@model.id))
+                console.log(3)
+                #remove one form the back
+                latest.pop()
+                # append new one to the beginning
+                latest.unshift(@model)
+                localStorage.setObject('latest', JSON.stringify(latest))
+                console.log(4)
+            else
+                console.log(5)
+                #get rid of old model
+                latest.remove(@model.id)
+                # append new one to the beginning
+                latest.unshift(@model)
+                localStorage.setObject('latest', JSON.stringify(latest))
+                console.log(6)
+        console.log(7)
+
+
     save_action: (url) =>
         super
-        @publishEvent('log:info','commmit form')
+        @publishEvent('log:debug','commmit form')
         #run model and schema validation
         if _.isUndefined(@form.commit({validate:true}))
             @model.save({},{
@@ -48,6 +103,8 @@ module.exports = class AddView extends View
                     if mediator.collections.listings?
                         # add it to collection so we don't need to use server ...
                         mediator.collections.listings.add(@model)
+                    # if model has been saved we will most probably need to refresh HOMEPAGE view
+                    @update_local_storage()
                     @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
                     # if no query being done and we doing save this changs forever
                     # so redirect to HOME if url or listing.query is undefined
@@ -62,7 +119,7 @@ module.exports = class AddView extends View
                         Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
             })
         else
-            @publishEvent 'tell_user', 'Błąd w formularzu!'
+            @publishEvent 'tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.'
 
 
     delete_action: =>
@@ -94,7 +151,7 @@ module.exports = class AddView extends View
             Chaplin.utils.redirectTo {url: "/"}
 
     copy_address: (event) ->
-        @publishEvent('log:info', 'copy address event')
+        @publishEvent('log:debug', 'copy address event')
         event.preventDefault()
         $("[name='internet_postcode']").val($("[name='postcode']").val())
         $("[name='internet_street']").val(  $("[name='street']").val())
@@ -107,7 +164,7 @@ module.exports = class AddView extends View
         $("[name='internet_county']").val($("[name='county']").val())
 
     address_reset: ->
-        @publishEvent('log:info', 'address reset')
+        @publishEvent('log:debug', 'address reset')
         $("[name='internet_postcode']").val('')
         $("[name='postcode']").val('')
         $("[name='internet_street']").val('')
@@ -129,7 +186,7 @@ module.exports = class AddView extends View
         $("[name='number']").val('')
 
     fill_address: (event) ->
-        @publishEvent('log:info', 'fill address event')
+        @publishEvent('log:debug', 'fill address event')
         @address_reset()
         obj = @response[event.target.value]
         $("[name='postcode']").val(obj.address.postcode)
@@ -147,7 +204,7 @@ module.exports = class AddView extends View
                 county = item
             else if item.indexOf('gmina') > -1
                 borough = item
-        @publishEvent('log:info', "county:#{county}, borough:#{borough}, address.county:#{obj.address.county}, address.borough:#{obj.address.borough}")
+        @publishEvent('log:debug', "county:#{county}, borough:#{borough}, address.county:#{obj.address.county}, address.borough:#{obj.address.borough}")
         $("[name='borough']").val(borough or obj.address.borough or obj.address.village or obj.address.city)
         $("[name='county']").val(county or obj.address.county or '')
         #clean suggested list items
@@ -171,7 +228,7 @@ module.exports = class AddView extends View
         value = $input.val()
         html = ""
         $ul.html ""
-        window.ul = $ul
+        window.ul = $ul if mediator.online is false
         if value and value.length > 2
             $ul.html "<li><div class='ui-loader'><span class='ui-icon ui-icon-loading'></span></div></li>"
             $ul.listview "refresh"
@@ -201,7 +258,7 @@ module.exports = class AddView extends View
                     self.publishEvent('tell_user', 'Nie można połączyć się z serwerem adresowym')
 
     init_openstreet: =>
-        @publishEvent('log:info', 'init openstreet map')
+        @publishEvent('log:debug', 'init openstreet map')
         @openstreet()
 
     openstreet: ->
@@ -288,18 +345,15 @@ module.exports = class AddView extends View
         base_template = @form.template()
         $bt = $(base_template)
         $bt.find('.ui-grid-a').remove()
-        window.bt = $bt
         @$el.append($bt)
-        @publishEvent('log:info', 'view: edit-view RenderEnd()')
+        @publishEvent('log:debug', 'view: edit-view RenderEnd()')
 
     render_subview: (tab_id='tab_1')=>
         #NOTE: this assumes that we don't have more then 9 tabs (value [1] gets only one digit and substracts one for array compatybility) !!
-        @publishEvent('log:info', "render sub_view #{tab_id}")
-        # console.log('->>', @el, tab_id, id)
+        @publishEvent('log:debug', "render sub_view #{tab_id}")
         if tab_id not in @rendered_tabs
             $temp = $(@form.el).find("##{tab_id}")
             # console.log('---> ', @form.el, $temp, tab_id)
-            window.form = @form
             @subview tab_id, new TabView container: @el, template: $temp, id: tab_id
             @subview(tab_id).render()
             if tab_id is 'tab_2'
@@ -319,5 +373,5 @@ module.exports = class AddView extends View
 
     attach: =>
         super
-        @publishEvent('log:info', "listing-add attach")
+        @publishEvent('log:debug', "listing-add attach")
         @render_subview()

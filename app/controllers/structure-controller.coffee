@@ -13,10 +13,12 @@ RightPanelView = require 'views/right-panel-view'
 
 module.exports = class StructureController extends Controller
     beforeAction: (params, route) ->
-        @publishEvent('log:info', 'StructureController start ------------')
+        @publishEvent('log:debug', 'StructureController start ------------')
         #should provide regions
-        @compose 'structure', StructureView
-        @compose 'header', Header, region: 'header'
+        @reuse 'structure', StructureView
+        #@view = new StructureView
+        #@view.render().attach()
+        @reuse 'header', Header, region: 'header'
         edit_footer = [
             'listing#add',
             'listing#show',
@@ -44,18 +46,18 @@ module.exports = class StructureController extends Controller
             'export#list'
             ]
         if route.name in edit_footer
-            @compose 'footer-nav', NavFooter, region:'footer'
+            @reuse 'footer-nav', NavFooter, region:'footer'
         else if route.name in list_footer
-            @compose 'footer-list', ListFooter, region:'footer'
+            @reuse 'footer-list', ListFooter, region:'footer'
         else
-            @compose 'footer', Footer, region:'footer'
+            @reuse 'footer', Footer, region:'footer'
 
-        @compose 'panel-right', RightPanelView
-        @compose 'panel-left', LeftPanelView
-        @compose 'info', InfoView, region:'info'
-        @compose 'viewed', ViewedView, region:'viewed'
-        @compose 'confirm', ConfirmView, region:'confirm'
-        @compose 'popgeneric', PopGenericView, region:'popgeneric'
+        @reuse 'panel-right', RightPanelView
+        @reuse 'panel-left', LeftPanelView
+        @reuse 'info', InfoView, region:'info'
+        @reuse 'viewed', ViewedView, region:'viewed'
+        @reuse 'confirm', ConfirmView, region:'confirm'
+        @reuse 'popgeneric', PopGenericView, region:'popgeneric'
         #init panel after init jqm
         @publishEvent 'structureController:render'
-        @publishEvent('log:info', 'structureController done ----------')
+        @publishEvent('log:debug', 'structureController done ----------')

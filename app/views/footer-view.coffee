@@ -27,5 +27,5 @@ module.exports = class FooterView extends View
             $("#footer-region").html('').append(new_el.outerHTML)
             $("#footer-region").enhanceWithin()
         , 30)
-        @publishEvent('log:info', 'FooterView:attach')
+        @publishEvent('log:debug', 'FooterView:attach')
         @publishEvent 'jqm_footer_refersh:render'

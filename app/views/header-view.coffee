@@ -41,5 +41,5 @@ module.exports = class HeaderView extends View
 
     attach: =>
         super
-        @publishEvent('log:info', 'HeaderView:attach()')
+        @publishEvent('log:debug', 'HeaderView:attach()')
 

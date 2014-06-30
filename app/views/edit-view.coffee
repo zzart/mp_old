@@ -35,6 +35,8 @@ module.exports = class EditView extends View
         # @delegate('DOMSubtreeModified','#resource_list', @refresh_resource )
         @delegate('click',"[name='resources'] li a:first-child", @resource_preview )
 
+        # --- debug
+        window.model = @model if mediator.online is false
 
     show_to_client: (e) =>
         @publishEvent("log:debug", "show_to_client cought")
@@ -221,16 +223,13 @@ module.exports = class EditView extends View
 
     get_form: =>
         @publishEvent('log:info',"form name: #{@form_name}")
-        window.model = @model
-        # console.log(@model.schema)
-        # console.log(@model.schema.type)
-        #@form = new Backbone.Form
         @form = new Backbone.Form
             model:  @model
             template: _.template(localStorage.getObject(@form_name))
             #templateData:{ }
 
-        window.form = @form
+        # --- debug
+        window.form = @form if mediator.online is false
         @form.render()
 
     save_action: =>

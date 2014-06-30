@@ -9,7 +9,7 @@ module.exports = class Layout extends Chaplin.Layout
             #@log = log4javascript.getDefaultLogger()
             #ajaxAppender = new log4javascript.AjaxAppender("#{mediator.server_url}/logging")
             #@log.addAppender(ajaxAppender)
-        @log.info('layout init')
+        @log.debug('layout init')
         jqm = true
 
         if jqm
@@ -45,7 +45,7 @@ module.exports = class Layout extends Chaplin.Layout
 
     schema_change: =>
         #when certain models are added/updated/removed we need to refresh schema
-        @log.info('****************refreshing schema')
+        @log.debug('****************refreshing schema')
         mediator.models.user.fetch()
 
     tell_viewed: (information) =>
@@ -82,7 +82,7 @@ module.exports = class Layout extends Chaplin.Layout
             $("form [data-role='controlgroup'] select").selectmenu( "disable" )
 
     disable_buttons:(can_edit, edit_type, delete_only, no_back) =>
-        @log.info('form buttons disable caught')
+        @log.debug('form buttons disable caught')
         if edit_type is 'add'
             $("#delete-button").attr('disabled', true)
         if not can_edit
@@ -105,7 +105,7 @@ module.exports = class Layout extends Chaplin.Layout
 
     jqm_init: =>
         #this will initialize page after page is ready
-        @log.info('layout: event jqm_init caugth')
+        @log.debug('layout: event jqm_init caugth')
         $ ->
             $.mobile.initializePage()
             $.mobile.loading('hide')
@@ -120,7 +120,7 @@ module.exports = class Layout extends Chaplin.Layout
             #$('#main-container').enhanceWithin()
         #window.location.hash = 'index'
     jqm_leftpanel: =>
-        @log.info('layout: event jqm_menurender caugth')
+        @log.debug('layout: event jqm_menurender caugth')
         #$("#left-panel").panel('open')
 
     jqm_refersh: =>
@@ -168,19 +168,19 @@ module.exports = class Layout extends Chaplin.Layout
         )
 
     jqm_page_refersh: =>
-        @log.info('layout: event jqm_page_refresh caugth')
+        @log.debug('layout: event jqm_page_refresh caugth')
         $("#page").enhanceWithin()
         $.mobile.loading('hide')
         #manually doing page refresh straight from DOM
     jqm_footer_refersh: =>
         #manually doing page refresh straight from DOM
-        @log.info('layout: event jqm_footer_refresh caugth')
+        @log.debug('layout: event jqm_footer_refresh caugth')
         $("#footer-region").enhanceWithin()
     jqm_recreate: =>
         #TODO: we might check in the DOM if this was rendered alreadyand only then do it or not.
 
     jqm_table_refresh: =>
-        @log.info('layout: jqm_table_refresh ')
+        @log.debug('layout: jqm_table_refresh ')
         $("#list-table").table("refresh")
 
 

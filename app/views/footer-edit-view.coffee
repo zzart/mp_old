@@ -25,6 +25,6 @@ module.exports = class FooterView extends View
 
     attach: =>
         super
-        @publishEvent('log:info', 'FooterEditView:attach()')
+        @publishEvent('log:debug', 'FooterView:attach()')
         #@publishEvent 'jqm_page_refersh:render'
         @publishEvent 'jqm_footer_refersh:render'

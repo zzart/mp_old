@@ -29,7 +29,7 @@ module.exports = class View extends View
                         Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
             })
         else
-            @publishEvent 'tell_user', 'Błąd w formularzu!'
+            @publishEvent 'tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.'
 
     delete_action: =>
         super

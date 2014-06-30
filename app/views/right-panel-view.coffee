@@ -64,4 +64,4 @@ module.exports = class RightPanelView extends View
 
     attach: =>
         super
-        @publishEvent('log:info', 'RightPanelView: attach()')
+        @publishEvent('log:debug', 'RightPanelView: attach()')
