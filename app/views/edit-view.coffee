@@ -43,6 +43,25 @@ module.exports = class EditView extends View
 
     show_history: (e) =>
         @publishEvent("log:debug", "show_history cought")
+        if @model.isNew() is false
+            response = @mp_request(@model, "#{mediator.server_url}v1/historie/#{@model.get('id')}/#{@model.module_name[1]}", "GET", "Historia została pobrana", "Historia obiektu nie została pobrana lub nie istnieje", false)
+            if response.responseText?
+                li = ""
+                for line in response.responseText
+                    console.log(line, response.responseText, typeof(response.responseText))
+                    li = "#{li}<li>#{line}</li>"
+                form = "<h3>Historia obiektu ##{@model.get('id')}</h3><ul>#{li}</ul><button data-icon='check' id='im_done'>OK</button>"
+                try
+                    $('#popgeneric').html(form).enhanceWithin()
+                catch error
+                    @publishEvent("log:warn", error)
+                $('#popgeneric').popup('open',{ transition:"fade" })
+                # # unbind is for stopping it firing multiple times
+                $("#im_done").unbind().click (e)->
+                    e.preventDefault()
+                    $('#popgeneric').popup('close')
+                    $(@).off('click')
+
 
     # resource --------------------------------------------
     popup_position:=>

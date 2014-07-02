@@ -9,9 +9,10 @@ module.exports = class View extends Chaplin.View
 
     # generic request for making non backbone specyfic requests
     # quering controllers etc.
-    mp_request: (model, url, type, msg_success, msg_fail) ->
+    mp_request: (model, url, type, msg_success, msg_fail, async=true) ->
         self = @
         $.ajax(
+            async: async
             url: url
             beforeSend: (xhr) ->
                 xhr.setRequestHeader('X-Auth-Token' , mediator.gen_token(url))

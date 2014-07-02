@@ -2834,11 +2834,15 @@ module.exports = View = (function(_super) {
     return this.template;
   };
 
-  View.prototype.mp_request = function(model, url, type, msg_success, msg_fail) {
+  View.prototype.mp_request = function(model, url, type, msg_success, msg_fail, async) {
     var self,
       _this = this;
+    if (async == null) {
+      async = true;
+    }
     self = this;
     return $.ajax({
+      async: async,
       url: url,
       beforeSend: function(xhr) {
         return xhr.setRequestHeader('X-Auth-Token', mediator.gen_token(url));
@@ -3538,7 +3542,34 @@ module.exports = EditView = (function(_super) {
   };
 
   EditView.prototype.show_history = function(e) {
-    return this.publishEvent("log:debug", "show_history cought");
+    var form, li, line, response, _i, _len, _ref;
+    this.publishEvent("log:debug", "show_history cought");
+    if (this.model.isNew() === false) {
+      response = this.mp_request(this.model, "" + mediator.server_url + "v1/historie/" + (this.model.get('id')) + "/" + this.model.module_name[1], "GET", "Historia została pobrana", "Historia obiektu nie została pobrana lub nie istnieje", false);
+      if (response.responseText != null) {
+        li = "";
+        _ref = response.responseText;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          line = _ref[_i];
+          console.log(line, response.responseText, typeof response.responseText);
+          li = "" + li + "<li>" + line + "</li>";
+        }
+        form = "<h3>Historia obiektu #" + (this.model.get('id')) + "</h3><ul>" + li + "</ul><button data-icon='check' id='im_done'>OK</button>";
+        try {
+          $('#popgeneric').html(form).enhanceWithin();
+        } catch (error) {
+          this.publishEvent("log:warn", error);
+        }
+        $('#popgeneric').popup('open', {
+          transition: "fade"
+        });
+        return $("#im_done").unbind().click(function(e) {
+          e.preventDefault();
+          $('#popgeneric').popup('close');
+          return $(this).off('click');
+        });
+      }
+    }
   };
 
   EditView.prototype.popup_position = function() {
@@ -5657,7 +5688,6 @@ module.exports = ListView = (function(_super) {
         clean_after_action(selected);
       }
       if (event.target.value === 'send-listing-address') {
-        console.log(1);
         form = '<form>\n<label for="email_send" class="ui-hidden-accessible">Email:</label>\n<input name="email_send" id="email_send" placeholder="Wprowadź email" value="" type="text" />\n<button data-icon="mail" id="address_submit">Wyślij</button>\n</form>';
         try {
           $('#popgeneric').html(form).enhanceWithin();

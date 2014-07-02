@@ -272,7 +272,6 @@ module.exports = class ListView extends View
                 clean_after_action(selected)
 
             if event.target.value == 'send-listing-address'
-                console.log(1)
                 form = '''
                     <form>
                     <label for="email_send" class="ui-hidden-accessible">Email:</label>
