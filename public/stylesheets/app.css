@@ -4913,11 +4913,12 @@ hr{color:#333333; border:2px; }
 
 /* address */
 .address_suggestion:hover{
-    background-color:lightgrey;
+    background-color:#F9F9F9;
+    cursor:hand; cursor:pointer;
 }
 .th-groups th {
 background-color: rgba(0,0,0,.1);
-border-right: 1px solid #A3A3A3;
+border-right: 2px solid #A5A5A5;
 }
 /*
 #list-table th:first-child{
@@ -4933,6 +4934,7 @@ border-style:none;
 min-height: 150px; /* !important is used to force override. */
 }
 .ui-panel {z-index:3 !important} /* for jqm panel as it shows elements on the list */
+#footer-region{z-index:4 !important} /* for openstreet map elements which stay on top of footer */
 .ui-btn-b {background-color: #333 !important; color:#f9f9f9 !important; text-shadow:none !important}
 table label {background-color:None !important}
 #info ul{padding:0px; margin:0px}

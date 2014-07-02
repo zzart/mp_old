@@ -95,13 +95,13 @@ module.exports = class Layout extends Chaplin.Layout
             $("#back-button").attr('disabled', true)
 
     log_debug:(option) =>
-        @log.debug(option)
+        @log.debug(option) if mediator.online is false
     log_info:(option) =>
-        @log.info(option)
+        @log.info(option)  if mediator.online is false
     log_warn:(option) =>
-        @log.warn(option)
+        @log.warn(option)  if mediator.online is false
     log_error:(option) =>
-        @log.error(option)
+        @log.error(option) if mediator.online is false
 
     jqm_init: =>
         #this will initialize page after page is ready

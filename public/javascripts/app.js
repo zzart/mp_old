@@ -1449,7 +1449,22 @@ module.exports = StructureController = (function(_super) {
       region: 'popgeneric'
     });
     this.publishEvent('structureController:render');
-    return this.publishEvent('log:debug', 'structureController done ----------');
+    this.publishEvent('log:debug', 'structureController done ----------');
+    return this.test_divs();
+  };
+
+  StructureController.prototype.test_divs = function() {
+    var val, _i, _len, _ref;
+    this.regions = ['content-region', 'header-region', 'footer-region', 'info-region', 'viewed-region', 'login-region', 'confirm-region', 'popgeneric-region'];
+    _ref = this.regions;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      val = _ref[_i];
+      if ($("#" + val).length === 0) {
+        this.publishEvent('log:warning', "No div present " + val + "!! Appending manually!");
+        $("#page").append("<div id='" + val + "'></div>");
+      }
+    }
+    return $("body > #footer").remove();
   };
 
   return StructureController;
@@ -4134,7 +4149,8 @@ module.exports = FooterView = (function(_super) {
     new_el = _.clone(this.el);
     _.delay(function() {
       $("#footer-region").html('').append(new_el.outerHTML);
-      return $("#footer-region").enhanceWithin();
+      $("#footer-region").enhanceWithin();
+      return $("body > #footer").remove();
     }, 30);
     this.publishEvent('log:debug', 'FooterView:attach');
     return this.publishEvent('jqm_footer_refersh:render');
@@ -4747,19 +4763,27 @@ module.exports = Layout = (function(_super) {
   };
 
   Layout.prototype.log_debug = function(option) {
-    return this.log.debug(option);
+    if (mediator.online === false) {
+      return this.log.debug(option);
+    }
   };
 
   Layout.prototype.log_info = function(option) {
-    return this.log.info(option);
+    if (mediator.online === false) {
+      return this.log.info(option);
+    }
   };
 
   Layout.prototype.log_warn = function(option) {
-    return this.log.warn(option);
+    if (mediator.online === false) {
+      return this.log.warn(option);
+    }
   };
 
   Layout.prototype.log_error = function(option) {
-    return this.log.error(option);
+    if (mediator.online === false) {
+      return this.log.error(option);
+    }
   };
 
   Layout.prototype.jqm_init = function() {
@@ -5850,7 +5874,8 @@ module.exports = AddView = (function(_super) {
     this.delegate('change', "[name='category']", this.rerender_form);
     this.delegate('click', "#copy_address", this.copy_address);
     this.rendered_tabs = [];
-    return this.categories = localStorage.getObject('categories');
+    this.categories = localStorage.getObject('categories');
+    return this.is_new = false;
   };
 
   AddView.prototype.change_tab = function(e) {
@@ -5877,9 +5902,9 @@ module.exports = AddView = (function(_super) {
     }
   };
 
-  AddView.prototype.update_local_storage = function() {
-    var created, latest, latest_modyfied, modyfied;
-    this.publishEvent('log:debug', 'update_local_storage');
+  AddView.prototype.update_home_page = function() {
+    var latest, latest_modyfied;
+    this.publishEvent('log:debug', 'update_home_page');
     latest_modyfied = new Collection;
     latest_modyfied.set(JSON.parse(localStorage.getObject('latest_modyfied')));
     this.publishEvent('log:debug', "check for latest_modyfied: " + (latest_modyfied.get(this.model.id)));
@@ -5892,34 +5917,26 @@ module.exports = AddView = (function(_super) {
       latest_modyfied.unshift(this.model);
       localStorage.setObject('latest_modyfied', JSON.stringify(latest_modyfied));
     }
-    created = new Date(this.model.get('date_created'));
-    modyfied = new Date(this.model.get('date_modyfied'));
-    this.publishEvent('log:debug', "Compering date " + created + " with " + modyfied + " result: " + (created.getTime() === modyfied.getTime()));
-    if (created.getTime() === modyfied.getTime()) {
-      console.log(1);
+    if (this.is_new) {
       latest = new Collection;
       latest.set(JSON.parse(localStorage.getObject('latest')));
-      console.log(2);
       if (_.isUndefined(latest.get(this.model.id))) {
-        console.log(3);
         latest.pop();
         latest.unshift(this.model);
-        localStorage.setObject('latest', JSON.stringify(latest));
-        console.log(4);
+        return localStorage.setObject('latest', JSON.stringify(latest));
       } else {
-        console.log(5);
         latest.remove(this.model.id);
         latest.unshift(this.model);
-        localStorage.setObject('latest', JSON.stringify(latest));
-        console.log(6);
+        return localStorage.setObject('latest', JSON.stringify(latest));
       }
     }
-    return console.log(7);
   };
 
   AddView.prototype.save_action = function(url) {
     var _this = this;
     AddView.__super__.save_action.apply(this, arguments);
+    this.is_new = this.model.isNew();
+    this.publishEvent('log:debug', "Rekord nowy : " + this.is_new);
     this.publishEvent('log:debug', 'commmit form');
     if (_.isUndefined(this.form.commit({
       validate: true
@@ -5933,7 +5950,7 @@ module.exports = AddView = (function(_super) {
           if (mediator.collections.listings != null) {
             mediator.collections.listings.add(_this.model);
           }
-          _this.update_local_storage();
+          _this.update_home_page();
           _this.publishEvent('tell_user', "Rekord " + (_this.model.get_url()) + " zapisany");
           if (((_ref = mediator.collections.listings) != null ? _ref.query : void 0) != null) {
             return Chaplin.utils.redirectTo({

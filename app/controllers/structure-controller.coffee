@@ -61,3 +61,28 @@ module.exports = class StructureController extends Controller
         #init panel after init jqm
         @publishEvent 'structureController:render'
         @publishEvent('log:debug', 'structureController done ----------')
+        @test_divs()
+
+    test_divs: ->
+        # NOTE: for some strange reason sometimes when you go from listview to home view <divs> start going missing
+        # and everything crases due to not having any <divs> to attach to
+        # this is hard to debug as it's inconsistant (maybe jqm 1.4.2, or chaplin reuse) ...!
+        # this ensures that by the time we are done with this controller we have structure in place no matter what happens
+
+        @regions = [
+            'content-region',
+            'header-region',
+            'footer-region',
+            'info-region',
+            'viewed-region',
+            'login-region',
+            'confirm-region',
+            'popgeneric-region',
+        ]
+        for val in @regions
+            if $("##{val}").length is 0
+                @publishEvent('log:warning', "No div present #{val}!! Appending manually!")
+                $("#page").append("<div id='#{val}'></div>")
+        #if there are any footers outside #page kill them grrrr...
+        $("body > #footer").remove()
+

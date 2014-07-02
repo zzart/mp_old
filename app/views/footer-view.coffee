@@ -26,6 +26,9 @@ module.exports = class FooterView extends View
             #remove EVERYTHING in footer-region first
             $("#footer-region").html('').append(new_el.outerHTML)
             $("#footer-region").enhanceWithin()
+            #remove footer jqm created outside
+            $("body > #footer").remove()
         , 30)
+
         @publishEvent('log:debug', 'FooterView:attach')
         @publishEvent 'jqm_footer_refersh:render'

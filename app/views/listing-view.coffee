@@ -14,6 +14,7 @@ module.exports = class AddView extends View
         @delegate 'click', "#copy_address", @copy_address
         @rendered_tabs = []
         @categories = localStorage.getObject('categories')
+        @is_new = false
         # console.log(@options)
 
 
@@ -39,8 +40,8 @@ module.exports = class AddView extends View
             @render()
             @render_subview()
 
-    update_local_storage: ->
-        @publishEvent('log:debug','update_local_storage')
+    update_home_page: ->
+        @publishEvent('log:debug','update_home_page')
         # if model has been saved we will most probably need to refresh HOMEPAGE view
         # instead of doing another fetch and putting it to localstorage we can do it now
         # look for ids in localstorage and replace or add this new model
@@ -63,37 +64,29 @@ module.exports = class AddView extends View
             localStorage.setObject('latest_modyfied', JSON.stringify(latest_modyfied))
 
         # for NEW models on home page
-        # if model's modyfication_date == creation_date then we are dealing with new model
-        # and may as well put it on the HOMEPAGE
-        created = new Date(@model.get('date_created'))
-        modyfied = new Date(@model.get('date_modyfied'))
-        @publishEvent('log:debug', "Compering date #{created} with #{modyfied} result: #{created.getTime() is modyfied.getTime()}")
-        if created.getTime() is modyfied.getTime()
-            console.log(1)
+        if @is_new
             latest = new Collection
             latest.set(JSON.parse(localStorage.getObject('latest')))
-            console.log(2)
             if _.isUndefined(latest.get(@model.id))
-                console.log(3)
                 #remove one form the back
                 latest.pop()
                 # append new one to the beginning
                 latest.unshift(@model)
                 localStorage.setObject('latest', JSON.stringify(latest))
-                console.log(4)
             else
-                console.log(5)
                 #get rid of old model
                 latest.remove(@model.id)
                 # append new one to the beginning
                 latest.unshift(@model)
                 localStorage.setObject('latest', JSON.stringify(latest))
-                console.log(6)
-        console.log(7)
 
 
     save_action: (url) =>
         super
+        # need to check before record is commited to the server and becomes old ....
+        @is_new = @model.isNew()
+        @publishEvent 'log:debug', "Rekord nowy : #{@is_new}"
+
         @publishEvent('log:debug','commmit form')
         #run model and schema validation
         if _.isUndefined(@form.commit({validate:true}))
@@ -104,7 +97,7 @@ module.exports = class AddView extends View
                         # add it to collection so we don't need to use server ...
                         mediator.collections.listings.add(@model)
                     # if model has been saved we will most probably need to refresh HOMEPAGE view
-                    @update_local_storage()
+                    @update_home_page()
                     @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
                     # if no query being done and we doing save this changs forever
                     # so redirect to HOME if url or listing.query is undefined
