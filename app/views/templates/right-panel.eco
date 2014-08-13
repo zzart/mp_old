@@ -1,7 +1,6 @@
 <!-- #################################  #  PANEL -->
 					<ul data-role="listview" >
 						<li data-icon="delete"> <a href="#header" data-rel="close">Zamknij menu</a></li>
-						<li data-icon="power"> <a href="#" id='first-name-placeholder' >Początek</a></li>
                         <li data-role='list-divider'></li>
                     </ul>
 <!-- ##################################  PANEL -->

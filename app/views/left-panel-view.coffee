@@ -37,9 +37,10 @@ module.exports = class LeftPanelView extends View
 
     account_status: ->
         as = localStorage.getObject('account')
-        val = "<h4>Konto</h4><p>Liczba ofert: <b>#{as.total_listings}</b><br />Przestrzeń dysku: <b>#{as.disk_usage}</b><br />Status konta: <b>#{as.status}</b></p>"
-        $('#info').html(val)
-        $('#info').popup('open',{ positionTo: "#account-status-btn", transition:"fade" })
+        val = "<p>Liczba ofert: <b>#{as.total_listings}</b><br />Przestrzeń dysku: <b>#{as.disk_usage}</b><br />Status konta: <b>#{as.status}</b></p>"
+        @publishEvent( 'tell_user', val)
+        #$('#info').html(val)
+        #$('#info').popup('open',{ positionTo: "#account-status-btn", transition:"fade" })
 
     getTemplateData: =>
         disk_usage: localStorage.getItem('disk_usage')

@@ -1,12 +1,20 @@
 StructureController = require 'controllers/structure-controller'
-# LoginView = require 'views/login-view'
-LoginView = require 'views/autologin-view'
-Model = require 'models/login-model'
 mediator = require 'mediator'
+if mediator.online is true
+    LoginView = require 'views/login-view'
+else
+    LoginView = require 'views/autologin-view'
+Model = require 'models/login-model'
 
 module.exports = class LoginController extends StructureController
     show: ->
-        @publishEvent('log:info', 'login controller')
+        @publishEvent('log:info', 'login show')
         mediator.models.user = new Model
         @view = new LoginView {region:'login'}
+
+    logoff: ->
+        @publishEvent('log:info', 'login off')
+        mediator.models.user = null
+        Chaplin.utils.redirectTo {url: ''}
+        @publishEvent 'tell_user', "Pomyślnie wylogowany"
 

@@ -1,5 +1,5 @@
-<table data-role="table" id="list-table" data-mode="columntoggle" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
-data-filter="true" data-input="#filterTable-input" data-mini="true" data-column-btn-text="Kolumny" data-column-btn-theme="b" data-column-popup-theme="a">
+<table data-role="table" id="list-table" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
+data-filter="true" data-input="#filterTable-input">
      <thead>
        <tr class='th-groups'>
          <th> <label> <input name="all" id="all" data-mini="true"  type="checkbox"> </label> </th>

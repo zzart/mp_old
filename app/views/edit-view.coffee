@@ -46,11 +46,14 @@ module.exports = class EditView extends View
         if @model.isNew() is false
             response = @mp_request(@model, "#{mediator.server_url}v1/historie/#{@model.get('id')}/#{@model.module_name[1]}", "GET", "Historia została pobrana", "Historia obiektu nie została pobrana lub nie istnieje", false)
             if response.responseText?
-                li = ""
-                for line in response.responseText
-                    console.log(line, response.responseText, typeof(response.responseText))
-                    li = "#{li}<li>#{line}</li>"
-                form = "<h3>Historia obiektu ##{@model.get('id')}</h3><ul>#{li}</ul><button data-icon='check' id='im_done'>OK</button>"
+                r = JSON.parse(response.responseText)
+                if _.has(r, 'historia')
+                    li = ""
+                    for line in r['historia']
+                        li = "#{li}<li>#{line}</li>"
+                    form = "<h3>Historia obiektu ##{@model.get('id')}</h3><ul>#{li}</ul><button data-icon='check' id='im_done'>OK</button>"
+                else
+                    form = "<h3>Historia obiektu ##{@model.get('id')}</h3>Nic nie znaleziono <br /> <button data-icon='check' id='im_done'>OK</button>"
                 try
                     $('#popgeneric').html(form).enhanceWithin()
                 catch error
@@ -226,6 +229,10 @@ module.exports = class EditView extends View
                 #     forceConfirm: true
                 #     endpoint: 'http://localhost:8080/v1/pliki'
                 # window.uploader = @uploader
+        # append photo capture to button
+        $('#upload input')[0].setAttribute('capture', 'camera')
+        $('#upload input')[0].setAttribute('accept', 'image/*')
+
     # resource end --------------------------------------------
 
     form_help:(event) =>

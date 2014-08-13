@@ -21,7 +21,7 @@
             </li>
       <% end %>
 
-<li data-role="list-divider">Wymagające Odświerzenia</li>
+<li data-role="list-divider">Wymagające Odświeżenia</li>
 
       <% for item in @update_needed: %>
             <li><a href="#oferty/<%= item['id'] %>">

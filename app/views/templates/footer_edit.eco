@@ -1,7 +1,7 @@
  <div data-role="navbar">
         <ul>
-            <li><button id="delete-button" class="ui-btn ui-btn-icon-top ui-icon-delete">Usuń</button></li>
-            <li><button id="save-button" class="ui-btn ui-btn-icon-top ui-icon-check" >Zapisz</button></li>
-            <li><button id="back-button" class="ui-btn ui-btn-icon-top ui-icon-back">Wróć</button></li>
+            <li><a id="delete-button" class="ui-btn ui-btn-icon-top ui-icon-delete">Usuń</a></li>
+            <li><a id="save-button" class="ui-btn ui-btn-icon-top ui-icon-check" >Zapisz</a></li>
+            <li><a id="back-button" class="ui-btn ui-btn-icon-top ui-icon-back">Wróć</a></li>
         </ul>
     </div><!-- /navbar -->

@@ -21,6 +21,9 @@ module.exports = class IFrameView extends View
             calendar:
                 url: 'https://www.google.com/calendar'
                 title: ''
+            video_logowanie:
+                url: '//www.youtube.com/embed/bMG_6xa0qRA'
+                title: ''
         @url = dic[options.template]['url']
         @title = dic[options.template]['title']
 

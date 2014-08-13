@@ -10,6 +10,7 @@ module.exports = (match) ->
     match 'klienci-wspolni/:id',        'client-public#show'
     # match 'klienci/:typ/:filter',       'client-list#show'
     match 'login',                       'login#show'
+    match 'login/koniec',                'login#logoff'
     match 'biura/:id',                   'bon#show'
     match 'oddzialy/dodaj',              'branch#add'
     match 'oddzialy',                    'branch#list'

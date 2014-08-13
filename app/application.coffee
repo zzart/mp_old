@@ -14,13 +14,6 @@ module.exports = class Application extends Chaplin.Application
 
   initialize: ->
     super
-    # check for browser compatybilty
-    if not bowser.a
-        alert('''Mamy podejrzenia że używasz przeglądarki, która jest stara albo nie wspiera wszystkich funkcjonalności Mobilnego Pośrednika!
-        Proszę wejdz na stronę http://www.mozilla.org/pl/firefox/new , pobierz i zainstaluj najnowszego Firefoxa (dostępny też dla iPhona, Android etc.)''')
-    if not (bowser.name is 'Firefox' and parseInt(bowser.version) >= 30)  and not (bowser.name is 'Chrome' and parseInt(bowser.version) >= 35)
-        alert('''Mamy podejrzenia, że nie używasz przeglądarki Firefox lub Chrome w najnowszej wersji ...
-        Proszę wejdz na stronę http://www.mozilla.org/pl/firefox/new , pobierz i zainstaluj najnowszego Firefoxa (dostępny też dla iPhona, Android etc.)''')
     # Initialize core components
     #@initDispatcher controllerSuffix: '-controller'
     #initDispatcher: (options = {}) ->
@@ -30,6 +23,7 @@ module.exports = class Application extends Chaplin.Application
 
     # Application-specific scaffold
     @initControllers()
+    @checkBrowser()
 
     # Register all routes and start routing
     #@initRouter options.routes, options
@@ -67,14 +61,14 @@ module.exports = class Application extends Chaplin.Application
     new StructureController()
     new RefreshController()
     new SingleRefreshController()
-
   # Create additional mediator properties
   # -------------------------------------
   initMediator: ->
     # Add additional application-specific properties and methods
     # e.g. mediator.prop = null
-    mediator.online = false
-    #mediator.online = true
+    #mediator.online = false
+    mediator.online = true
+    mediator.mobile = false
     mediator.models = {}
     mediator.collections = {}
     mediator.schemas = {}
@@ -105,3 +99,14 @@ module.exports = class Application extends Chaplin.Application
         auth_header = btoa(header_string)
 
     mediator.seal()
+
+  checkBrowser: ->
+    # check for browser compatybilty
+    if mediator.mobile is false
+        if not bowser.a
+            alert("Mamy podejrzenia że używasz przeglądarki, która jest stara albo nie wspiera wszystkich funkcjonalności Mobilnego Pośrednika! \
+            Wykryliśmy #{bowser.name}/#{bowser.version}\
+            Proszę wejdz na stronę http://www.mozilla.org/pl/firefox/new , pobierz i zainstaluj najnowszego Firefoxa (dostępny też dla iPhona, Android etc.)")
+        if not (bowser.name is 'Firefox' and parseInt(bowser.version) >= 30)  and not (bowser.name is 'Chrome' and parseInt(bowser.version) >= 35)
+            alert('''Mamy podejrzenia, że nie używasz przeglądarki Firefox lub Chrome w najnowszej wersji ...
+            Proszę wejdz na stronę http://www.mozilla.org/pl/firefox/new , pobierz i zainstaluj najnowszego Firefoxa (dostępny też dla iPhona, Android etc.)''')

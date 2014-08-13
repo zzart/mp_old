@@ -13,7 +13,6 @@ table.tablesorter thead tr .headerSortDown {
 }
 
 hr{color:#333333; border:2px; }
-.help-block{color:red}
 
 /* address */
 .address_suggestion:hover{
@@ -43,3 +42,18 @@ min-height: 150px; /* !important is used to force override. */
 table label {background-color:None !important}
 #info ul{padding:0px; margin:0px}
 #info li{list-style:none}
+.required_and_private_field{color:#3388CC; font-weight:bold}
+.private_field{color:#3388CC; font-weight:bold}
+.required_field{font-weight:bold; color:#C1272D}
+h4 {
+    color: black;
+    font-size: 12px;
+    text-transform: uppercase;}
+
+.help-block {
+    font-weight: bold;
+    color: yellow;
+    background-color: black;
+    text-shadow: none;
+}
+

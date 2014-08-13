@@ -6,7 +6,7 @@
                         <li data-role='list-divider'></li>
                     </ul>
     <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">
-                    <h4>Przeglądaj oferty</h4>
+                    <h3>Przeglądaj oferty</h3>
                     <ul data-role="listview" >
                         <li><a href="/oferty?category=flat_rent"    >Mieszkania Wynajem</a></li>
                         <li><a href="/oferty?category=flat_sell"    >Mieszkania Sprzedaż</a></li>
@@ -25,7 +25,7 @@
                 </div>
 
                 <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">
-                    <h4>Dodaj ofertę</h4>
+                    <h3>Dodaj ofertę</h3>
                     <ul data-role="listview">
                         <li><a href="/oferty/dodaj?type=flat_rent"    >Mieszkania Wynajem</a></li>
                         <li><a href="/oferty/dodaj?type=flat_sell"    >Mieszkania Sprzedaż</a></li>
@@ -125,11 +125,31 @@
                         <li data-role='list-divider' > </li>
                     </ul>
 </div>
+
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="video" data-expanded-icon="arrow-d">
+                    <h3>Pomoc video</h3>
+                    <ul data-role="listview" >
+                        <li><a href="/iframe/video_logowanie">Logowanie</a></li>
+                        <li><a href="/iframe/video_nawigacja">Nawigacja</a></li>
+                        <li><a href="/iframe/video_konfiguracja">Konfiguracja</a></li>
+                        <li><a href="/iframe/video_konta">Użytkownicy/Konta</a></li>
+                        <li><a href="/iframe/video_dodawanie_oferty">Dodawanie oferty</a></li>
+                        <li><a href="/iframe/video_szukanie_oferty">Szukanie oferty</a></li>
+                        <li data-role='list-divider' > </li>
+                    </ul>
+</div>
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="alert" data-expanded-icon="arrow-d">
+                    <h3>Dokumentacja</h3>
+                    <ul data-role="listview" >
+                        <li data-role='list-divider' > </li>
+                    </ul>
+</div>
 <br />
     <ul data-role="listview" >
         <li data-icon="shop">
             <a href='#' data-rel="popup" data-transition="pop" id='account-status-btn' data-position-to="window" >Status Konta</a>
         </li>
+        <li data-icon="power"> <a href="/login/koniec" id='first-name-placeholder' >Początek</a></li>
     </ul>
 
 

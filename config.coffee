@@ -44,7 +44,8 @@ exports.config =
                     'vendor/scripts/jquery.tablesorter.min.js',
                     'vendor/scripts/hmac-sha256.js',
                     'vendor/scripts/enc-base64-min.js',
-                    'vendor/scripts/fineuploader-4.2.1.js',
+                    # 'vendor/scripts/fineuploader-4.2.1.js',
+                    'vendor/scripts/fineuploader-5.0.3.js',
                     'vendor/scripts/OpenLayers.js'
                     ]
                 after: [
@@ -61,7 +62,8 @@ exports.config =
                     #'vendor/styles/jquery.mobile-1.4.0.css',
                     #'vendor/styles/jquery.mobile.structure-1.4.0.min.css',
                     'vendor/styles/fineuploader-4.2.1.css',
-                    'vendor/styles/jquery.mobile-1.4.2.min.css',
+                    # 'vendor/styles/fineuploader-5.0.3.css',
+                    'vendor/styles/jquery.mobile-1.4.2.css',
                     #'vendor/styles/jquery.mobile-1.4.0.min.css',
                     #'vendor/styles/jquery.mobile-1.4.0-rc.1.css',
                     #'vendor/styles/openlayers.css',

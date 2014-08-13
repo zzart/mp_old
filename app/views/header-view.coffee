@@ -17,7 +17,7 @@ module.exports = class HeaderView extends View
         str = ""
         for i in _.last(mediator.info, 10)
             str = "#{str}<li>#{i}</li>"
-        val = "<h4>Info</h4><ul>#{str}</ul>"
+        val = "<h5>Info</h5><ul>#{str}</ul>"
         $('#info').html(val)
         $ul = $("#info")
         try
@@ -30,7 +30,7 @@ module.exports = class HeaderView extends View
         str = ""
         for i in _.last(_.uniq(mediator.viewed), 20)
             str = "#{str}<li>#{i}</li>"
-        val = "<h4>Ostatio oglądane</h4><br /> <ul data-role='listview' >#{str}</ul>"
+        val = "<h5>Ostatio oglądane</h5><br /> <ul data-role='listview' >#{str}</ul>"
         $('#viewed').html(val)
         $ul = $("#viewed")
         try

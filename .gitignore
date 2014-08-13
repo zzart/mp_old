@@ -1,8 +1,8 @@
 node_modules
 *.swp
-public
+public/
 wiki
-unused
-tmp/*
-libs/*
-build/*
+unused/
+tmp/
+libs/
+build/
