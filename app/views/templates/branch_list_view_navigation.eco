@@ -1,4 +1,5 @@
 <div id="view-menu">
+        <a href="#header" class="ui-btn ui-icon-delete ui-btn-icon-left " data-rel="close">Zamknij menu</a>
             <fieldset data-role="controlgroup" data-type="vertical" data-theme="b">
                 <button data-icon="refresh" id='refresh'>Odśwież</button>
                 <a href='/oddzialy/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>

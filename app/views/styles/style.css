@@ -31,6 +31,7 @@ color:black;
 width:22px;
 }
 */
+.ui-content{padding:0}
 #list-table .ui-mini {font-size:initial}
 #list-table .ui-btn {padding: .7em 1.2em} /* sorts out wide checkbox labes areas */
 #upload .ui-input-text{

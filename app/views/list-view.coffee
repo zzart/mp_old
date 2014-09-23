@@ -101,6 +101,7 @@ module.exports = class ListView extends View
                 $("[data-query=\'#{k}\']").selectmenu('refresh')
 
     select_all_action: =>
+        @publishEvent('jqm_refersh:render') # need this - jqm has to annoyingly initalize checkboxes
         @publishEvent("log:debug", "select all action")
         selected = $('#list-table>thead input:checkbox').prop('checked')
         $('#list-table>tbody input:checkbox').prop('checked', selected).checkboxradio("refresh")
