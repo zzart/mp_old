@@ -75,7 +75,7 @@ module.exports = class Application extends Chaplin.Application
     mediator.last_query = {}
     mediator.info = []
     mediator.viewed = []
-    if mediator.online is true
+    if mediator.online is false
         mediator.server_url = 'http://mps.mobilnyposrednik.pl/'
     else
         mediator.server_url = 'http://localhost:8080/'

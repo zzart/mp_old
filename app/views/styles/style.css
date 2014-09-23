@@ -20,8 +20,11 @@ hr{color:#333333; border:2px; }
     cursor:hand; cursor:pointer;
 }
 .th-groups th {
+/*
 background-color: rgba(0,0,0,.1);
 border-right: 2px solid #A5A5A5;
+*/
+color:black;
 }
 /*
 #list-table th:first-child{
