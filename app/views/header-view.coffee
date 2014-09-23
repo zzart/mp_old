@@ -6,7 +6,7 @@ module.exports = class HeaderView extends View
     template: template
     containerMethod : 'html'
     id: 'header'
-    attributes: { 'data-role':'header', 'data-theme':'b' }
+    #attributes: { 'data-role':'header', 'data-theme':'b' }
 
     initialize: ->
         super

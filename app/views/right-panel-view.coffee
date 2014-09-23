@@ -7,7 +7,7 @@ module.exports = class RightPanelView extends View
         'data-role':'panel'
         'data-position':'left'
         #'data-position-fixed':'true'
-        #'data-dismissible':'false'
+        'data-dismissible':'false'
         'data-display':'push'
         'data-theme':'b'
     }
@@ -25,6 +25,8 @@ module.exports = class RightPanelView extends View
         #@delegate 'panelbeforeclose', @panel_beforeclose
         @delegate 'panelopen', @panel_open
         @delegate 'panelclose', @panel_close
+        @subscribeEvent('rightpanel:open', @panel_open_action)
+        @subscribeEvent('rightpanel:close', @close_panel)
         #@delegate 'click', '#left-panel', @panel_self_close
         #@delegate 'click', @panel_self_close
 
@@ -39,17 +41,20 @@ module.exports = class RightPanelView extends View
 
     panel_beforeopen: =>
         @publishEvent('log:debug', 'before panel open')
-        $("#header").unwrap()
-        $("#content").unwrap()
-        $("#footer").unwrap()
+        #$("#header").unwrap()
+        #$("#content").unwrap()
+        #$("#footer").unwrap()
+
+    panel_open_action: =>
+        @$el.panel('open')
 
     panel_open: =>
         @publishEvent('log:debug', 'panel open')
-        $(".ui-panel-page-container-b").css('background-color','#F9F9F9')
-        $("#header").wrap("<div id='header-region'></div>")
-        $("#content").wrap("<div id='content-region'></div>")
-        $("#footer").wrap("<div id='footer-region'></div>")
-        @publishEvent 'jqm_refresh:render'
+        #$(".ui-panel-page-container-b").css('background-color','#F9F9F9')
+        #$("#header").wrap("<div id='header-region'></div>")
+        #$("#content").wrap("<div id='content-region'></div>")
+        #$("#footer").wrap("<div id='footer-region'></div>")
+        #@publishEvent 'jqm_refresh:render'
 
         #panel_beforeclose: =>
         #    @publishEvent('log:debug', 'panel before close')
@@ -60,7 +65,7 @@ module.exports = class RightPanelView extends View
 
     panel_close: =>
         @publishEvent('log:debug', 'panel close')
-        @publishEvent 'jqm_refresh:render'
+        #@publishEvent 'jqm_refresh:render'
 
     attach: =>
         super

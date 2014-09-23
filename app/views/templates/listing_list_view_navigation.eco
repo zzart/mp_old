@@ -1,4 +1,5 @@
     <fieldset data-role="controlgroup" data-type="vertical" data-theme='b'>
+        <a href="#header" class="ui-btn ui-icon-delete ui-btn-icon-left " data-rel="close">Zamknij menu</a>
         <button data-icon="refresh" id='refresh' >Odśwież</button>
         <a href='/oferty/dodaj?type=<%= @listing_type %>' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
 
@@ -14,6 +15,7 @@
             <option value="eksport" disabled>Eksport do pliku</option>
         </select>
 
+        <small>&nbsp; Filtry</small>
         <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
         <select name="status-query" id="status-query" data-query='status'>
             <option selected disabled>Status</option>
@@ -32,7 +34,7 @@
         <select name="agent-query" id="agent-query" data-query='agent'>
             <option selected disabled>Agent</option>
             <option value="">Wszyscy</option>
-            <% for key , val of @agents : %>
+            <% for key, val of @agents : %>
             <option value="<%= key %>"><%= val %></option>
             <% end %>
         </select>
@@ -40,7 +42,7 @@
         <select name="client-query" id="client-query" data-query='client'>
             <option selected disabled>Klient</option>
             <option value="">Wszyscy</option>
-            <% for key , val of @clients : %>
+            <% for key, val of @clients : %>
             <option value="<%= key %>"><%= val %></option>
             <% end %>
         </select>
@@ -48,7 +50,7 @@
         <select name="branch-query" id="branch-query" data-query='branch'>
             <option selected disabled>Oddział</option>
             <option value="">Wszystkie</option>
-            <% for key , val of @branches : %>
+            <% for key, val of @branches : %>
             <option value="<%= key %>"><%= val %></option>
             <% end %>
         </select>

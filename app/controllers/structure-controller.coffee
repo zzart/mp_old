@@ -79,10 +79,14 @@ module.exports = class StructureController extends Controller
             'confirm-region',
             'popgeneric-region',
         ]
+        @attribs = {
+            'content-region': 'role="main" class="ui-content"',
+            'header-region': 'data-role="header" data-theme="b"',
+        }
         for val in @regions
             if $("##{val}").length is 0
                 @publishEvent('log:warning', "No div present #{val}!! Appending manually!")
-                $("#page").append("<div id='#{val}'></div>")
+                $("#page").append("<div id='#{val}' #{@attrib[val] or ''}></div>")
         #if there are any footers outside #page kill them grrrr...
         $("body > #footer").remove()
 

@@ -47,24 +47,24 @@ module.exports = class LeftPanelView extends View
 
     panel_beforeopen: =>
         @publishEvent('log:debug', 'before panel open')
-        $("#header").unwrap()
-        $("#content").unwrap()
-        $("#footer").unwrap()
+        #$("#header").unwrap()
+        #$("#content").unwrap()
+        #$("#footer").unwrap()
 
     panel_open: =>
         @publishEvent('log:debug', 'panel open')
-        $(".ui-panel-page-container-b").css('background-color','#F9F9F9')
-        $("#header").wrap("<div id='header-region'></div>")
-        $("#content").wrap("<div id='content-region'></div>")
-        $("#footer").wrap("<div id='footer-region'></div>")
-        @publishEvent 'jqm_refresh:render'
+        #$(".ui-panel-page-container-b").css('background-color','#F9F9F9')
+        #$("#header").wrap("<div id='header-region'></div>")
+        #$("#content").wrap("<div id='content-region'></div>")
+        #$("#footer").wrap("<div id='footer-region'></div>")
+        #@publishEvent 'jqm_refresh:render'
 
     panel_beforeclose: =>
         @publishEvent('log:debug', 'panel before close')
 
     panel_close: =>
         @publishEvent('log:debug', 'panel close')
-        @publishEvent 'jqm_refresh:render'
+        #@publishEvent 'jqm_refresh:render'
 
     attach: =>
         super

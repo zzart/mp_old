@@ -6,7 +6,7 @@ EditPanelView = require 'views/edit-panel-view'
 module.exports = class EditView extends View
     autoRender: true
     containerMethod: "html"
-    attributes: { 'data-role':'content' }
+    #attributes: { 'data-role':'content' }
     id: 'content'
     className: 'ui-content'
     initialize: (params) =>

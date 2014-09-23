@@ -7,10 +7,10 @@ mediator = require 'mediator'
 module.exports = class HomePageView extends View
     autoRender: true
     containerMethod: "html"
-    attributes: { 'data-role':'content' }
+    #attributes: { 'data-role':'content' }
     id: 'content'
     template: template
-    className: 'ui-content'
+    #className: 'ui-content'
 
     initialize: ->
         @latest_exist = false

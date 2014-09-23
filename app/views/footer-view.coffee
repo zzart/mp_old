@@ -6,6 +6,7 @@ module.exports = class FooterView extends View
     containerMethod : 'html'
     id: 'footer'
     attributes: { 'data-role':'footer', 'data-position':'fixed' , 'data-theme':'b' }
+    #attributes: { 'data-position':'fixed' }
 
     getTemplateData: =>
         # model: @model

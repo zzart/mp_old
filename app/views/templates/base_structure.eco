@@ -1,11 +1,11 @@
 <!-- this is REGIONS ONLY -->
-<div id='header-region' >
+<div id='header-region' data-role="header" data-theme="b">
 </div><!-- header -->
 
-<div id='content-region'>
+<div id='content-region' role="main" class='ui-content'>
 </div><!-- content -->
 
-<div id='footer-region' >
+<div id='footer-region'>
 </div><!-- footer -->
 
 <div id="viewed-region">

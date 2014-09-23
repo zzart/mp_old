@@ -6,7 +6,7 @@ mediator = require 'mediator'
 module.exports = class ListView extends View
     autoRender: true
     containerMethod: "html"
-    attributes: { 'data-role':'content' }
+    #attributes: { 'data-role':'content' }
     id: 'content'
     className: 'ui-content'
     initialize: (params) ->
@@ -28,6 +28,7 @@ module.exports = class ListView extends View
         @subscribeEvent('navigation:select_action', @select_action)
 
         @delegate 'change', '#all', @select_all_action
+        @delegate 'change', ':checkbox', @open_right_panel
         #@delegate 'click',  ".ui-table-columntoggle-btn", @column_action
         #@delegate 'tablecreate' , @table_create
 
@@ -103,6 +104,12 @@ module.exports = class ListView extends View
         @publishEvent("log:debug", "select all action")
         selected = $('#list-table>thead input:checkbox').prop('checked')
         $('#list-table>tbody input:checkbox').prop('checked', selected).checkboxradio("refresh")
+
+    open_right_panel: (event) =>
+        @publishEvent("log:debug", "open_right_panel")
+        if $(event.target).is(':checked')
+            @publishEvent('rightpanel:open')
+
 
     filter_apply: =>
         @publishEvent('log:debug', 'filter apply')
@@ -187,6 +194,7 @@ module.exports = class ListView extends View
             selected = null
             # for table THEAD
             @publishEvent 'jqm_refersh:render'
+            @publishEvent('rightpanel:close')
             return
 
         @publishEvent('log:debug', "performing action #{event.target.value} for offers #{selected}")

@@ -66,8 +66,8 @@ module.exports = class Application extends Chaplin.Application
   initMediator: ->
     # Add additional application-specific properties and methods
     # e.g. mediator.prop = null
-    #mediator.online = false
-    mediator.online = true
+    mediator.online = false
+    #mediator.online = true
     mediator.mobile = false
     mediator.models = {}
     mediator.collections = {}
