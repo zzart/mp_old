@@ -6,4 +6,4 @@ module.exports = class PopGenericView extends View
     containerMethod : 'html'
     id: 'popgeneric'
     attributes: { 'data-role':'popup','data-theme':'b', 'data-position-to':'window', 'data-arrow':'true'}
-    className:'ui-content'
+    className:'ui-content-popup'

@@ -28,3 +28,6 @@ module.exports = (match) ->
     match 'eksporty',                    'export#list'
     match 'eksporty/dodaj',              'export#add'
     match 'eksporty/:id',                'export#show'
+    match 'importy',                     'import#list'
+    match 'importy/dodaj',               'import#add'
+    match 'importy/:id',                 'import#show'

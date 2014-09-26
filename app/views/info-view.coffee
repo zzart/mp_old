@@ -6,7 +6,7 @@ module.exports = class InfoView extends View
     containerMethod : 'html'
     id: 'info'
     attributes: { 'data-role':'popup','data-theme':'b', 'data-position-to':'window', 'data-arrow':'true'}
-    className:'ui-content'
+    className:'ui-content-popup'
 
     attach: =>
         super

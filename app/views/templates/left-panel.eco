@@ -74,14 +74,18 @@
                         <li ><a href="/agenci" >Agenci</a></li>
                         <li ><a href="/oddzialy" >Oddziały</a></li>
                         <li ><a href="/grafiki" >Logo/Znaki wodne</a></li>
-                        <!--
-                        <li ><a href="" >Importy</a></li>
-                        <li><a href="" >Portale zewnętrzne</a></li>
-                        -->
-                        <li ><a href="/eksporty" >Eksporty</a></li>
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
+
+    <div data-role="collapsible" data-inset="false" data-collapsed-icon="recycle" data-expanded-icon="arrow-d">
+        <h3>Wymana danymi</h3>
+        <ul data-role="listview" >
+            <li ><a href="/importy" >Importy</a></li>
+            <li ><a href="/eksporty">Eksporty</a></li>
+            <li data-role='list-divider' > </li>
+        </ul>
+    </div>
 
    <!--
    <div data-role="collapsible" data-inset="false" data-collapsed-icon="search" data-expanded-icon="arrow-d">
@@ -105,38 +109,38 @@
                 </div>
    -->
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">
-                    <h3>Narzędzia</h3>
-                    <ul data-role="listview" >
-                        <li><a href="https://www.google.com/calendar/" target="_blank" >Kalendarz</a></li>
-                        <li><a href="https://maps.google.com/" target="_blank" >MapyGoogle</a></li>
-                        <li><a href="http://www.openstreetmap.org" target="_blank" >OpenStreet</a></li>
-                        <li><a href="/iframe/kw" >Księgi wieczyste</a></li>
-                        <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>
-                        <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>
-                        <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>
-                        <!--
-                        <li><a href="/iframe/calendar">Kalendarz</a></li>
-                        <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>
-                        -->
-                        <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" target="_blank">Kalkulator kosztów</a></li>
-                        <!--
-                        <li><a href="http://pfrn.pl/" >PFRN</a></li>
-                        -->
-                        <li data-role='list-divider' > </li>
-                    </ul>
+            <h3>Narzędzia</h3>
+            <ul data-role="listview" >
+                <li><a href="https://www.google.com/calendar/" target="_blank" >Kalendarz</a></li>
+                <li><a href="https://maps.google.com/" target="_blank" >MapyGoogle</a></li>
+                <li><a href="http://www.openstreetmap.org" target="_blank" >OpenStreet</a></li>
+                <li><a href="/iframe/kw" >Księgi wieczyste</a></li>
+                <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>
+                <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>
+                <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>
+                <!--
+                <li><a href="/iframe/calendar">Kalendarz</a></li>
+                <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>
+                -->
+                <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" target="_blank">Kalkulator kosztów</a></li>
+                <!--
+                <li><a href="http://pfrn.pl/" >PFRN</a></li>
+                -->
+                <li data-role='list-divider' > </li>
+            </ul>
 </div>
 
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="video" data-expanded-icon="arrow-d">
-                    <h3>Pomoc video</h3>
-                    <ul data-role="listview" >
-                        <li><a href="/iframe/video_logowanie">Logowanie</a></li>
-                        <li><a href="/iframe/video_nawigacja">Nawigacja</a></li>
-                        <li><a href="/iframe/video_konfiguracja">Konfiguracja</a></li>
-                        <li><a href="/iframe/video_konta">Użytkownicy/Konta</a></li>
-                        <li><a href="/iframe/video_dodawanie_oferty">Dodawanie oferty</a></li>
-                        <li><a href="/iframe/video_szukanie_oferty">Szukanie oferty</a></li>
-                        <li data-role='list-divider' > </li>
-                    </ul>
+            <h3>Pomoc video</h3>
+            <ul data-role="listview" >
+                <li><a href="/iframe/video_logowanie">Logowanie</a></li>
+                <li><a href="/iframe/video_nawigacja">Nawigacja</a></li>
+                <li><a href="/iframe/video_konfiguracja">Konfiguracja</a></li>
+                <li><a href="/iframe/video_konta">Użytkownicy/Konta</a></li>
+                <li><a href="/iframe/video_dodawanie_oferty">Dodawanie oferty</a></li>
+                <li><a href="/iframe/video_szukanie_oferty">Szukanie oferty</a></li>
+                <li data-role='list-divider' > </li>
+            </ul>
 </div>
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="alert" data-expanded-icon="arrow-d">
                     <h3>Dokumentacja</h3>

@@ -1,7 +1,7 @@
     <div data-role="header" data-theme="a">
     <h1>Logowianie</h1>
     </div>
-    <div role="main" class="ui-content">
+    <div role="main" class="ui-content-popup">
     <p class='login-error'></p>
     <form>
             <input name="user" id="user" placeholder="Użytkownik" value="" type="text">

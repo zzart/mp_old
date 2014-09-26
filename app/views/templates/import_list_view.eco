@@ -1,0 +1,33 @@
+<table data-role="table" id="list-table" class="tablesorter ui-responsive ui-shadow table-stroke table-stripe"
+data-filter="true" data-input="#filterTable-input" >
+     <thead>
+       <tr class='th-groups'>
+         <th><label><input name="all" id="all" data-mini="true" type="checkbox"></label></th>
+         <th data-priority="6">ID</th>
+         <th>Data&nbsp;&nbsp;</th>
+         <th>Nazwa pliku&nbsp;&nbsp;</th>
+         <th data-priority="2">Typ importu&nbsp;&nbsp;</th>
+         <th data-priority="2">Status importu&nbsp;&nbsp;</th>
+         <th>Ilość Ofert&nbsp;&nbsp;</th>
+         <th data-priority="3">Ilość Zdjęć&nbsp;&nbsp;</th>
+         <th data-priority="5">Ostrzeżenia&nbsp;&nbsp;</th>
+         <th data-priority="5">Błędy&nbsp;&nbsp;</th>
+       </tr>
+     </thead>
+     <tbody>
+      <% for item in @collection : %>
+       <tr>
+         <td><label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
+         <td><%= item['id'] %></td>
+         <td><%- item['date_func'] %></a></td>
+         <td><%= item['file_name'] %></a></td>
+         <td><%= item['import_type_func'] %></td>
+         <td><%= item['import_status_func'] %></td>
+         <td><%= item['objects_number'] %></a></td>
+         <td><%= item['pictures_number'] %></a></td>
+         <td><%= item['warnings'] %></a></td>
+         <td><%= item['errors'] %></td>
+       </tr>
+      <% end %>
+     </tbody>
+</table>

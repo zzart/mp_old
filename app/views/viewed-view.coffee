@@ -6,7 +6,7 @@ module.exports = class ViewedView extends View
     containerMethod : 'html'
     id: 'viewed'
     attributes: { 'data-role':'popup','data-theme':'b', 'data-position-to':'window', 'data-arrow':'true'}
-    className:'ui-content'
+    className:'ui-content-popup'
 
     attach: =>
         super
