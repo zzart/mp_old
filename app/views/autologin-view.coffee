@@ -21,8 +21,6 @@ module.exports = class LoginView extends View
         #get data from form
         @user = 'admin@test_test'
         @pass = 'admin'
-        # @user = 'dd@novum'
-        # @pass = 'dd'
         #@user = 'test'
         #@pass = 'test'
         # -------------------------
@@ -41,6 +39,9 @@ module.exports = class LoginView extends View
                 @model.set({'user_pass':@pass}) # set this manually so we don't send password back and forth
                 @model.set({'company_name':@user.split('@')[1]}) #
                 @model.update_db()
+                $.cookie('user', @user, {expires: 7})
+                $.cookie('pass', @pass, {expires: 7})
+                @model.check_free_account()
                 $('#first-name-placeholder').text(@model.get('first_name') or @model.get('username'))
                 $('#bon-config-link').attr('href', "/biura/#{@model.get('company_id')}")
                 $('#agent-config-link').attr('href', "/agenci/#{@model.get('id')}")

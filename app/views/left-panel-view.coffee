@@ -26,6 +26,7 @@ module.exports = class LeftPanelView extends View
         #@delegate 'click', '#left-panel', @panel_self_close
         #@delegate 'click', @panel_self_close
         @delegate 'click', '#account-status-btn', @account_status
+        @delegate 'click', '.link_disabled', @paid_only
         @delegate 'click', 'a', @close_panel
 
         #panel_self_close: =>
@@ -35,10 +36,14 @@ module.exports = class LeftPanelView extends View
     close_panel: =>
         @$el.panel('close')
 
+    paid_only: ->
+        val = "<h3>Przepraszamy</h3><p>Funkcjonalność dostępna tylko na <b>płatnych</b> kontach</p>"
+        @publishEvent('tell_user', val)
+
     account_status: ->
         as = localStorage.getObject('account')
-        val = "<p>Liczba ofert: <b>#{as.total_listings}</b><br />Przestrzeń dysku: <b>#{as.disk_usage}</b><br />Status konta: <b>#{as.status}</b></p>"
-        @publishEvent( 'tell_user', val)
+        val = "<p>Liczba ofert: <b>#{as.total_listings}</b><br />Przestrzeń dysku: <b>#{as.disk_usage}</b><br />Status konta: <b>#{as.status}</b><br />Pakiet: <b>#{as.price_plan}</b></p>"
+        @publishEvent('tell_user', val)
         #$('#info').html(val)
         #$('#info').popup('open',{ positionTo: "#account-status-btn", transition:"fade" })
 

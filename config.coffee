@@ -47,6 +47,7 @@ exports.config =
                     # 'vendor/scripts/fineuploader-4.2.1.js',
                     'vendor/scripts/fineuploader-5.0.6.js',
                     'vendor/scripts/OpenLayers.js'
+                    'vendor/scripts/jquery.cookie.js'
                     ]
                 after: [
                     'test/vendor/scripts/test-helper.js'

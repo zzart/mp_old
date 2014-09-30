@@ -22,4 +22,9 @@ module.exports = class Login extends Chaplin.Model
         localStorage.setObject('portals', @.get('portals'))
         @.set({is_logged:true})
 
+    check_free_account: =>
+        if localStorage.getObject('account').price_plan is 'darmowy'
+            @publishEvent('login_model:warning',"disabling export features")
+            $('#left-panel a[href$="/eksporty"]').addClass('link_disabled').removeAttr('href')
+
 

@@ -19,7 +19,11 @@ module.exports = class ListView extends View
         @collection = _.clone(@params.collection)
         @listing_type = @params.listing_type ? false
         @navigation = require "views/templates/#{@params.template}_navigation"
-        @template = require "views/templates/#{@params.template}"
+        # when we on mobile we want lists and not tables
+        if bowser.mobile is true
+            @template = require "views/templates/#{@params.template}_mobile"
+        else
+            @template = require "views/templates/#{@params.template}"
 
         # NOTE: this catches clicks from navigation subview!
         @subscribeEvent('navigation:refresh', @refresh_action)
@@ -29,6 +33,7 @@ module.exports = class ListView extends View
 
         @delegate 'change', '#all', @select_all_action
         @delegate 'change', ':checkbox', @open_right_panel
+        @delegate 'click', '#content li img', @select_single
         #@delegate 'click',  ".ui-table-columntoggle-btn", @column_action
         #@delegate 'tablecreate' , @table_create
 
@@ -99,6 +104,10 @@ module.exports = class ListView extends View
             for k,v of @collection.query
                 $("[data-query=\'#{k}\']").val(v)
                 $("[data-query=\'#{k}\']").selectmenu('refresh')
+
+    select_single: (e)=>
+        e.preventDefault()
+        @publishEvent("log:debug", "select single called")
 
     select_all_action: =>
         @publishEvent('jqm_refersh:render') # need this - jqm has to annoyingly initalize checkboxes

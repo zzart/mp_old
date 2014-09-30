@@ -25,6 +25,7 @@ module.exports = class EditView extends View
         # events
         @subscribeEvent('edit_panel:show_to_client', @show_to_client)
         @subscribeEvent('edit_panel:show_history', @show_history)
+        @subscribeEvent('header:change_tab', @change_tab)
 
         @subscribeEvent('delete:clicked', @delete_action)
         @subscribeEvent('popupbeforeposition', @popup_position)
@@ -274,6 +275,23 @@ module.exports = class EditView extends View
         #so we only render nav once !
         if @edit_panel_rendered is false
             @render_edit_panel()
+        @render_tabs()
+
+    render_tabs: (tab_id='tab_1') =>
+        # lets hide / show the tab which is required
+        # if we have divs named tab_\d need to create tabs
+        @publishEvent('log:debug', 'view: edit-view render tabs()')
+        if @$el.find('div[id^=tab_]').length
+            @publishEvent('log:debug', 'view: found tabs')
+            #hide all tabs
+            @$el.find('div[id^=tab_]').css('display', 'none')
+            # unhide the one we need
+            $("##{tab_id}").css('display', 'inline')
+
+    change_tab: (e)=>
+        @publishEvent('log:info', "change tab #{e.target.dataset.id}")
+        tab_id = "tab_#{e.target.dataset.id}"
+        @render_tabs(tab_id)
 
     render_edit_panel: =>
         @publishEvent('log:debug', "render edit_panel")

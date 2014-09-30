@@ -1,0 +1,12 @@
+<ul data-role="listview" data-inset="true" data-divider-theme="a">
+    <% for item in @collection : %>
+    <li>
+        <%- item['thumbnail_func'] %>
+        <a href="#oferty/<%= item['id'] %>">
+            <h3><%= item['remote_id'] %> <%= item['client_func'] %></h3>
+            <p><%= item['town'] %> <%= item['street'] %> <%= item['number'] %>  <%= item['cena'] %><%= item['waluta_func'] %>
+            <%= item['powierzchnia_calkowita'] %>m2 <%= item['liczba_pokoi'] %>pk <%= item['pietro'] %>pt <%= item['status_func'] %> <%= item['rynek_func'] %></p>
+        </a>
+    </li>
+    <% end %>
+</ul>

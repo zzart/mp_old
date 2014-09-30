@@ -79,7 +79,7 @@
                 </div>
 
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="recycle" data-expanded-icon="arrow-d">
-        <h3>Wymana danymi</h3>
+        <h3>Wymana danych</h3>
         <ul data-role="listview" >
             <li ><a href="/importy" >Importy</a></li>
             <li ><a href="/eksporty">Eksporty</a></li>

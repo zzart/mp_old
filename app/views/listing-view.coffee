@@ -7,9 +7,11 @@ module.exports = class AddView extends View
     initialize: (params) =>
         super
         # send url data from controler
-        @delegate 'filterablebeforefilter', '#autocomplete', _.debounce(@address_search,1500)
+        @delegate 'filterablebeforefilter', '#autocomplete', @address_search
+        # @delegate 'filterablebeforefilter', '#autocomplete', _.debounce(@address_search,1500)
         @delegate 'click', '.address_suggestion', @fill_address
-        @delegate 'click', "[data-role='navbar'] a", @change_tab
+        #@delegate 'click', "[data-role='navbar'] a", @change_tab
+        @subscribeEvent('header:change_tab', @change_tab)
         @delegate 'change', "[name='category']", @rerender_form
         @delegate 'click', "#copy_address", @copy_address
         @rendered_tabs = []
@@ -17,12 +19,9 @@ module.exports = class AddView extends View
         @is_new = false
         # console.log(@options)
 
-
     change_tab: (e)=>
-        e.preventDefault()
-        #NOTE: this assumes that we don't have more then 9 tabs (value [1] gets only one digit) !!
-        @publishEvent('log:info', "change tab #{e.target.attributes.href.value[1]}")
-        tab_id = "tab_#{e.target.attributes.href.value[5]}"
+        @publishEvent('log:info', "change tab #{e.target.dataset.id}")
+        tab_id = "tab_#{e.target.dataset.id}"
         @render_subview(tab_id)
 
     rerender_form: (e) =>
@@ -243,9 +242,11 @@ module.exports = class AddView extends View
                         html += "<li class='address_suggestion' value=#{i}>#{obj.display_name}</li>"
                         i++
 
-                    $ul.html html
+                    $ul.html(html)
                     $ul.listview "refresh"
                     $ul.trigger "updatelayout"
+                    # let do it manually anyway as jqm is crap
+                    $('#autocomplete>li').removeClass('ui-screen-hidden')
                 error:(error) ->
                     self.publishEvent('log:error', "no response from address server #{error}")
                     self.publishEvent('tell_user', 'Nie można połączyć się z serwerem adresowym')
@@ -347,7 +348,7 @@ module.exports = class AddView extends View
         if tab_id not in @rendered_tabs
             $temp = $(@form.el).find("##{tab_id}")
             # console.log('---> ', @form.el, $temp, tab_id)
-            @subview tab_id, new TabView container: @el, template: $temp, id: tab_id
+            @subview tab_id, new TabView container: @el, template: $temp, id: "content_#{tab_id}"
             @subview(tab_id).render()
             if tab_id is 'tab_2'
                 @init_openstreet()
@@ -360,9 +361,14 @@ module.exports = class AddView extends View
                 current_form_name = @form_name.substring(0, @form_name.length - 5)
                 current_category_id = @categories[current_form_name]
                 $("[name='category']").val(current_category_id)
-
             @publishEvent 'jqm_refersh:render'
             @rendered_tabs.push(tab_id)
+        else
+            #we've rendered this tab already so just make it visible
+            $('div[id^=content_tab_]').css('display', 'none')
+            # unhide the one we need
+            $("#content_#{tab_id}").css('display', 'inline')
+
 
     attach: =>
         super

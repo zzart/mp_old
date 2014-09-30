@@ -1,6 +1,7 @@
 Controller =    require 'controllers/base/controller'
 StructureView = require 'views/structure-view'
 Header =        require 'views/header-view'
+EditHeader =    require 'views/header-edit-view'
 Footer =        require 'views/footer-view'
 NavFooter =     require 'views/footer-edit-view'
 ListFooter =    require 'views/footer-list-view'
@@ -18,7 +19,24 @@ module.exports = class StructureController extends Controller
         @reuse 'structure', StructureView
         #@view = new StructureView
         #@view.render().attach()
-        @reuse 'header', Header, region: 'header'
+        # HEADER -------------------------------------
+        edit_listing_header = [
+            'listing#add',
+            'listing#show',
+        ]
+        edit_header = [
+            'client#add',
+            'client#show',
+        ]
+        if route.name in edit_listing_header
+            @reuse 'header-edit', EditHeader, region:'header', tabs: [
+                'Oferta', 'Adres', 'Nieruchomość', 'Pomieszczenia', 'Pozostałe', 'Zdjęcia / Eksporty' ]
+        else if route.name in edit_header
+            @reuse 'header-edit', EditHeader, region:'header', tabs: [ 'Szczegóły','Pliki']
+        else
+            @reuse 'header', Header, region: 'header'
+
+        # Footer -------------------------------------
         edit_footer = [
             'listing#add',
             'listing#show',

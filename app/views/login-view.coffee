@@ -20,6 +20,11 @@ module.exports = class LoginView extends View
             $('#page').enhanceWithin()
             $('#login').popup('open')
             $("input#user").focus()
+            # set cookie if exists
+            if $.cookie('user')
+                $('input#user').val($.cookie('user'))
+            if $.cookie('pass')
+                $('input#pass').val($.cookie('pass'))
 
     login:(event) =>
         event.preventDefault()
@@ -44,6 +49,8 @@ module.exports = class LoginView extends View
                 @model.set({'user_pass':@pass}) # set this manually so we don't send password back and forth
                 @model.set({'company_name':@user.split('@')[1]}) #
                 @model.update_db()
+                $.cookie('user', @user, {expires: 7})
+                $.cookie('pass', @pass, {expires: 7})
                 $('#first-name-placeholder').text(@model.get('first_name') or @model.get('username'))
                 $('#bon-config-link').attr('href', "/biura/#{@model.get('company_id')}")
                 $('#agent-config-link').attr('href', "/agenci/#{@model.get('id')}")

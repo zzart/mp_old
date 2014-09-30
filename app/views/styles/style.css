@@ -37,6 +37,7 @@ width:22px;
 .listing-edit{padding:10px}
 .listing-edit-right{padding-left:10px}
 .listing-edit-left{padding-left:10px}
+.link_disabled{color:gray !important}
 #list-table .ui-mini {font-size:initial}
 #list-table .ui-btn {padding: .7em 1.2em} /* sorts out wide checkbox labes areas */
 #upload .ui-input-text{border-style:none; }
