@@ -272,21 +272,21 @@ module.exports = class EditView extends View
             @$el.append(@form.el)
             # console.log(@$el, @form.el, @template, @form_name)
             @publishEvent('log:info', 'view: edit-view RenderEnd()')
+        @render_tabs()
         #so we only render nav once !
         if @edit_panel_rendered is false
             @render_edit_panel()
-        @render_tabs()
 
     render_tabs: (tab_id='tab_1') =>
         # lets hide / show the tab which is required
         # if we have divs named tab_\d need to create tabs
-        @publishEvent('log:debug', 'view: edit-view render tabs()')
+        @publishEvent('log:warn', "view: edit-view render tabs() #{tab_id}")
         if @$el.find('div[id^=tab_]').length
             @publishEvent('log:debug', 'view: found tabs')
             #hide all tabs
             @$el.find('div[id^=tab_]').css('display', 'none')
             # unhide the one we need
-            $("##{tab_id}").css('display', 'inline')
+            @$el.find("##{tab_id}").css('display', 'inline')
 
     change_tab: (e)=>
         @publishEvent('log:info', "change tab #{e.target.dataset.id}")

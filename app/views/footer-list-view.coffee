@@ -5,7 +5,8 @@ module.exports = class FooterView extends View
     template: template
     containerMethod : 'html'
     id: 'footer'
-    attributes: { 'data-role':'footer', 'data-position':'fixed' , 'data-theme':'b' }
+    # this creates footer bar ... we want to max out on number of items so don't need it anymore
+    #attributes: { 'data-role':'footer', 'data-position':'fixed' , 'data-theme':'b' }
     attach: =>
         super
         @publishEvent('log:info', 'FooterView:attach')

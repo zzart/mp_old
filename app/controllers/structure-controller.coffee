@@ -2,6 +2,7 @@ Controller =    require 'controllers/base/controller'
 StructureView = require 'views/structure-view'
 Header =        require 'views/header-view'
 EditHeader =    require 'views/header-edit-view'
+ListHeader =    require 'views/header-list-view'
 Footer =        require 'views/footer-view'
 NavFooter =     require 'views/footer-edit-view'
 ListFooter =    require 'views/footer-list-view'
@@ -13,13 +14,17 @@ LeftPanelView = require 'views/left-panel-view'
 RightPanelView = require 'views/right-panel-view'
 
 module.exports = class StructureController extends Controller
-    beforeAction: (params, route) ->
-        @publishEvent('log:debug', 'StructureController start ------------')
+    beforeAction: (params, route, options) ->
+        @publishEvent('log:debug', "StructureController controller params: #{JSON.stringify(params)}, #{JSON.stringify(route)}, #{JSON.stringify(options)}" )
         #should provide regions
         @reuse 'structure', StructureView
         #@view = new StructureView
         #@view.render().attach()
         # HEADER -------------------------------------
+        listing_list_header = [
+            'listing#list',
+
+        ]
         edit_listing_header = [
             'listing#add',
             'listing#show',
@@ -29,10 +34,12 @@ module.exports = class StructureController extends Controller
             'client#show',
         ]
         if route.name in edit_listing_header
-            @reuse 'header-edit', EditHeader, region:'header', tabs: [
+            @reuse 'header-edit', EditHeader, tabs: [
                 'Oferta', 'Adres', 'Nieruchomość', 'Pomieszczenia', 'Pozostałe', 'Zdjęcia / Eksporty' ]
         else if route.name in edit_header
-            @reuse 'header-edit', EditHeader, region:'header', tabs: [ 'Szczegóły','Pliki']
+            @reuse 'header-edit', EditHeader, tabs: ['Szczegóły','Pliki']
+        else if route.name in listing_list_header
+            @reuse 'header-list', ListHeader, { params:params, route:route, options:options }
         else
             @reuse 'header', Header, region: 'header'
 

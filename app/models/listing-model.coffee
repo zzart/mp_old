@@ -18,6 +18,7 @@ module.exports = class Listing extends Chaplin.Model
                 if r.mime_type.split('/')[0] is 'image'
                     img = new Image()
                     img.src = 'data:' + r.mime_type + ';base64,' + r.thumbnail
+                    img.width = 90
                     img.outerHTML
 
         date_created_func: ->

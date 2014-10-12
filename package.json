@@ -1,8 +1,8 @@
 {
   "author": "Mariusz Raczynski @ Pixey",
-  "name": "mp",
-  "description": "",
-  "version": "0.0.1",
+  "name": "MobilnyPosrednik",
+  "description": "Program do administracji ofert nieruchomości",
+  "version": "0.0.2",
   "homepage": "http://mobilnyposrednik.pl",
   "repository": {
     "type": "git",
@@ -12,7 +12,8 @@
     "node": "~0.6.10 || 0.8 || 0.9"
   },
   "scripts": {
-    "start": "brunch watch --server",
+    "start": "rm /home/mars/www/mp/public/javascripts/* -fr;  brunch watch --server",
+    "build": "rm /home/mars/www/mp/public/javascripts/* -fr; ENVIRONMENT='production' brunch build --config config-release.coffee",
     "test": "brunch test"
   },
   "dependencies": {

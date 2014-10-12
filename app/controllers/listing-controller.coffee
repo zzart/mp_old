@@ -8,9 +8,9 @@ mediator =  require 'mediator'
 
 module.exports = class ListingController extends Controller
     list:(params, route, options) ->
-        @publishEvent('log:debug', "in list property controller#{params}, #{route}, #{options}" )
+        @publishEvent('log:debug', "in list property controller#{JSON.stringify(params)}, #{JSON.stringify(route)}, #{JSON.stringify(options)}" )
         mediator.last_query = _.clone(options.query)
-        listing_type = options.query.category
+        @listing_type = options.query.category
         mediator.collections.listings = new Collection
         mediator.collections.listings.query_add(options.query)
         mediator.collections.listings.fetch
@@ -24,7 +24,7 @@ module.exports = class ListingController extends Controller
                     template: "listing_list_view"
                     filter:'status'
                     region:'content'
-                    listing_type: listing_type
+                    listing_type: @listing_type
                     controller: 'listing_controller'
                 }
             error: =>

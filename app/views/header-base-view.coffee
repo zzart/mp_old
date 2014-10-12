@@ -1,5 +1,6 @@
 #template = require 'views/templates/header_base'
-View = require 'views/base/view'
+View = require 'views/navigation-base-view'
+#View = require 'views/base/view'
 mediator = require 'mediator'
 
 module.exports = class HeaderBase extends View

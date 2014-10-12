@@ -1,3 +1,0 @@
-            <div style='padding:2px 8px 2px 8px' >
-         <input id="filterTable-input" data-type="search" data-filter-placeholder="Find cars..." data-theme="a" data-filter-theme="a" data-inset="true" />
-            </div>

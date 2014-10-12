@@ -6,6 +6,7 @@ module.exports = class HeaderEditView extends HeaderBase
     template: template
     containerMethod : 'html'
     id: 'header'
+    region: 'header'
 
     initialize: (options)->
         super
