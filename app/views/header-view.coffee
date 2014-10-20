@@ -7,10 +7,10 @@ module.exports = class HeaderView extends View
     containerMethod : 'html'
     id: 'header'
     region: 'header'
-    template: template
 
     initialize: (options) ->
         super
+        @template = template
         @params = options.params
         @options = options.options
         @route = options.route
@@ -25,11 +25,11 @@ module.exports = class HeaderView extends View
         @publishEvent('log:debug', 'HeaderView:attach()')
 
     extra_header: =>
+        ## depending on route we will generate extra header ( lists ) or not
         basic = ['home_show', 'login_show', 'iframe_show']
-        # depending on route we will generate extra header ( lists ) or not
-        template_name = String.replace(@route.name, '#', '_')
-        template_name = String.replace(template_name, '-', '_')
+        # replace all -# with underscores
+        template_name = @route.name.replace(/[#-]/g, '_')
         if template_name in basic
             return
-        @subview 'sub_header', new SubView template: "header_#{template_name}"
+        @subview "sub_header", new SubView template: "header_#{template_name}"
         @subview("sub_header").render()

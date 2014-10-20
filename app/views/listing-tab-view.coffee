@@ -15,7 +15,7 @@ module.exports = class View extends View
         #and we need it inside the form element
         $(@container).find('form:first').append(@$el)
         # hide all tabs
-        $('div[id^=content_tab_]').css('display', 'none')
+        $("div[id^=content_tab_]").css('display', 'none')
         # unhide the one we need
         $("##{@id}").css('display', 'inline')
         @publishEvent('log:info', 'tabview: tab-view afterAttach()')
