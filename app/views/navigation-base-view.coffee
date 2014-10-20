@@ -3,14 +3,14 @@ mediator = require 'mediator'
 
 # BASE CLASS for contextual menu and horizontal filters in list view
 module.exports = class BaseView extends View
-    initialize: (options) =>
+    initialize: (options) ->
         super
-        @publishEvent('log:debug', "Base view options: #{JSON.stringify(options)}" )
+        # @publishEvent('log:debug', "Base view options: #{JSON.stringify(options)}" )
         @delegate 'change', '#select-action', @select_action
         @delegate 'click',  '#refresh', @refresh_action
         @delegate 'change', "[data-query]", @query_action
         @delegate 'change', "[data-filter]", @filter_action
-        @listing_type = options.options?.query?.category
+        @listing_type = options?.options?.query?.category
 
     query_action: (event) =>
         event.preventDefault()

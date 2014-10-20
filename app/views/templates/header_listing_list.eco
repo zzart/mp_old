@@ -1,0 +1,62 @@
+    <div style='padding:0em 0.4em 0em 0.4em' >
+        <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ...." data-theme="a" data-filter-theme="a" data-inset="true" />
+    </div>
+
+    <div style='padding:0em 0.4em 0em 0.4em' data-role="controlgroup" data-type="horizontal" data-mini="true">
+        <a href='#' id='refresh' class='ui-btn ui-icon-refresh ui-btn-icon-notext' >Odśwież</a>
+        <a href='/oferty/dodaj?type=<%= @listing_type %>' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
+
+        <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
+        <select name="select-action" id="select-action">
+            <option selected value=''>Akcja</option>
+            <option value="wydruk-wewnetrzny">Wydruk wewnętrzyny</option>
+            <option value="wydruk-klienta">Wydruk dla klienta</option>
+            <option value="zmien_agenta">Zmień Agenta</option>
+            <option value="send-listing-client">Wyślij ofertę klientowi</option>
+            <option value="send-listing-address">Wyślij ofertę ...</option>
+            <option value="usun">Usuń</option>
+            <option value="eksport" disabled>Eksport do pliku</option>
+        </select>
+
+        <label for="status-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+        <select name="status-query" id="status-query" data-query='status'>
+            <option selected disabled>Status</option>
+            <option value="">Wszystkie</option>
+            <option value="1">Aktywne</option>
+            <option value="0">Nieaktywne</option>
+            <option value="2">Archiwalne</option>
+            <option value="3">Robocze</option>
+            <option value="4">Sprzedane</option>
+            <option value="5">Wynajęte</option>
+            <option value="6">Umowa przedwstępna</option>
+            <option value="7">Usunięte</option>
+        </select>
+
+        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+        <select name="agent-query" id="agent-query" data-query='agent'>
+            <option selected disabled>Agent</option>
+            <option value="">Wszyscy</option>
+            <% for key, val of @agents : %>
+            <option value="<%= key %>"><%= val %></option>
+            <% end %>
+        </select>
+
+        <label for="branch-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+        <select name="branch-query" id="branch-query" data-query='branch'>
+            <option selected disabled>Oddział</option>
+            <option value="">Wszystkie</option>
+            <% for key, val of @branches : %>
+            <option value="<%= key %>"><%= val %></option>
+            <% end %>
+        </select>
+
+        <label for="client-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+        <select name="client-query" id="client-query" data-query='client'>
+            <option selected disabled>Klient</option>
+            <option value="">Wszyscy</option>
+            <% for key, val of @clients : %>
+            <option value="<%= key %>"><%= val %></option>
+            <% end %>
+        </select>
+
+    </div>

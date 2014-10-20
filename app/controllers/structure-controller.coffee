@@ -15,16 +15,12 @@ RightPanelView = require 'views/right-panel-view'
 
 module.exports = class StructureController extends Controller
     beforeAction: (params, route, options) ->
-        @publishEvent('log:debug', "StructureController controller params: #{JSON.stringify(params)}, #{JSON.stringify(route)}, #{JSON.stringify(options)}" )
+        @publishEvent('log:debug', "StructureController controller params: #{JSON.stringify(params)}, route: #{JSON.stringify(route)}, options: #{JSON.stringify(options)}" )
         #should provide regions
         @reuse 'structure', StructureView
         #@view = new StructureView
         #@view.render().attach()
         # HEADER -------------------------------------
-        listing_list_header = [
-            'listing#list',
-
-        ]
         edit_listing_header = [
             'listing#add',
             'listing#show',
@@ -32,16 +28,24 @@ module.exports = class StructureController extends Controller
         edit_header = [
             'client#add',
             'client#show',
+            'client-public#show',
+            'branch#add',
+            'branch#show',
+            'agent#add',
+            'agent#show',
+            'bon#show'
+            'graphic#add',
+            'graphic#show'
+            'export#add',
+            'export#show'
         ]
         if route.name in edit_listing_header
             @reuse 'header-edit', EditHeader, tabs: [
                 'Oferta', 'Adres', 'Nieruchomość', 'Pomieszczenia', 'Pozostałe', 'Zdjęcia / Eksporty' ]
         else if route.name in edit_header
             @reuse 'header-edit', EditHeader, tabs: ['Szczegóły','Pliki']
-        else if route.name in listing_list_header
-            @reuse 'header-list', ListHeader, { params:params, route:route, options:options }
         else
-            @reuse 'header', Header, region: 'header'
+            @reuse 'header', Header, { params:params, route:route, options:options }
 
         # Footer -------------------------------------
         edit_footer = [

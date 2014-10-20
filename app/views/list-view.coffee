@@ -113,15 +113,15 @@ module.exports = class ListView extends View
         # everytime a checkbox is checked we need to adjust @selected_items array
         @publishEvent("log:debug", "select_items called")
         @selected_items = []
-        selected = $('#list-table>tbody input:checked')
+        self = @
+        selected = $("#list-table>tbody input:checked")
         for i in selected
             if $(i).attr('id') isnt 'all'
-                @selected_items.push($(i).attr('id'))
+                self.selected_items.push($(i).attr('id'))
         @selected_items = _.uniq(@selected_items)
         @publishEvent("log:debug", "select_items array #{@selected_items}")
 
-
-    select_single: (e)=>
+    select_single: (e) =>
         if e.target.tagName is 'IMG'
             e.preventDefault()
             @publishEvent("log:debug", "IMG click ! ")
@@ -282,8 +282,8 @@ module.exports = class ListView extends View
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
                     self.render()
-                #clean only after the CLICK event
-                self.clean_after_action()
+                    #clean only after the CLICK event
+                    self.clean_after_action()
 
             if event.target.value == 'zmien_agenta'
                 str = ""

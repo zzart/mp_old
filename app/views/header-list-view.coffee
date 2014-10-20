@@ -1,18 +1,17 @@
-template = require 'views/templates/header_list'
-HeaderBase = require 'views/header-base-view'
+View = require 'views/header-base-view'
 mediator = require 'mediator'
 
-module.exports = class HeaderListView extends HeaderBase
-    template: template
-    containerMethod : 'html'
-    id: 'header'
+module.exports = class HeaderListView extends View
+    containerMethod : 'append'
+    id: 'sub_header'
     region: 'header'
 
-    initialize: ->
+    initialize: (options) ->
         super
+        @template = require "views/templates/#{options.template}"
 
     attach: =>
         super
-        $("#header").enhanceWithin()
-        @publishEvent('log:debug', 'HeaderView:attach()')
+        $("#sub_header").enhanceWithin()
+        @publishEvent('log:debug', 'HeaderListView:attach()')
 
