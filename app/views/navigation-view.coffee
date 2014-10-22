@@ -1,4 +1,4 @@
-View = require 'views/navigation-base-view'
+View = require 'views/header-action-view'
 mediator = require 'mediator'
 
 module.exports = class View extends View

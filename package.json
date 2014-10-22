@@ -12,8 +12,8 @@
     "node": "~0.6.10 || 0.8 || 0.9"
   },
   "scripts": {
+    "build": "rm /home/mars/www/mp/public/javascripts/* -fr; ENVIRONMENT=\"production\" brunch build --config config-release.coffee",
     "start": "rm /home/mars/www/mp/public/javascripts/* -fr;  brunch watch --server",
-    "build": "rm /home/mars/www/mp/public/javascripts/* -fr; ENVIRONMENT='production' brunch build --config config-release.coffee",
     "test": "brunch test"
   },
   "dependencies": {

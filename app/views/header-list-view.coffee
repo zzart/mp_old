@@ -1,4 +1,4 @@
-View = require 'views/header-base-view'
+View = require 'views/header-action-view'
 mediator = require 'mediator'
 
 module.exports = class HeaderListView extends View
@@ -13,5 +13,7 @@ module.exports = class HeaderListView extends View
     attach: =>
         super
         $("#sub_header").enhanceWithin()
+        test= @getTemplateData()
+        console.log(JSON.stringify(test))
         @publishEvent('log:debug', 'HeaderListView:attach()')
 

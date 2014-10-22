@@ -23,7 +23,12 @@ module.exports = class ListView extends View
         @navigation = require "views/templates/#{@params.template}_navigation"
         # when we on mobile we want lists and not tables
         if bowser.mobile is true
-            @template = require "views/templates/#{@params.template}_mobile"
+            # look for mobile template and use default if not found
+            try
+                @template = require "views/templates/#{@params.template}_mobile"
+            catch e
+                @publishEvent('log:debug', "#{e} template not found. Going with non-mobile template")
+                @template = require "views/templates/#{@params.template}"
         else
             @template = require "views/templates/#{@params.template}"
 

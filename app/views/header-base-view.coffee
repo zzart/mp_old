@@ -1,11 +1,11 @@
 #template = require 'views/templates/header_base'
-View = require 'views/navigation-base-view'
-#View = require 'views/base/view'
+# View = require 'views/header-action-view'
+View = require 'views/base/view'
 mediator = require 'mediator'
 
 module.exports = class HeaderBase extends View
 
-    initialize: ->
+    initialize: (options) ->
         super
         @delegate 'click', '#info-btn', @info_screen
         @delegate 'click', '#viewed-btn', @viewed_screen

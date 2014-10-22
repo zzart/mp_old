@@ -12,9 +12,6 @@ module.exports = class IFrameView extends View
             geodz:
                 url: 'http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot'
                 title: ''
-            kw:
-                url: 'http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html'
-                title: 'Księgi wieczyste '
             geo:
                 url: 'http://maps.geoportal.gov.pl/webclient/'
                 title: ''

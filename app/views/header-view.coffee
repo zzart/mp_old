@@ -15,9 +15,6 @@ module.exports = class HeaderView extends View
         @options = options.options
         @route = options.route
 
-    render: =>
-        super
-
     attach: =>
         super
         @extra_header()
@@ -31,5 +28,5 @@ module.exports = class HeaderView extends View
         template_name = @route.name.replace(/[#-]/g, '_')
         if template_name in basic
             return
-        @subview "sub_header", new SubView template: "header_#{template_name}"
+        @subview "sub_header", new SubView template: "header_#{template_name}", params: @params, route: @route, options: @options
         @subview("sub_header").render()

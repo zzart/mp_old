@@ -4,6 +4,8 @@
 
     <div style='padding:0em 0.4em 0em 0.4em' data-role="controlgroup" data-type="horizontal" data-mini="true">
         <a href='#' id='refresh' class='ui-btn ui-icon-refresh ui-btn-icon-notext' >Odśwież</a>
+        <!--
         <a href='/importy/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
+        -->
 
     </div>

@@ -2,7 +2,7 @@ Controller =    require 'controllers/base/controller'
 StructureView = require 'views/structure-view'
 Header =        require 'views/header-view'
 EditHeader =    require 'views/header-edit-view'
-ListHeader =    require 'views/header-list-view'
+# ListHeader =    require 'views/header-list-view'
 Footer =        require 'views/footer-view'
 NavFooter =     require 'views/footer-edit-view'
 ListFooter =    require 'views/footer-list-view'
@@ -15,7 +15,10 @@ RightPanelView = require 'views/right-panel-view'
 
 module.exports = class StructureController extends Controller
     beforeAction: (params, route, options) ->
-        @publishEvent('log:debug', "StructureController controller params: #{JSON.stringify(params)}, route: #{JSON.stringify(route)}, options: #{JSON.stringify(options)}" )
+        @publishEvent('log:debug', "StructureController controller
+            params: #{JSON.stringify(params)},
+            route: #{JSON.stringify(route)},
+            options: #{JSON.stringify(options)}")
         #should provide regions
         @reuse 'structure', StructureView
         #@view = new StructureView
@@ -45,7 +48,7 @@ module.exports = class StructureController extends Controller
         else if route.name in edit_header
             @reuse 'header-edit', EditHeader, tabs: ['Szczegóły','Pliki']
         else
-            @reuse 'header', Header, { params:params, route:route, options:options }
+            @reuse 'header', Header, {params:params, route:route, options:options}
 
         # Footer -------------------------------------
         edit_footer = [
@@ -74,11 +77,12 @@ module.exports = class StructureController extends Controller
             'graphic#list'
             'export#list'
             ]
+        empty = ['login#show']
         if route.name in edit_footer
             @reuse 'footer-nav', NavFooter, region:'footer'
         else if route.name in list_footer
             @reuse 'footer-list', ListFooter, region:'footer'
-        else
+        else if route.name not in empty
             @reuse 'footer', Footer, region:'footer'
 
         @reuse 'panel-right', RightPanelView

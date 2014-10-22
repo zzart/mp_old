@@ -302,7 +302,7 @@ module.exports = class AddView extends View
         ##markers
         size = new OpenLayers.Size(21,25)
         offset = new OpenLayers.Pixel(-(size.w/2), -size.h)
-        icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, offset)
+        icon = new OpenLayers.Icon("#{mediator.server_url}img/marker.png", size, offset)
         marker = new OpenLayers.Marker(
             new OpenLayers.LonLat(0,0).transform(projection), icon)
             # ).transform(projection, openlayers_projection), icon)
