@@ -34,6 +34,7 @@ module.exports = class ListView extends View
 
         # NOTE: this catches clicks from navigation subview!
         @subscribeEvent('navigation:refresh', @refresh_action)
+        @subscribeEvent('navigation:search_reveal', @search_reveal_action)
         @subscribeEvent('navigation:filter_action', @filter_action)
         @subscribeEvent('navigation:query_action', @query_action)
         @subscribeEvent('navigation:select_action', @select_action)
@@ -196,6 +197,12 @@ module.exports = class ListView extends View
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
         @publishEvent('log:debug', "selected_items : #{@selected_items}")
 
+    search_reveal_action: (e) =>
+        e.preventDefault()
+        @publishEvent('log:debug', 'search_reveal_action cougth')
+        #toggle() isn't supported anymore
+        $("#search-list").css('display', 'block')
+
     getTemplateData: =>
         collection: @collection.toJSON()
         listing_type: @listing_type
@@ -292,6 +299,15 @@ module.exports = class ListView extends View
                     #clean only after the CLICK event
                     self.clean_after_action()
 
+            if event.target.value == 'wygeneruj_ids'
+                @model = @collection.models[0]
+                for id in self.selected_items
+                    url = "#{@model.urlRoot}/odswiez_ids/#{id}"
+                    @mp_request(@model, url, 'GET', 'Wszystkie ID dla tego oddzaiłu zostały ponownie wygenerowane')
+                $(@).off('click')
+                self.render()
+                self.clean_after_action()
+
             if event.target.value == 'zmien_agenta'
                 str = ""
                 for k,v of localStorage.getObject('agents')
@@ -305,17 +321,12 @@ module.exports = class ListView extends View
                     @publishEvent("log:warn", error)
                 $('#popgeneric').popup('open',{ transition:"fade" })
                 # unbind is for stopping it firing multiple times
-                console.log('1-------- zmien_agenta')
                 $("#agent-choose li").unbind().click ->
-                    console.log('2-------- zmien_agenta')
                     $('#popgeneric').popup('close')
                     # inside click f() we can reference attributes of element
                     # on which click was established
                     # so @value is list item 'value' attribute
-                    console.log('3-------- zmien_agenta')
-                    console.log(self.selected_items)
                     for id in self.selected_items
-                        console.log('4--------- zmien_agenta')
                         # TODO: this might take a while so we could do progress bar of some sorts....
                         console.log(@value, id)
                         model = self.collection_hard.get(id)

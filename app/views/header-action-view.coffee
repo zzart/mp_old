@@ -8,6 +8,7 @@ module.exports = class HeaderActionView extends View
         @publishEvent('log:debug', "HeaderActionView options: #{JSON.stringify(options)}" )
         @delegate 'change', '#select-action', @select_action
         @delegate 'click',  '#refresh', @refresh_action
+        @delegate 'click',  '#search-toggle', @search_reveal_action
         @delegate 'change', "[data-query]", @query_action
         @delegate 'change', "[data-filter]", @filter_action
         try
@@ -28,6 +29,10 @@ module.exports = class HeaderActionView extends View
     refresh_action: (event) =>
         event.preventDefault()
         @publishEvent('navigation:refresh', event)
+
+    search_reveal_action: (event) =>
+        event.preventDefault()
+        @publishEvent('navigation:search_reveal', event)
 
     select_action: (event) =>
         event.preventDefault()

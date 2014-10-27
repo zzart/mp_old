@@ -4,6 +4,7 @@ module.exports = class BranchView extends View
     initialize: (options) =>
         super
 
+
     save_action: =>
         super
         @publishEvent('log:info','commmit form')

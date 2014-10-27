@@ -8,7 +8,7 @@ mediator =  require 'mediator'
 
 module.exports = class ListingController extends Controller
     list:(params, route, options) ->
-        @publishEvent('log:debug', "in list property controller#{JSON.stringify(params)}, #{JSON.stringify(route)}, #{JSON.stringify(options)}" )
+        @publishEvent('log:debug', "ListingController: #{JSON.stringify(params)}, #{JSON.stringify(route)}, #{JSON.stringify(options)}" )
         mediator.last_query = _.clone(options.query)
         @listing_type = options.query.category
         mediator.collections.listings = new Collection

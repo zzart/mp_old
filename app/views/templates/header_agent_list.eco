@@ -1,9 +1,10 @@
-    <div style='padding:0em 0.4em 0em 0.4em' >
+    <div class='action-panel' id='search-list' >
         <input id="filterTable-input" data-type="search" data-filter-placeholder="Szukaj ...." data-theme="a" data-filter-theme="a" data-inset="true" />
     </div>
 
-    <div style='padding:0em 0.4em 0em 0.4em' data-role="controlgroup" data-type="horizontal" data-mini="true">
+    <div class='action-panel' data-role="controlgroup" data-type="horizontal" data-mini="true">
         <a href='#' id='refresh' class='ui-btn ui-icon-refresh ui-btn-icon-notext' >Odśwież</a>
+        <a href='#' id='search-toggle' class='ui-btn ui-icon-search ui-btn-icon-notext' >Szukaj</a>
         <a href='/agenci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left " >Dodaj</a>
 
             <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>

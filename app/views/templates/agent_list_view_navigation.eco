@@ -1,31 +1,5 @@
 <div id="view-menu">
     <form>
         <fieldset data-role="controlgroup" data-type="vertical" data-theme="b">
-            <a href="#header" class="ui-btn ui-icon-delete ui-btn-icon-left " data-rel="close">Zamknij menu</a>
-            <button data-icon="refresh" id='refresh'>Odśwież</button>
-            <a href='/agenci/dodaj' class="ui-btn ui-icon-edit ui-btn-icon-left" >Dodaj</a>
-
-            <label for="select-action" class="ui-hidden-accessible ui-icon-action">Akcja</label>
-            <select name="select-action" id="select-action">
-                <option selected disabled>Akcja</option>
-                <option value="usun">Usuń</option>
-            </select>
-            <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
-            <select name="select-filter" id="select-filter" data-filter='agent_type'>
-                <option selected disabled>Filtr</option>
-                <option value="">Wszyscy</option>
-                <option value="0">Pośrednik</option>
-                <option value="1">Administrator nieruchomości</option>
-                <option value="2">Menadzer</option>
-                <option value="3">Wsparcie IT</option>
-            </select>
-            <label for="branch-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
-            <select name="branch-filter" id="branch-filter" data-filter='branch'>
-                <option selected disabled>Oddział</option>
-                <option value="">Wszystkie</option>
-                <% for key , val of @branches : %>
-                <option value="<%= key %>"><%= val %></option>
-                <% end %>
-            </select>
     </fieldset>
 </div>

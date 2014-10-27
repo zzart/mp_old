@@ -20,6 +20,12 @@ module.exports = class Listing extends Chaplin.Model
                     img.src = 'data:' + r.mime_type + ';base64,' + r.thumbnail
                     img.width = 90
                     img.outerHTML
+            else
+                img = new Image()
+                img.src = 'images/ikona.png'
+                img.width = 90
+                img.outerHTML
+
 
         date_created_func: ->
             @get('date_created').substr?(0,10)
