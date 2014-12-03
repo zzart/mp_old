@@ -67,3 +67,10 @@ h4 {
     text-shadow: none;
 }
 
+/*
+fix for horizontal.control.group mess -> applicable only to chrome
+}
+*/
+#sub_header .ui-controlgroup-horizontal .ui-select {
+padding-top:0.5px
+}

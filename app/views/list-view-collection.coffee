@@ -53,7 +53,7 @@ module.exports = class ListView extends CollectionView
     select_action: (event) =>
         #get all selected offers
         selected = $('#list-table>tbody input:checked ')
-        console.log(selected)
+        # console.log(selected)
         self = @
         clean_after_action = (selected) =>
             #Once action is done clear the selection
@@ -116,14 +116,14 @@ module.exports = class ListView extends CollectionView
         if _.isNaN(value)
             @filter = _.omit(@filter, key)
             @publishEvent("log:info", "omiting #{key}" )
-            console.log(@filter)
+            # console.log(@filter)
         else
             @filter[key] = value
 
         @publishEvent('log:debug', key)
         @publishEvent('log:debug', value)
 
-        console.log(@filter)
+        # console.log(@filter)
         if _.isEmpty(@filter)
             #@render()
             return
@@ -140,7 +140,7 @@ module.exports = class ListView extends CollectionView
         @publishEvent('log:debug', 'filter apply')
         #TODO: doesn't work for multiple filter objects
         if obj[@filter] isnt false
-            console.log(obj)
+            # console.log(obj)
             @publishEvent('log:debug', 'filter apply')
             list_of_models = @collection_hard.where(obj)
             @collection.reset(list_of_models)

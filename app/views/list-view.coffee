@@ -234,8 +234,7 @@ module.exports = class ListView extends View
         @publishEvent('log:info', "collection has a length of : #{@collection.length}")
         if @collection.length >= 1
             $("#list-table").tablesorter({sortList:[[4,0]], headers:{0:{'sorter':false}, 1:{'sorter':false}}})
-        else
-            @publishEvent 'tell_user', 'Nic nie znaleźiono!<br />Aby dodać pierwszy element naciśnij  <a class="ui-btn ui-shadow ui-corner-all ui-icon-edit ui-btn-icon-notext ui-btn-inline">Dodaj</a>'
+        # @publishEvent 'tell_user', 'Nic nie znaleźiono!<br />Aby dodać pierwszy element naciśnij  <a class="ui-btn ui-shadow ui-corner-all ui-icon-edit ui-btn-icon-notext ui-btn-inline">Dodaj</a>'
         @publishEvent('jqm_refersh:render')
         @selects_refresh()
         @publishEvent 'table_refresh'
@@ -328,7 +327,7 @@ module.exports = class ListView extends View
                     # so @value is list item 'value' attribute
                     for id in self.selected_items
                         # TODO: this might take a while so we could do progress bar of some sorts....
-                        console.log(@value, id)
+                        #console.log(@value, id)
                         model = self.collection_hard.get(id)
                         # set (change:agent) will trigger sync on model
                         model.set('agent', @value)
@@ -361,7 +360,7 @@ module.exports = class ListView extends View
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
                     self.render()
-                self.clean_after_action()
+                    self.clean_after_action()
 
             if event.target.value == 'send-listing-address'
                 form = '''
@@ -389,7 +388,7 @@ module.exports = class ListView extends View
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
                     self.render()
-                self.clean_after_action()
+                    self.clean_after_action()
 
             if event.target.value == 'wydruk-wewnetrzny' or  event.target.value == 'wydruk-klienta'
                 # get model

@@ -9,7 +9,7 @@ module.exports = class Layout extends Chaplin.Layout
             #@log = log4javascript.getDefaultLogger()
             #ajaxAppender = new log4javascript.AjaxAppender("#{mediator.server_url}/logging")
             #@log.addAppender(ajaxAppender)
-        @log.debug('layout init')
+        @log.debug('layout init') if mediator.online is false
         jqm = true
 
         if jqm
@@ -45,7 +45,7 @@ module.exports = class Layout extends Chaplin.Layout
 
     schema_change: =>
         #when certain models are added/updated/removed we need to refresh schema
-        @log.debug('****************refreshing schema')
+        @log.debug('****************refreshing schema') if mediator.online is false
         mediator.models.user.fetch()
 
     tell_viewed: (information) =>
@@ -63,7 +63,7 @@ module.exports = class Layout extends Chaplin.Layout
         , 4000)
 
     server_error: =>
-        @log.debug('server error')
+        @log.debug('server error')  if mediator.online is false
         $('#info').text('Upss, brak kontaktu z serwerem...')
         #set display popup with delay
         setTimeout(->
@@ -74,7 +74,7 @@ module.exports = class Layout extends Chaplin.Layout
         , 3000)
 
     disable_form:(can_edit) =>
-        @log.info('form disable caught')
+        @log.info('form disable caught') if mediator.online is false
         if not can_edit
             $("form input:radio").checkboxradio('disable')
             $("form :input").textinput({disabled:true} )
@@ -82,7 +82,7 @@ module.exports = class Layout extends Chaplin.Layout
             $("form [data-role='controlgroup'] select").selectmenu( "disable" )
 
     disable_buttons:(can_edit, edit_type, delete_only, no_back) =>
-        @log.debug('form buttons disable caught')
+        @log.debug('form buttons disable caught') if mediator.online is false
         if edit_type is 'add'
             $("#delete-button").attr('disabled', true)
         if not can_edit
@@ -105,7 +105,7 @@ module.exports = class Layout extends Chaplin.Layout
 
     jqm_init: =>
         #this will initialize page after page is ready
-        @log.debug('layout: event jqm_init caugth')
+        @log.debug('layout: event jqm_init caugth') if mediator.online is false
         $ ->
             $.mobile.initializePage()
             $.mobile.loading('hide')
@@ -120,11 +120,11 @@ module.exports = class Layout extends Chaplin.Layout
             #$('#main-container').enhanceWithin()
         #window.location.hash = 'index'
     jqm_leftpanel: =>
-        @log.debug('layout: event jqm_menurender caugth')
+        @log.debug('layout: event jqm_menurender caugth') if mediator.online is false
         #$("#left-panel").panel('open')
 
     jqm_refersh: =>
-        @log.debug('layout: event jqm_refresh caugth')
+        @log.debug('layout: event jqm_refresh caugth') if mediator.online is false
         #this is callbacks based so i know precisely WHEN jqm finished rendering !!!
         self = @
         f1 = (callback) ->
@@ -136,7 +136,7 @@ module.exports = class Layout extends Chaplin.Layout
             $("#content-region").enhanceWithin()
             f2(->
                 self.publishEvent('jqm_finished_rendering')
-                self.log.debug('jqm_refresh finished')
+                self.log.debug('jqm_refresh finished') if mediator.online is false
             )
         )
         #$.mobile.loading('hide')
@@ -168,19 +168,19 @@ module.exports = class Layout extends Chaplin.Layout
         )
 
     jqm_page_refersh: =>
-        @log.debug('layout: event jqm_page_refresh caugth')
+        @log.debug('layout: event jqm_page_refresh caugth') if mediator.online is false
         $("#page").enhanceWithin()
         $.mobile.loading('hide')
         #manually doing page refresh straight from DOM
     jqm_footer_refersh: =>
         #manually doing page refresh straight from DOM
-        @log.debug('layout: event jqm_footer_refresh caugth')
+        @log.debug('layout: event jqm_footer_refresh caugth') if mediator.online is false
         $("#footer-region").enhanceWithin()
     jqm_recreate: =>
         #TODO: we might check in the DOM if this was rendered alreadyand only then do it or not.
 
     jqm_table_refresh: =>
-        @log.debug('layout: jqm_table_refresh ')
+        @log.debug('layout: jqm_table_refresh ') if mediator.online is false
         $("#list-table").table("refresh")
 
 

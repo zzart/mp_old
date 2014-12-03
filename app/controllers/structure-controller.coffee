@@ -43,8 +43,11 @@ module.exports = class StructureController extends Controller
             'export#show'
         ]
         if route.name in edit_listing_header
+            # NOTE: doing different tabs depending on category doesn't work
+            # we don't know listing category when clicked on
+            # we can only tell category (route.query/options.query) when user adds NEW one
             @reuse 'header-edit', EditHeader, tabs: [
-                'Oferta', 'Adres', 'Nieruchomość', 'Pomieszczenia', 'Pozostałe', 'Zdjęcia / Eksporty' ]
+                'Oferta', 'Adres', 'Nieruchomość', 'Szczegóły', 'Pozostałe', 'Zdjęcia / Eksporty' ]
         else if route.name in edit_header
             @reuse 'header-edit', EditHeader, tabs: ['Szczegóły','Pliki']
         else

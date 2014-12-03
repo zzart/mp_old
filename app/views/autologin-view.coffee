@@ -20,7 +20,7 @@ module.exports = class LoginView extends View
         #check credentials and set up settings
         #get data from form
         @user = 'admin@demo'
-        @pass = 'admin'
+        @pass = 'demo'
         #@user = 'test'
         #@pass = 'test'
         # -------------------------

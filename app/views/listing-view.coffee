@@ -257,7 +257,7 @@ module.exports = class AddView extends View
 
     openstreet: ->
         @publishEvent('log:debug', 'opentstreet called')
-        OpenLayers.ImgPath = 'img/'
+        OpenLayers.ImgPath = "#{mediator.static_url}img/"
         $("#openmap").css('height', '400px')
         #NOTE: openlayers uses EPSG:900913 projection
         #we need a way to go from geolocation (EPSG:4326) to OpenLayers (EPSG:900913) and vice versa
@@ -302,7 +302,7 @@ module.exports = class AddView extends View
         ##markers
         size = new OpenLayers.Size(21,25)
         offset = new OpenLayers.Pixel(-(size.w/2), -size.h)
-        icon = new OpenLayers.Icon("#{mediator.server_url}img/marker.png", size, offset)
+        icon = new OpenLayers.Icon("#{mediator.static_url}img/marker.png", size, offset)
         marker = new OpenLayers.Marker(
             new OpenLayers.LonLat(0,0).transform(projection), icon)
             # ).transform(projection, openlayers_projection), icon)

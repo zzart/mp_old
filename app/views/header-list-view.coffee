@@ -13,7 +13,7 @@ module.exports = class HeaderListView extends View
     attach: =>
         super
         $("#sub_header").enhanceWithin()
-        test= @getTemplateData()
-        console.log(JSON.stringify(test))
+        test = @getTemplateData()
+        #console.log(JSON.stringify(test))
         @publishEvent('log:debug', 'HeaderListView:attach()')
 

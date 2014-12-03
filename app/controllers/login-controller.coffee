@@ -3,6 +3,7 @@ mediator = require 'mediator'
 if mediator.online is true
     LoginView = require 'views/login-view'
 else
+    #LoginView = require 'views/login-view'
     LoginView = require 'views/autologin-view'
 Model = require 'models/login-model'
 

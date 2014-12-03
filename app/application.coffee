@@ -67,8 +67,6 @@ module.exports = class Application extends Chaplin.Application
     # Add additional application-specific properties and methods
     # e.g. mediator.prop = null
     mediator.stand_alone = false
-    # mediator.online = true
-    # mediator.mobile = true
     mediator.online = false
     mediator.mobile = false
     mediator.models = {}
@@ -104,7 +102,7 @@ module.exports = class Application extends Chaplin.Application
 
   checkBrowser: ->
     # check for browser compatybilty
-    bowser.mobile = true
+    bowser.mobile = false
     if mediator.mobile is false
         if not bowser.a
             alert("Mamy podejrzenia że używasz przeglądarki, która jest stara albo nie wspiera wszystkich funkcjonalności Mobilnego Pośrednika! \
