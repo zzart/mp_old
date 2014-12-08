@@ -26,7 +26,7 @@ data-filter="true" data-input="#filterTable-input">
          <td><a href='/agenci/<%= item['id'] %>'><%= item['surname'] %></a></td>
          <td><a href='/agenci/<%= item['id'] %>'><%= item['username'] %></a></td>
          <td><%= item['email'] %></td>
-         <td><%= item['phone'] %></td>
+         <td><%= item['phone_primary'] %></td>
          <td><%= item['is_active_func'] %></td>
          <td><%= item['is_admin_func'] %></td>
          <td><%= item['agent_type_func'] %></td>

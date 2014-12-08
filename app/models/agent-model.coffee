@@ -29,5 +29,7 @@ module.exports = class Agent extends Chaplin.Model
         , this)
         data
     module_name: ['agent', 'agenci']
+    sufix: {'username': "@#{mediator.models.user.get('company_name')}"}
+    prefix: {'phone_primary':'+48'}
     get_url: ->
         return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"

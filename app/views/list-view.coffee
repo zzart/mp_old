@@ -350,13 +350,14 @@ module.exports = class ListView extends View
                 # unbind is for stopping it firing multiple times
                 $("#client-choose li").unbind().click ->
                     $('#popgeneric').popup('close')
+                    self.publishEvent("tell_user", 'Przygotowuje email...')
                     # inside click f() we can reference attributes of element on which click was established
                     # so @value is list item 'value' attribute
                     for id in self.selected_items
                         # console.log(@value, i.id)
                         model = self.collection_hard.get(id)
                         url = "#{model.urlRoot}/#{id}/email/#{@value}?private=false"
-                        self.mp_request(model, url, 'GET', 'Email wysłany', 'Email nie został wysłany')
+                        self.mp_request(model, url, 'GET', 'Email został wysłany')
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
                     self.render()
@@ -379,12 +380,13 @@ module.exports = class ListView extends View
                 $("#address_submit").unbind().click (e)->
                     e.preventDefault()
                     $('#popgeneric').popup('close')
+                    self.publishEvent("tell_user", 'Przygotowuje email...')
                     # inside click f() we can reference attributes of element on which click was established
                     # so @value is list item 'value' attribute
                     for id in self.selected_items
                         model = self.collection_hard.get(id)
                         url = "#{model.urlRoot}/#{id}/email/#{$("#email_send").val()}?private=false"
-                        self.mp_request(model, url, 'GET', 'Email wysłany', 'Email nie został wysłany')
+                        self.mp_request(model, url, 'GET', 'Email został wysłany')
                     # Remove click event !!!!!!!!!!!!!!!!!
                     $(@).off('click')
                     self.render()

@@ -20,5 +20,19 @@ module.exports = class View extends Chaplin.View
             success: (data, textStatus, jqXHR ) =>
                 self.publishEvent("tell_user", msg_success)
             error: (jqXHR, textStatus, errorThrown ) ->
-                self.publishEvent("tell_user", msg_fail or jqXHR.responseText or errorThrown)
+                # since we have various response objects
+                # NOTE: watch out for defaut msg_fail -- it will obscure real msg from the server
+                window.response = jqXHR if mediator.online is false
+                if msg_fail
+                    self.publishEvent("tell_user", msg_fail)
+                    self.publishEvent("log:debug", "msg_fail: #{msg_fail}")
+                else if jqXHR.responseJSON.title?
+                    self.publishEvent("tell_user", jqXHR.responseJSON.title)
+                    self.publishEvent("log:debug", "responseJSON.title: #{jqXHR.responseJSON.title}")
+                else if jqXHR.responseText?
+                    self.publishEvent("tell_user", jqXHR.responseText)
+                    self.publishEvent("log:debug", "responseText: #{jqXHR.responseText}")
+                else
+                    self.publishEvent("tell_user", errorThrown)
+                    self.publishEvent("log:debug", "errorThrown: #{errorThrown}")
         )

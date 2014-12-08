@@ -74,3 +74,14 @@ fix for horizontal.control.group mess -> applicable only to chrome
 #sub_header .ui-controlgroup-horizontal .ui-select {
 padding-top:0.5px
 }
+
+/*
+for controlgroups with addional text fields information ____|m2
+additional style to .subscript .ui-controlgroup-controls otherwise subscript fields are dropping onto new line ...?
+*/
+.controlgroup-textinput{
+    padding-top:.22em;
+    padding-bottom:.22em;
+
+}
+.subscript .ui-controlgroup-controls {width:100%}

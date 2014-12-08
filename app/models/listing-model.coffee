@@ -67,6 +67,19 @@ module.exports = class Listing extends Chaplin.Model
         data
 
     module_name: ['oferta', 'oferty']
+    # TODO: let's do it when I get some time
+    # changing tabs causing weird appending stuff ...
+    # prefix: {}
+    # sufix: {
+    #     'powierzchnia_calkowita': 'm2'
+    #     'powierzchnia_lazienek': 'm2'
+    #     'powierzchnia_wc': 'm2'
+    #     'powierzchnia_kuchni': 'm2'
+    #     'powierzchnia_piwnicy': 'm2'
+    #     'powierzchnia_uzytkowa': 'm2'
+    #     'powierzchnia_balkonu': 'm2'
+    #     'powierzchnia_biurowa': 'm2'
+    # }
     get_url: ->
         return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
 

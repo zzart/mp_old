@@ -302,12 +302,32 @@ module.exports = class EditView extends View
         #so we only render nav once !
         @edit_panel_rendered = true
 
+    subscript: =>
+        # append subscript to html markup
+        # IN order to set it up
+        # 1. change yaml to include .subscript class
+        # 2. add dict subscript to @model with right value
+        # this wraps the field and appends needed classes
+        all_divs = @$el.find('.subscript')
+        for div in all_divs
+            input = $(div).find('input')
+            $(input).attr('data-wrapper-class', 'controlgroup-textinput ui-btn')
+            $(input).wrap('<div data-role="controlgroup" data-type="horizontal"></div>')
+
+            name = $(input).attr('name')
+            if @model.sufix?[name]?
+                $(input).after("<button>#{@model.sufix[name]}</button>")
+            if @model.prefix?[name]?
+                $(input).before("<button>#{@model.prefix[name]}</button>")
+
+
     attach: =>
         super
         @publishEvent('log:info', 'view: edit-view afterRender()')
         @publishEvent 'disable_buttons', @can_edit ? false , @edit_type, @delete_only
         #move listing inints into listing view
         if not @form_name.match('rent|sell')
+            @subscript()
             # init resources when they are needed
             if _.isObject(@model.schema.resources)
                 @publishEvent('log:info', 'view: attach initate uploader , sortable, events ')

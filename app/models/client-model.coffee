@@ -54,6 +54,8 @@ module.exports = class Client extends Chaplin.Model
         @publishEvent('log:info',"--> #{@module_name[0]} removed")
         @update()
     module_name: ['klient', 'klienci']
+    prefix: {}
+    sufix: {}
     get_url: ->
         return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
 
