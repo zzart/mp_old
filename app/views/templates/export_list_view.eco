@@ -18,9 +18,9 @@ data-filter="true" data-input="#filterTable-input" >
      </thead>
      <tbody>
       <% for item in @collection : %>
-
-       <tr>
-         <td><label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
+     <tr>
+     <td class="tickbox">
+         <label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
          <td><%= item['id'] %></td>
          <td><a href='/eksporty/<%= item['id'] %>'><%- item['name'] %></a></td>
          <td><a href='/eksporty/<%= item['id'] %>'><%= item['address_ftp'] %></a></td>

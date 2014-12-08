@@ -55,6 +55,7 @@ table label {background-color:None !important}
 .required_and_private_field{color:#3388CC; font-weight:bold}
 .private_field{color:#3388CC; font-weight:bold}
 .required_field{font-weight:bold; color:#C1272D}
+.tickbox{width:3% !important}
 h4 {
     color: black;
     font-size: 12px;

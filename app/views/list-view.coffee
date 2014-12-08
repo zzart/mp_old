@@ -311,7 +311,7 @@ module.exports = class ListView extends View
                 str = ""
                 for k,v of localStorage.getObject('agents')
                     str = "#{str}<li value='#{k}'><a id='#{k}'>#{v}</a></li>"
-                val = "<h4>Wybierz Agenta</h4><br /><ul data-role='listview' id='agent-choose'>#{str}</ul>"
+                val = "<h5>Wybierz Agenta</h5><br /><ul data-role='listview' id='agent-choose'>#{str}</ul>"
                 $('#popgeneric').html(val)
                 $ul = $("#popgeneric")
                 try
@@ -341,7 +341,7 @@ module.exports = class ListView extends View
                 str = ""
                 for k,v of localStorage.getObject('clients')
                     str = "#{str}<li value='#{k}'><a id='#{k}'>#{v}</a></li>"
-                val = "<h4>Wybierz Klienta</h4><br /><ul data-role='listview' id='client-choose'>#{str}</ul>"
+                val = "<h5>Wybierz Klienta</h5><br /><ul data-role='listview' id='client-choose'>#{str}</ul>"
                 try
                     $('#popgeneric').html(val).enhanceWithin()
                 catch error

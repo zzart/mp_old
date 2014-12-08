@@ -19,7 +19,7 @@ data-filter="true" data-input="#filterTable-input">
       <% for item in @collection : %>
 
        <tr>
-         <td width="2%"> <label> <input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true"  type="checkbox"> </label> </td>
+         <td class="tickbox"> <label> <input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true"  type="checkbox"> </label> </td>
          <td><a href='/agenci/<%= item['id'] %>'><%= item['id'] %></a></td>
          <td><%= item['branch_func'] %></td>
          <td><a href='/agenci/<%= item['id'] %>'><%= item['first_name'] %></a></td>

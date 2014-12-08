@@ -17,7 +17,7 @@ data-filter="true" data-input="#filterTable-input" >
      <tbody>
       <% for item in @collection : %>
        <tr>
-         <td><label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
+         <td class="tickbox"> <label><input name="<%= item['id'] %>" id="<%= item['id'] %>" data-mini="true" type="checkbox"></label></td>
          <td><%= item['id'] %></td>
          <td><%- item['date_func'] %></a></td>
          <td><%= item['file_name'] %></a></td>
