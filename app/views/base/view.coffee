@@ -26,7 +26,7 @@ module.exports = class View extends Chaplin.View
                 if msg_fail
                     self.publishEvent("tell_user", msg_fail)
                     self.publishEvent("log:debug", "msg_fail: #{msg_fail}")
-                else if jqXHR.responseJSON.title?
+                else if jqXHR.responseJSON?.title?
                     self.publishEvent("tell_user", jqXHR.responseJSON.title)
                     self.publishEvent("log:debug", "responseJSON.title: #{jqXHR.responseJSON.title}")
                 else if jqXHR.responseText?

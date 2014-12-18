@@ -19,10 +19,8 @@ module.exports = class LoginView extends View
         @publishEvent('log:error', 'autologin------')
         #check credentials and set up settings
         #get data from form
-        @user = 'agent@demo_template'
+        @user = 'jozef@demo'
         @pass = 'demo'
-        #@user = 'test'
-        #@pass = 'test'
         # -------------------------
         # generate app mac
         apphash = CryptoJS.HmacSHA256(@model.url, mediator.app_key)

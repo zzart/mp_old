@@ -66,9 +66,11 @@ module.exports = class Application extends Chaplin.Application
   initMediator: ->
     # Add additional application-specific properties and methods
     # e.g. mediator.prop = null
+    # # # # # # # # # # # # # #
     mediator.stand_alone = false
     mediator.online = false
     mediator.mobile = false
+    # # # # # # # # # # # # # #
     mediator.models = {}
     mediator.collections = {}
     mediator.schemas = {}
@@ -102,12 +104,10 @@ module.exports = class Application extends Chaplin.Application
 
   checkBrowser: ->
     # check for browser compatybilty
-    bowser.mobile = false
-    if mediator.mobile is false
-        if not bowser.a
-            alert("Mamy podejrzenia że używasz przeglądarki, która jest stara albo nie wspiera wszystkich funkcjonalności Mobilnego Pośrednika! \
-            Wykryliśmy #{bowser.name}/#{bowser.version}\
-            Proszę wejdz na stronę http://www.mozilla.org/pl/firefox/new , pobierz i zainstaluj najnowszego Firefoxa (dostępny też dla iPhona, Android etc.)")
-        if not (bowser.name is 'Firefox' and parseInt(bowser.version) >= 30)  and not (bowser.name is 'Chrome' and parseInt(bowser.version) >= 35)
-            alert('''Mamy podejrzenia, że nie używasz przeglądarki Firefox lub Chrome w najnowszej wersji ...
-            Proszę wejdz na stronę http://www.mozilla.org/pl/firefox/new , pobierz i zainstaluj najnowszego Firefoxa (dostępny też dla iPhona, Android etc.)''')
+    if not bowser.a
+        alert("Mamy podejrzenia że używasz przeglądarki, która jest stara albo nie wspiera wszystkich funkcjonalności Mobilnego Pośrednika! \
+        Wykryliśmy #{bowser.name}/#{bowser.version}\
+        MobilnyPośrednik testowany jest TYLKO na najnowszych darmowych przeglądarkach dlatego prosimy o akutalizaję!")
+    if not (bowser.name is 'Firefox' and parseInt(bowser.version) >= 30)  and not (bowser.name is 'Chrome' and parseInt(bowser.version) >= 35)
+        alert('''Mamy podejrzenia, że nie używasz przeglądarki Firefox lub Chrome w najnowszej wersji...
+        MobilnyPośrednik testowany jest TYLKO na najnowszych darmowych przeglądarkach dlatego prosimy o akutalizaję!''')

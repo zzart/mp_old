@@ -1,5 +1,5 @@
 {config} = require './config'
-console.log("SET mediator.mobile = true !!!!!!!!!!!!! config-release.coffee")
+console.log("SET mediator.online = true !!!!!!!!!!!!! config-release.coffee")
 
 config.files.javascripts.joinTo =
 # (1) get them all in one file

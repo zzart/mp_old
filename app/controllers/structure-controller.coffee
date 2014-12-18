@@ -36,12 +36,15 @@ module.exports = class StructureController extends Controller
             'branch#show',
             'agent#add',
             'agent#show',
-            'bon#show'
-            'graphic#add',
-            'graphic#show'
-            'export#add',
-            'export#show'
+            'bon#show',
         ]
+        single_header = [
+            'graphic#show',
+            'graphic#add',
+            'export#add',
+            'export#show',
+        ]
+
         if route.name in edit_listing_header
             # NOTE: doing different tabs depending on category doesn't work
             # we don't know listing category when clicked on
@@ -50,6 +53,8 @@ module.exports = class StructureController extends Controller
                 'Oferta', 'Adres', 'Nieruchomość', 'Szczegóły', 'Pozostałe', 'Zdjęcia / Eksporty' ]
         else if route.name in edit_header
             @reuse 'header-edit', EditHeader, tabs: ['Szczegóły','Pliki']
+        else if route.name in single_header
+            @reuse 'header-edit', EditHeader, tabs: ['Szczegóły']
         else
             @reuse 'header', Header, {params:params, route:route, options:options}
 

@@ -73,23 +73,25 @@ module.exports = class EditView extends View
 
     resource_preview:(e)=>
         e.preventDefault()
+        uuid = false # reset
         uuid = e.target.id
-        preview = e.target.dataset.preview
-        @publishEvent("log:info", "#{uuid},#{preview}, #{e}")
-
-        img = new Image()
-        if preview is "true"
-            img.src = "#{mediator.upload_url}/#{uuid}/#{mediator.models.user.get('company_name')}"
-        else
-            img.src = "images/file.png" # localhost:3333
-            # img.height = '100'
-            # img.width = '100'
-        button = "<a href='#' data-rel='back' class='ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right'>Zamknij</a>"
-        save_button = "<a href='#{mediator.upload_url}/#{uuid}/#{mediator.models.user.get('company_name')}?download=true' class='ui-btn ui-btn-inline'>Zapisz na dysku</a>"
-        element = "#{button}#{img.outerHTML}<br />#{save_button}"
-        setTimeout(->
-            $('#resource_preview').html(element).popup('open')
-        , 1000)
+        # if user clicks on img then we don't have all data required. Let's force them to click on main content link only
+        if uuid
+            preview = e.target.dataset.preview
+            @publishEvent("log:info", "#{uuid},#{preview}, #{e}")
+            img = new Image()
+            if preview is "true"
+                img.src = "#{mediator.upload_url}/#{uuid}/#{mediator.models.user.get('company_name')}"
+            else
+                img.src = "images/file.png" # localhost:3333
+                # img.height = '100'
+                # img.width = '100'
+            button = "<a href='#' data-rel='back' class='ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right'>Zamknij</a>"
+            save_button = "<a href='#{mediator.upload_url}/#{uuid}/#{mediator.models.user.get('company_name')}?download=true' class='ui-btn ui-btn-inline'>Zapisz na dysku</a>"
+            element = "#{button}#{img.outerHTML}<br />#{save_button}"
+            setTimeout(->
+                $('#resource_preview').html(element).popup('open')
+            , 1000)
 
     init_events: =>
         @editor = @form.fields.resources.editor
@@ -182,7 +184,6 @@ module.exports = class EditView extends View
                         # console.log('getValue', self.form.fields.resources.getValue())
 
     init_uploader: =>
-
         self = @
         @$el.append(upload_template)
         #$("#upload").fineUploader
@@ -212,11 +213,21 @@ module.exports = class EditView extends View
                             filename:response.filename
                             size: response.size
                             order:order + 1
-                        self.form.fields.resources.editor.addItem(current_val, true) # SECOUND PARAM NEEDS TO BE TRUE TO TRIGGER ADD EVENT!!!!
+                        # SECOUND PARAM NEEDS TO BE TRUE TO TRIGGER ADD EVENT!!!!
+                        self.form.fields.resources.editor.addItem(current_val, true)
                         self.publishEvent('log:info', "download complete #{arguments}")
                     else
-                        self.publishEvent('log:info', "download failed #{arguments}")
-                        self.publishEvent('tell_user', "Plik nie został pomyślnie przesłany na serwer ")
+                        # In case we need to tell user sth specyfic ie. (run out of space etc.)
+                        # need to be able to check for server msg first and then default ...
+                        console.log(xmlhttprequest)
+                        try
+                            self.publishEvent('log:error', "download failed.")
+                            self.publishEvent('log:error', xmlhttprequest.response)
+                            resp = JSON.parse(xmlhttprequest.response)
+                            self.publishEvent('tell_user', "Plik nie został pomyślnie przesłany na serwer. #{resp.title} ")
+                        catch error
+                            self.publishEvent('log:error', error)
+                            self.publishEvent('tell_user', "Plik nie został pomyślnie przesłany na serwer.")
 
             cors: # ALL requests are expected to be cross-domain requests
                 expected: true
@@ -287,6 +298,8 @@ module.exports = class EditView extends View
             @$el.find('div[id^=tab_]').css('display', 'none')
             # unhide the one we need
             @$el.find("##{tab_id}").css('display', 'inline')
+        # the secound tab with resouces doesn't refreshes itself propely
+        @$el.find('[data-role="listview"]').listview().listview('refresh')
 
     change_tab: (e)=>
         @publishEvent('log:info', "change tab #{e.target.dataset.id}")

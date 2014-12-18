@@ -302,7 +302,7 @@ module.exports = class ListView extends View
                 @model = @collection.models[0]
                 for id in self.selected_items
                     url = "#{@model.urlRoot}/odswiez_ids/#{id}"
-                    @mp_request(@model, url, 'GET', 'Wszystkie ID dla tego oddzaiłu zostały ponownie wygenerowane')
+                    @mp_request(@model, url, 'GET', 'Wszystkie numery ID dla tego oddzaiłu zostaną ponownie wygenerowane a oferty zaznaczone do całościowych eksportów. To może potrwać ok. 2 minuty.')
                 $(@).off('click')
                 self.render()
                 self.clean_after_action()
