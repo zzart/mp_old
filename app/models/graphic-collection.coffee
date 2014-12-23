@@ -1,7 +1,8 @@
 Model = require 'models/graphic-model'
+Collection = require 'models/base/collection'
 mediator = require 'mediator'
 
-module.exports = class GraphicList extends Chaplin.Collection
+module.exports = class GraphicList extends Collection
     model: Model
     #url: 'http://localhost:8080/v1/grafiki'
     url: "#{mediator.server_url}v1/grafiki"

@@ -1,12 +1,10 @@
 mediator = require 'mediator'
+Model = require 'models/base/model'
 
-module.exports = class Listing extends Chaplin.Model
+module.exports = class Listing extends Model
     #urlRoot: 'http://localhost:8080/v1/oferty'
     urlRoot: "#{mediator.server_url}v1/oferty"
     schema: {}
-    get: (attr) ->
-        value = Backbone.Model::get.call(this, attr)
-        (if _.isFunction(value) then value.call(this) else value)
     defaults:
         # is_active: '1' # for booleans
         # is_active_func: ->
@@ -58,14 +56,6 @@ module.exports = class Listing extends Chaplin.Model
                  when 6 then 'umowa przedwstępna'
                  when 7 then 'usunięta'
 
-    toJSON: ->
-        data = {}
-        json = Backbone.Model::toJSON.call(this)
-        _.each(json, (value, key) ->
-            data[key] = @get(key)
-        , this)
-        data
-
     module_name: ['oferta', 'oferty']
     # TODO: let's do it when I get some time
     # changing tabs causing weird appending stuff ...
@@ -80,8 +70,6 @@ module.exports = class Listing extends Chaplin.Model
     #     'powierzchnia_balkonu': 'm2'
     #     'powierzchnia_biurowa': 'm2'
     # }
-    get_url: ->
-        return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
 
     initialize: ->
         @on('change:agent', @onChangeAgent)

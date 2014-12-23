@@ -1,11 +1,9 @@
 mediator = require 'mediator'
+Model = require 'models/base/model'
 
-module.exports = class Agent extends Chaplin.Model
+module.exports = class Agent extends Model
     urlRoot: "#{mediator.server_url}v1/agenci"
     schema: {}
-    get: (attr) ->
-        value = Backbone.Model::get.call(this, attr)
-        (if _.isFunction(value) then value.call(this) else value)
     defaults:
         is_active: '1' # for booleans
         is_active_func: ->
@@ -21,15 +19,6 @@ module.exports = class Agent extends Chaplin.Model
         branch_func: ->
             if @get('branch') then localStorage.getObject('branches')["#{@get('branch')}"]
 
-    toJSON: ->
-        data = {}
-        json = Backbone.Model::toJSON.call(this)
-        _.each(json, (value, key) ->
-            data[key] = @get(key)
-        , this)
-        data
     module_name: ['agent', 'agenci']
     sufix: {'username': "@#{mediator.models.user.get('company_name')}"}
     prefix: {'phone_primary':'+48'}
-    get_url: ->
-        return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"

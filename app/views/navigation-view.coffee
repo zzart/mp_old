@@ -13,5 +13,5 @@ module.exports = class View extends View
         super
         # panel content needs manuall refresh
         @$el.enhanceWithin()
-        @publishEvent('log:debug', 'NavigationView: afterAttach()')
+        @publishEvent('log:debug', "NavigationView: afterAttach()")
 

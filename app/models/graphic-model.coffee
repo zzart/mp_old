@@ -1,11 +1,9 @@
 mediator = require 'mediator'
+Model = require 'models/base/model'
 
-module.exports = class Graphic extends Chaplin.Model
+module.exports = class Graphic extends Model
     urlRoot: "#{mediator.server_url}v1/grafiki"
     schema: {}
-    get: (attr) ->
-        value = Backbone.Model::get.call(this, attr)
-        (if _.isFunction(value) then value.call(this) else value)
     defaults:
         is_active: '1' # for booleans
         opacity: '100' #
@@ -31,17 +29,8 @@ module.exports = class Graphic extends Chaplin.Model
                  when 1 then 'prawy górny'
                  when 2 then 'lewy dolny'
                  when 3 then 'prawy dolny'
-    toJSON: ->
-        data = {}
-        json = Backbone.Model::toJSON.call(this)
-        _.each(json, (value, key) ->
-            data[key] = @get(key)
-        , this)
-        data
 
     module_name: ['grafika', 'grafiki']
-    get_url: ->
-        return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
 
     # initialize: ->
     #     @on('change:surname', @onChange)

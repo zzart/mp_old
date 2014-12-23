@@ -1,6 +1,7 @@
 mediator = require 'mediator'
+Model = require 'models/base/model'
 
-module.exports = class Login extends Chaplin.Model
+module.exports = class Login extends Model
     #url: 'http://localhost:8080/v1/login'
     url: "#{mediator.server_url}v1/login"
     update_db: =>

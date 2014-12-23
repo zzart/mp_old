@@ -9,6 +9,7 @@ module.exports = class HeaderActionView extends View
         @delegate 'change', '#select-action', @select_action
         @delegate 'click',  '#refresh', @refresh_action
         @delegate 'click',  '#search-toggle', @search_reveal_action
+        @delegate 'click',  '#import-info', @import_info
         @delegate 'change', "[data-query]", @query_action
         @delegate 'change', "[data-filter]", @filter_action
         try
@@ -37,6 +38,10 @@ module.exports = class HeaderActionView extends View
     select_action: (event) =>
         event.preventDefault()
         @publishEvent('navigation:select_action', event)
+
+    import_info: (event) =>
+        event.preventDefault()
+        @publishEvent('navigation:import_info', event)
 
     getTemplateData: =>
         super

@@ -8,6 +8,7 @@ module.exports = class HeaderListView extends View
 
     initialize: (options) ->
         super
+        @publishEvent('log:debug', "initialized HeaderListView with #{options.template}")
         @template = require "views/templates/#{options.template}"
 
     attach: =>

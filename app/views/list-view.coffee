@@ -219,7 +219,7 @@ module.exports = class ListView extends View
             @render_subview()
 
     render_subview: =>
-        @publishEvent('log:debug', "render sub_view")
+        @publishEvent('log:debug', "render sub_view with #{@params.template}")
         @subview "navigation", new NavigationView template: @navigation, listing_type: @listing_type
         @subview("navigation").render()
         @publishEvent('jqm_refersh:render')

@@ -1,7 +1,8 @@
 Model = require 'models/listing-model'
+Collection = require 'models/base/collection'
 mediator = require 'mediator'
 
-module.exports = class ListingList extends Chaplin.Collection
+module.exports = class ListingList extends Collection
     initialize: ->
         @query= {}
         @query_add(@query_defaults())

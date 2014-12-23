@@ -6,9 +6,12 @@ Model = require 'models/branch-model'
 mediator = require 'mediator'
 
 module.exports = class BranchController extends Controller
+
     list:(params, route, options) ->
         @publishEvent('log:info', 'in branch list controller')
         # check if collection is already fetched from server
+        # NOTE: this is so after save operation we don't do unnessesery fetch
+        # loosing item data in the process - for quick view
         mediator.collections.branches = new Collection
         mediator.collections.branches.fetch
             data: params
@@ -19,7 +22,7 @@ module.exports = class BranchController extends Controller
                 @publishEvent('log:info', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
                 @view = new ListView {
-                    collection:mediator.collections.branches
+                    collection: mediator.collections.branches
                     template:'branch_list_view'
                     region:'content'
                     controller: 'branch_controller'
@@ -32,7 +35,7 @@ module.exports = class BranchController extends Controller
         @publishEvent('log:info', 'in branchadd controller')
         mediator.models.branch = new Model
         @model = mediator.models.branch
-        @schema =localStorage.getObject('branch_schema')
+        @schema = localStorage.getObject('branch_schema')
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
         @view = new View {form_name:'branch_form', model:@model, can_edit:@can_edit, region:'content'}
@@ -41,7 +44,8 @@ module.exports = class BranchController extends Controller
         @publishEvent('log:info', 'in branch show controller')
         @redirectTo {'/oddzialy'} unless _.isObject(mediator.collections.branches.get(params.id))
         @model = mediator.collections.branches.get(params.id)
-        @schema =localStorage.getObject('branch_schema')
+        window.modell = @model
+        @schema = localStorage.getObject('branch_schema')
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
         @publishEvent 'tell_viewed', @model.get_url()

@@ -1,11 +1,9 @@
 mediator = require 'mediator'
+Model = require 'models/base/model'
 
-module.exports = class Import extends Chaplin.Model
+module.exports = class Import extends Model
     urlRoot: "#{mediator.server_url}v1/importy"
     schema: {}
-    get: (attr) ->
-        value = Backbone.Model::get.call(this, attr)
-        (if _.isFunction(value) then value.call(this) else value)
     defaults:
         import_status_func: ->
             switch parseInt(@get('import_status'))
@@ -17,17 +15,8 @@ module.exports = class Import extends Chaplin.Model
                  when 1 then 'Przyrostowy'
         date_func: ->
             @get('date').substr?(0,10)
-    toJSON: ->
-        data = {}
-        json = Backbone.Model::toJSON.call(this)
-        _.each(json, (value, key) ->
-            data[key] = @get(key)
-        , this)
-        data
 
     module_name: ['import', 'importy']
-    get_url: ->
-        return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
 
     initialize: ->
         @on('change:name', @onChange)

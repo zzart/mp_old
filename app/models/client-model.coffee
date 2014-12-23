@@ -1,12 +1,10 @@
 mediator = require 'mediator'
+Model = require 'models/base/model'
 
-module.exports = class Client extends Chaplin.Model
+module.exports = class Client extends Model
     #urlRoot: 'http://localhost:8080/v1/klienci'
     urlRoot: "#{mediator.server_url}v1/klienci"
     schema: {}
-    get: (attr) ->
-        value = Backbone.Model::get.call(this, attr)
-        (if _.isFunction(value) then value.call(this) else value)
     defaults:
         is_private: '' # for booleans
         client_type_func: ->
@@ -17,14 +15,6 @@ module.exports = class Client extends Chaplin.Model
                  when 4 then 'najemca'
         agent_func: ->
             localStorage.getObject('agents')["#{@get('agent')}"]
-
-    toJSON: ->
-        data = {}
-        json = Backbone.Model::toJSON.call(this)
-        _.each(json, (value, key) ->
-            data[key] = @get(key)
-        , this)
-        data
 
     initialize: ->
         @on('change:surname', @onChange)
@@ -56,6 +46,3 @@ module.exports = class Client extends Chaplin.Model
     module_name: ['klient', 'klienci']
     prefix: {}
     sufix: {}
-    get_url: ->
-        return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
-
