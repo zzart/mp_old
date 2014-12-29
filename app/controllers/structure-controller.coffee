@@ -12,6 +12,7 @@ ViewedView =    require 'views/viewed-view'
 PopGenericView =require 'views/popgeneric-view'
 LeftPanelView = require 'views/left-panel-view'
 RightPanelView = require 'views/right-panel-view'
+mediator = require 'mediator'
 
 module.exports = class StructureController extends Controller
     beforeAction: (params, route, options) ->
@@ -101,8 +102,10 @@ module.exports = class StructureController extends Controller
         @reuse 'popgeneric', PopGenericView, region:'popgeneric'
         #init panel after init jqm
         @publishEvent 'structureController:render'
-        @publishEvent('log:debug', 'structureController done ----------')
         @test_divs()
+        @publishEvent('log:debug', 'structureController done ----------')
+
+
 
     test_divs: ->
         # NOTE: for some strange reason sometimes when you go from listview to home view <divs> start going missing

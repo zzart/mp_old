@@ -101,6 +101,9 @@ module.exports = class Application extends Chaplin.Application
         auth_header = btoa(header_string)
 
     mediator.seal()
+    # for debugging
+    if mediator.online is false
+        window.mediator = mediator
 
   checkBrowser: ->
     # check for browser compatybilty

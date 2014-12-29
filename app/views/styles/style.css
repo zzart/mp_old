@@ -70,11 +70,13 @@ h4 {
 
 /*
 fix for horizontal.control.group mess -> applicable only to chrome
+https://github.com/jquery/jquery-mobile/issues/7793
 }
-*/
 #sub_header .ui-controlgroup-horizontal .ui-select {
 padding-top:0.5px
 }
+*/
+#sub_header .ui-select > .ui-btn { display: block !important; }
 
 /*
 for controlgroups with addional text fields information ____|m2

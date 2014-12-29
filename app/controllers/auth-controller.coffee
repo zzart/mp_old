@@ -6,7 +6,7 @@ mediator = require 'mediator'
 module.exports = class AuthController extends StructureController
     beforeAction: (params, route) ->
         super # call StructureController beforeAction
-        @publishEvent('log:debug', 'AuthController#beforeAction()')
+        @publishEvent('log:debug', 'AuthController start ----------#beforeAction()')
         if mediator.online is false
             @publishEvent('log:debug',  window.location.pathname)
             @publishEvent('log:debug',  mediator.models.user?.toJSON())
@@ -15,6 +15,14 @@ module.exports = class AuthController extends StructureController
         if _.isEmpty(mediator.models.user)
             mediator.redirectUrl = window.location.pathname
             @redirectTo {url: 'login'}
+        @test_attributes()
+        @publishEvent('log:debug', 'AuthController done ----------')
+
+    test_attributes: ->
+        try
+            console.log(mediator.collections.branches.get(1))
+        catch e
+            console.error('branches undefined')
 
 
 #AUTH -----------------------------------------------------------------------

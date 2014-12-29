@@ -7,6 +7,16 @@ mediator = require 'mediator'
 
 module.exports = class BranchController extends Controller
 
+    dispose: ->
+        # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
+        # we need model.attributes to persist accross all controllers for quick access !
+        # so before we get rid of everything let's deepCopy this obj
+        @publishEvent('log:error', 'dispose method called branch controller --------')
+        deepCopy = mediator.collections.branches.clone()
+        super
+        mediator.collections.branches = deepCopy
+        @test_attributes()
+
     list:(params, route, options) ->
         @publishEvent('log:info', 'in branch list controller')
         # check if collection is already fetched from server

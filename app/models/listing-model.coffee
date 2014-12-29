@@ -72,10 +72,11 @@ module.exports = class Listing extends Model
     # }
 
     initialize: ->
+        super
         @on('change:agent', @onChangeAgent)
-        @on('add', @onAdd)
-        @on('remove', @onRemove)
-        @on('destroy', @onDestory)
+        # @on('add', @onAdd)
+        # @on('remove', @onRemove)
+        # @on('destroy', @onDestory)
     onChangeAgent: (model, attribute) ->
         # for changing Agent from dropdown list page
         # NOTE: we want to trigger this only for already existing models which have agent set

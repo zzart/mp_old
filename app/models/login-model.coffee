@@ -28,4 +28,4 @@ module.exports = class Login extends Model
             @publishEvent('login_model:warning',"disabling export features")
             $('#left-panel a[href$="/eksporty"]').addClass('link_disabled').removeAttr('href')
 
-
+    module_name: ['login', 'login']

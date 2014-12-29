@@ -4,6 +4,21 @@
 module.exports = class Model extends Chaplin.Model
     # Mixin a synchronization state machine
     # _(@prototype).extend Chaplin.SyncMachine
+    initialize: ->
+        @on('change:surname', @onChange)
+        @on('add', @onAdd)
+        @on('remove', @onRemove)
+        @on('destroy', @onDestory)
+
+    onChange: ->
+        @publishEvent('log:info',"--> #{@module_name[0]} changed")
+    onAdd: ->
+        @publishEvent('log:info',"--> #{@module_name[0]} add")
+    onDestroy: ->
+        @publishEvent('log:info',"--> #{@module_name[0]} destroyed")
+    onRemove: ->
+        @publishEvent('log:info',"--> #{@module_name[0]} remove")
+
     get: (attr) ->
         value = Backbone.Model::get.call(this, attr)
         (if _.isFunction(value) then value.call(this) else value)
@@ -18,3 +33,4 @@ module.exports = class Model extends Chaplin.Model
         @get('name')
     get_url: ->
         return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
+

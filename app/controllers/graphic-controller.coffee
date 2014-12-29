@@ -7,9 +7,9 @@ mediator = require 'mediator'
 
 module.exports = class GraphicController extends Controller
     list:(params, route, options) ->
-        @publishEvent('log:info', 'in client list controller')
+        @publishEvent('log:info', 'in graphic list controller ---------')
+        @test_attributes()
         mediator.collections.graphics = new Collection
-        # console.log(mediator.collections.clients)
         mediator.collections.graphics.fetch
             data: params
             beforeSend: =>
@@ -44,4 +44,13 @@ module.exports = class GraphicController extends Controller
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
         @publishEvent 'tell_viewed', @model.get_url()
         @view = new View {form_name:'graphic_form', model:@model, can_edit:@can_edit,  region:'content'}
+
+    dispose: ->
+        # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
+        # we need model.attributes to persist accross all controllers for quick access !
+        # so before we get rid of everything let's deepCopy this obj
+        @publishEvent('log:info', 'dispose method called graphic controller --------')
+        deepCopy = mediator.collections.graphics.clone()
+        super
+        mediator.collections.graphics = deepCopy
 

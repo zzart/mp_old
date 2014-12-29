@@ -38,14 +38,15 @@ module.exports = class Export extends Model
         #          when 3 then 'prawy dolny'
     module_name: ['eksport', 'eksporty']
 
-    initialize: ->
-        @on('change:name', @onChange)
-        @on('add', @onAdd)
-        @on('remove', @onRemove)
-        @on('destroy', @onDestory)
+    # initialize: ->
+    #     @on('change:name', @onChange)
+    #     @on('add', @onAdd)
+    #     @on('remove', @onRemove)
+    #     @on('destroy', @onDestory)
 
     onChange: ->
-        @publishEvent('log:info',"--> #{@module_name[0]} changed")
+        # @publishEvent('log:info',"--> #{@module_name[0]} changed")
+        super
         # after change in name need to regenerate forms and localStorage
         # all needs to take off with a slight delay so that model has a chance to save itself
         self = @
@@ -53,12 +54,15 @@ module.exports = class Export extends Model
             self.publishEvent('modelchanged', 'client')
         , 30)
     onAdd: ->
-        @publishEvent('log:info',"--> #{@module_name[0]} add")
+        super
+        # @publishEvent('log:info',"--> #{@module_name[0]} add")
     onDestroy: ->
-        @publishEvent('log:info',"--> #{@module_name[0]} destroyed")
+        super
+        # @publishEvent('log:info',"--> #{@module_name[0]} destroyed")
         @publishEvent('modelchanged', 'client')
     onRemove: ->
-        @publishEvent('log:info',"--> #{@module_name[0]} removed")
+        super
+        # @publishEvent('log:info',"--> #{@module_name[0]} removed")
 
     # initialize: ->
     #     @on('change:surname', @onChange)

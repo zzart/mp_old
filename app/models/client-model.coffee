@@ -16,12 +16,6 @@ module.exports = class Client extends Model
         agent_func: ->
             localStorage.getObject('agents')["#{@get('agent')}"]
 
-    initialize: ->
-        @on('change:surname', @onChange)
-        @on('add', @onAdd)
-        @on('remove', @onRemove)
-        @on('destroy', @onDestory)
-
 
     update: ->
         # after change in name need to regenerate forms and localStorage
@@ -33,15 +27,15 @@ module.exports = class Client extends Model
         , 30)
 
     onChange: ->
-        @publishEvent('log:info',"--> #{@module_name[0]} changed")
+        super
         @update()
     onAdd: ->
-        @publishEvent('log:info',"--> #{@module_name[0]} add")
+        super
     onDestroy: ->
-        @publishEvent('log:info',"--> #{@module_name[0]} destroyed")
+        super
         @publishEvent('modelchanged', 'client')
     onRemove: ->
-        @publishEvent('log:info',"--> #{@module_name[0]} removed")
+        super
         @update()
     module_name: ['klient', 'klienci']
     prefix: {}

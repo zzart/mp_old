@@ -45,3 +45,13 @@ module.exports = class ExportController extends Controller
         @publishEvent 'tell_viewed', @model.get_url()
         @view = new View {form_name:'export_form', model:@model, can_edit:@can_edit,  region:'content'}
 
+
+    dispose: ->
+        # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
+        # we need model.attributes to persist accross all controllers for quick access !
+        # so before we get rid of everything let's deepCopy this obj
+        @publishEvent('log:error', 'dispose method called exports controller --------')
+        deepCopy = mediator.collections.exports.clone()
+        super
+        mediator.collections.exports = deepCopy
+

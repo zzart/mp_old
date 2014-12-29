@@ -100,3 +100,12 @@ module.exports = class ListingController extends Controller
                     @publishEvent 'server_error'
 
 
+    dispose: ->
+        # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
+        # we need model.attributes to persist accross all controllers for quick access !
+        # so before we get rid of everything let's deepCopy this obj
+        @publishEvent('log:error', 'dispose method called exports controller --------')
+        deepCopy = mediator.collections.listings.clone()
+        super
+        mediator.collections.listings = deepCopy
+

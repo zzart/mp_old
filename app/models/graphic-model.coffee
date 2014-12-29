@@ -31,17 +31,3 @@ module.exports = class Graphic extends Model
                  when 3 then 'prawy dolny'
 
     module_name: ['grafika', 'grafiki']
-
-    # initialize: ->
-    #     @on('change:surname', @onChange)
-    #     @on('add', @onAdd)
-    #     @on('remove', @onRemove)
-    #     @on('destroy', @onDestory)
-    # onChange: ->
-    #     @publishEvent('modelchanged', 'client')
-    # onAdd: ->
-    #     console.log('--> model add')
-    # onDestroy: ->
-    #     @publishEvent('modelchanged', 'client')
-    # onRemove: ->
-    #     console.log('--> model remove')
