@@ -19,7 +19,7 @@ module.exports = class LoginView extends View
         @publishEvent('log:error', 'autologin------')
         #check credentials and set up settings
         #get data from form
-        @user = 'jozef@demo'
+        @user = 'agent@demo'
         @pass = 'demo'
         # -------------------------
         # generate app mac

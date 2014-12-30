@@ -134,13 +134,10 @@ module.exports = class AddView extends View
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
     back_action: =>
-        super
-        # coming from HOMEPAGE and pressing back button causes no listings to be present yet
-        # need to redirect back to HOMEPAGE is this case
-        if mediator.collections.listings? is true
-            Chaplin.utils.redirectTo {url: "/oferty?#{$.param(mediator.collections.listings.query )}"}
-        else
-            Chaplin.utils.redirectTo {url: "/"}
+        # we can't just inherit it from view class
+        # as we also need to pass last query param if there was one
+        # so we using previous path?query
+        Chaplin.utils.redirectTo url: "#{@route_params[1]['previous']['path']}?#{@route_params[1]['previous']['query']}"
 
     copy_address: (event) ->
         @publishEvent('log:debug', 'copy address event')

@@ -9,6 +9,7 @@ module.exports = class RefreshController extends Controller
     initialize: ->
         @subscribeEvent('refreshmodel', @refresh_model)
         @subscribeEvent('modelchanged', @refresh_dependencies)
+
     refresh_model: (model, callback) ->
         #accepts 'model/form or schema' str
         #@publishEvent('log:info', "refresh called with #{model} param")

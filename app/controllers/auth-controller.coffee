@@ -15,14 +15,8 @@ module.exports = class AuthController extends StructureController
         if _.isEmpty(mediator.models.user)
             mediator.redirectUrl = window.location.pathname
             @redirectTo {url: 'login'}
-        @test_attributes()
         @publishEvent('log:debug', 'AuthController done ----------')
 
-    test_attributes: ->
-        try
-            console.log(mediator.collections.branches.get(1))
-        catch e
-            console.error('branches undefined')
 
 
 #AUTH -----------------------------------------------------------------------

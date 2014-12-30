@@ -51,7 +51,3 @@ module.exports = class ClientAddView extends View
         super
         @publishEvent('log:info', 'view: clientadd afterRender()')
 
-
-    back_action: =>
-        super
-        Chaplin.utils.redirectTo {url: '/klienci'}

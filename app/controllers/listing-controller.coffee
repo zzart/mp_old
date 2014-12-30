@@ -8,7 +8,8 @@ mediator =  require 'mediator'
 
 module.exports = class ListingController extends Controller
     list:(params, route, options) ->
-        @publishEvent('log:debug', "ListingController: #{JSON.stringify(params)}, #{JSON.stringify(route)}, #{JSON.stringify(options)}" )
+        @publishEvent('log:debug', "ListingController")
+        route_params = [params, route, options]
         mediator.last_query = _.clone(options.query)
         @listing_type = options.query.category
         mediator.collections.listings = new Collection
@@ -26,6 +27,7 @@ module.exports = class ListingController extends Controller
                     region:'content'
                     listing_type: @listing_type
                     controller: 'listing_controller'
+                    route_params: route_params
                 }
             error: =>
                 @publishEvent 'server_error'
@@ -33,7 +35,8 @@ module.exports = class ListingController extends Controller
 
     add:(params, route, options) ->
         @publishEvent('log:info', "in add property controller" )
-        console.log(params, route, options)
+        route_params = [params, route, options]
+        #console.log(params, route, options)
         listing_type = options.query.type
         form = "#{listing_type}_form"
         @schema =localStorage.getObject("#{listing_type}_schema")
@@ -47,13 +50,15 @@ module.exports = class ListingController extends Controller
             can_edit:true
             edit_type: 'add'
             region: 'content'
+            route_params: route_params
         }
         @publishEvent('log:debug', "after init view property controller" )
 
 
     show:(params, route, options) ->
         @publishEvent('log:debug', 'in listing show controller')
-        url = "/oferty?#{$.param(mediator.last_query)}"
+        route_params = [params, route, options]
+        #url = "/oferty?#{$.param(mediator.last_query)}"
         # @redirectTo {url} unless _.isObject(mediator.collections.listings.get(params.id))
         if _.isObject(mediator.collections.listings?.get(params.id))
             @model = mediator.collections.listings.get(params.id)
@@ -71,6 +76,7 @@ module.exports = class ListingController extends Controller
                 model:@model
                 can_edit:@can_edit
                 region:'content'
+                route_params: route_params
             }
         else
             mediator.models.listing = new Model
@@ -94,6 +100,7 @@ module.exports = class ListingController extends Controller
                         model:@model
                         can_edit:@can_edit
                         region:'content'
+                        route_params: route_params
                     }
 
                 error: =>
@@ -104,8 +111,12 @@ module.exports = class ListingController extends Controller
         # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
         # we need model.attributes to persist accross all controllers for quick access !
         # so before we get rid of everything let's deepCopy this obj
-        @publishEvent('log:error', 'dispose method called exports controller --------')
-        deepCopy = mediator.collections.listings.clone()
+        @publishEvent('log:info', 'dispose method called exports controller --------')
+        try
+            # if comming from home we won't have a collection ....
+            deepCopy = mediator.collections.listings.clone()
+        catch e
+            deepCopy = {}
         super
         mediator.collections.listings = deepCopy
 

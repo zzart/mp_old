@@ -5,7 +5,7 @@ module.exports = class Model extends Chaplin.Model
     # Mixin a synchronization state machine
     # _(@prototype).extend Chaplin.SyncMachine
     initialize: ->
-        @on('change:surname', @onChange)
+        @on('change', @onChange)
         @on('add', @onAdd)
         @on('remove', @onRemove)
         @on('destroy', @onDestory)
@@ -18,6 +18,14 @@ module.exports = class Model extends Chaplin.Model
         @publishEvent('log:info',"--> #{@module_name[0]} destroyed")
     onRemove: ->
         @publishEvent('log:info',"--> #{@module_name[0]} remove")
+
+    update: ->
+        # after change in name need to regenerate forms and localStorage
+        # all needs to take off with a slight delay so that model has a chance to save itself
+        self = @
+        _.delay(->
+            self.publishEvent('modelchanged', 'client')
+        , 30)
 
     get: (attr) ->
         value = Backbone.Model::get.call(this, attr)

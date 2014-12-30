@@ -38,42 +38,15 @@ module.exports = class Export extends Model
         #          when 3 then 'prawy dolny'
     module_name: ['eksport', 'eksporty']
 
-    # initialize: ->
-    #     @on('change:name', @onChange)
-    #     @on('add', @onAdd)
-    #     @on('remove', @onRemove)
-    #     @on('destroy', @onDestory)
-
     onChange: ->
-        # @publishEvent('log:info',"--> #{@module_name[0]} changed")
         super
-        # after change in name need to regenerate forms and localStorage
-        # all needs to take off with a slight delay so that model has a chance to save itself
-        self = @
-        _.delay(->
-            self.publishEvent('modelchanged', 'client')
-        , 30)
+        @update()
     onAdd: ->
         super
-        # @publishEvent('log:info',"--> #{@module_name[0]} add")
     onDestroy: ->
         super
-        # @publishEvent('log:info',"--> #{@module_name[0]} destroyed")
         @publishEvent('modelchanged', 'client')
     onRemove: ->
         super
-        # @publishEvent('log:info',"--> #{@module_name[0]} removed")
+        @publishEvent('modelchanged', 'client')
 
-    # initialize: ->
-    #     @on('change:surname', @onChange)
-    #     @on('add', @onAdd)
-    #     @on('remove', @onRemove)
-    #     @on('destroy', @onDestory)
-    # onChange: ->
-    #     @publishEvent('modelchanged', 'client')
-    # onAdd: ->
-    #     console.log('--> model add')
-    # onDestroy: ->
-    #     @publishEvent('modelchanged', 'client')
-    # onRemove: ->
-    #     console.log('--> model remove')

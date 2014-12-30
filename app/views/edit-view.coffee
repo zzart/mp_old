@@ -12,6 +12,7 @@ module.exports = class EditView extends View
     initialize: (params) =>
         super
         @params = params
+        @route_params = @params.route_params ? false
         @model = @params.model
         @form_name = @params.form_name
         @edit_panel_template = @params.form_name
@@ -258,6 +259,7 @@ module.exports = class EditView extends View
 
     back_action: (event) =>
         @publishEvent('log:info', 'back_action  caught')
+        Chaplin.utils.redirectTo @route_params[1]['previous']['name']
 
     get_form: =>
         @publishEvent('log:info',"form name: #{@form_name}")

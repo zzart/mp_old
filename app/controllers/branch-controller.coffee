@@ -7,18 +7,9 @@ mediator = require 'mediator'
 
 module.exports = class BranchController extends Controller
 
-    dispose: ->
-        # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
-        # we need model.attributes to persist accross all controllers for quick access !
-        # so before we get rid of everything let's deepCopy this obj
-        @publishEvent('log:error', 'dispose method called branch controller --------')
-        deepCopy = mediator.collections.branches.clone()
-        super
-        mediator.collections.branches = deepCopy
-        @test_attributes()
-
     list:(params, route, options) ->
         @publishEvent('log:info', 'in branch list controller')
+        route_params = [params, route, options]
         # check if collection is already fetched from server
         # NOTE: this is so after save operation we don't do unnessesery fetch
         # loosing item data in the process - for quick view
@@ -36,6 +27,7 @@ module.exports = class BranchController extends Controller
                     template:'branch_list_view'
                     region:'content'
                     controller: 'branch_controller'
+                    route_params: route_params
                 }
             error: =>
                 @publishEvent 'loading_stop'
@@ -43,15 +35,23 @@ module.exports = class BranchController extends Controller
 
     add:(params, route, options) ->
         @publishEvent('log:info', 'in branchadd controller')
+        route_params = [params, route, options]
         mediator.models.branch = new Model
         @model = mediator.models.branch
         @schema = localStorage.getObject('branch_schema')
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
-        @view = new View {form_name:'branch_form', model:@model, can_edit:@can_edit, region:'content'}
+        @view = new View {
+            form_name:'branch_form'
+            model:@model
+            can_edit:@can_edit
+            region:'content'
+            route_params: route_params
+        }
 
     show:(params, route, options) ->
         @publishEvent('log:info', 'in branch show controller')
+        route_params = [params, route, options]
         @redirectTo {'/oddzialy'} unless _.isObject(mediator.collections.branches.get(params.id))
         @model = mediator.collections.branches.get(params.id)
         window.modell = @model
@@ -59,5 +59,20 @@ module.exports = class BranchController extends Controller
         @model.schema = _.clone(@schema)
         @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
         @publishEvent 'tell_viewed', @model.get_url()
-        @view = new View {form_name:'branch_form', model:@model, can_edit:@can_edit, region:'content'}
+        @view = new View {
+            form_name:'branch_form'
+            model:@model
+            can_edit:@can_edit
+            region:'content'
+            route_params: route_params
+        }
 
+
+    dispose: ->
+        # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
+        # we need model.attributes to persist accross all controllers for quick access !
+        # so before we get rid of everything let's deepCopy this obj
+        @publishEvent('log:info', 'dispose method called branch controller --------')
+        deepCopy = mediator.collections.branches.clone()
+        super
+        mediator.collections.branches = deepCopy

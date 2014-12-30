@@ -16,27 +16,22 @@ module.exports = class Client extends Model
         agent_func: ->
             localStorage.getObject('agents')["#{@get('agent')}"]
 
-
-    update: ->
-        # after change in name need to regenerate forms and localStorage
-        # all needs to take off with a slight delay so that model has a chance to save itself
-        self = @
-        _.delay(->
-            self.publishEvent('modelchanged', 'client')
-            self.publishEvent('refresh_localstorage', 'clients')
-        , 30)
+    initialize: ->
+        super
+        @on('change:name', @onChange)
 
     onChange: ->
         super
         @update()
-    onAdd: ->
-        super
+
     onDestroy: ->
         super
         @publishEvent('modelchanged', 'client')
+
     onRemove: ->
         super
         @update()
+
     module_name: ['klient', 'klienci']
     prefix: {}
     sufix: {}

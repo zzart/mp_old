@@ -9,6 +9,7 @@ module.exports = class AgentController extends Controller
 
     list:(params, route, options) ->
         @publishEvent('log:info', 'in agent list controller')
+        route_params = [params, route, options]
         # check if collection is already fetched from server
         #if _.isObject(mediator.collections.agents)
         #    @view = new ListView {params , region:'content'}
@@ -28,6 +29,7 @@ module.exports = class AgentController extends Controller
                     filter:'agent_type'
                     region:'content'
                     controller: 'agent_controller'
+                    route_params: route_params
                 }
             error: =>
                 @publishEvent 'loading_stop'
@@ -35,6 +37,7 @@ module.exports = class AgentController extends Controller
 
     add:(params, route, options) ->
         #in case someone added branch or user we need updated schema from server!
+        route_params = [params, route, options]
         mediator.models.user.fetch
             success: =>
                 @publishEvent('log:info', 'in agentadd controller')
@@ -51,15 +54,22 @@ module.exports = class AgentController extends Controller
                         mediator.models.user.update_db()
                         @schema =localStorage.getObject('agent_schema')
                         @model.schema = _.clone(@schema)
-                        @view = new EditView {form_name:'agent_form', model:@model, can_edit:@can_edit, edit_type:'add', region:'content'}
+                        @view = new EditView {
+                            form_name:'agent_form'
+                            model:@model
+                            can_edit:@can_edit
+                            edit_type:'add'
+                            region:'content'
+                            route_params: route_params
+                        }
                     error: =>
                         @publishEvent 'loading_stop'
                         @publishEvent 'server_error'
 
 
     show:(params, route, options) ->
+        route_params = [params, route, options]
         @publishEvent('log:info', 'in agent show controller')
-        console.log(params, route, options)
         #in case someone added branch or user we need updated schema from server!
         mediator.models.user.fetch
             success: =>
@@ -83,11 +93,6 @@ module.exports = class AgentController extends Controller
                                 mediator.models.user.get('is_admin'),
                                 @model.get('id'),
                                 mediator.models.user.get('id'))
-                            console.log('-------', @can_edit)
-                            console.log(
-                                mediator.models.user.get('is_admin'),
-                                @model.get('id'),
-                                mediator.models.user.get('id'))
                             @edit_type = ''
                             if mediator.models.user.get('id') is @model.get('id')
                                 @edit_type = 'add'
@@ -101,6 +106,7 @@ module.exports = class AgentController extends Controller
                                 can_edit:@can_edit
                                 edit_type:@edit_type
                                 region:'content'
+                                route_params: route_params
                             }
                         error: =>
                             @publishEvent 'loading_stop'
@@ -108,10 +114,6 @@ module.exports = class AgentController extends Controller
                 else
                     @publishEvent('log:info', 'in agent show Else')
                     @model = mediator.collections.agents.get(params.id)
-                    console.log(
-                        mediator.models.user.get('is_admin'),
-                        @model.get('id'),
-                        mediator.models.user.get('id'))
                     # this is so user can't delete themself!!
                     @edit_type = ''
                     if mediator.models.user.get('id') is @model.get('id')
@@ -120,7 +122,14 @@ module.exports = class AgentController extends Controller
                     @schema =localStorage.getObject('agent_schema')
                     @model.schema = _.clone(@schema)
                     @publishEvent 'tell_viewed', @model.get_url()
-                    @view = new EditView {form_name:'agent_form', model:@model, can_edit:@can_edit, edit_type:@edit_type,  region:'content'}
+                    @view = new EditView {
+                        form_name:'agent_form'
+                        model:@model
+                        can_edit:@can_edit
+                        edit_type:@edit_type
+                        region:'content'
+                        route_params: route_params
+                    }
 
 
 
@@ -128,7 +137,7 @@ module.exports = class AgentController extends Controller
         # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
         # we need model.attributes to persist accross all controllers for quick access !
         # so before we get rid of everything let's deepCopy this obj
-        @publishEvent('log:error', 'dispose method called agent controller --------')
+        @publishEvent('log:info', 'dispose method called agent controller --------')
         deepCopy = mediator.collections.agents.clone()
         super
         mediator.collections.agents = deepCopy

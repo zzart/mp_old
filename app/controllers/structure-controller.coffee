@@ -16,10 +16,10 @@ mediator = require 'mediator'
 
 module.exports = class StructureController extends Controller
     beforeAction: (params, route, options) ->
-        @publishEvent('log:debug', "StructureController controller
-            params: #{JSON.stringify(params)},
-            route: #{JSON.stringify(route)},
-            options: #{JSON.stringify(options)}")
+        @publishEvent('log:debug', "StructureController controller")
+        @publishEvent('log:debug', params)
+        @publishEvent('log:debug', route)
+        @publishEvent('log:debug', options)
         #should provide regions
         @reuse 'structure', StructureView
         #@view = new StructureView

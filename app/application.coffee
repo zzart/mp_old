@@ -79,8 +79,10 @@ module.exports = class Application extends Chaplin.Application
     mediator.viewed = []
     if mediator.online is true
         mediator.server_url = 'http://mps.mobilnyposrednik.pl/'
+        mediator.static_url = 'http://app.mobilnyposrednik.pl/'
     else
         mediator.server_url = 'http://localhost:8080/'
+        mediator.static_url = ''
         console.log(mediator.server_url)
     mediator.upload_url = "#{mediator.server_url}v1/pliki"
     mediator.app_key = 'mp'
