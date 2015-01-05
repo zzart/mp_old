@@ -101,7 +101,8 @@ module.exports = class AddView extends View
                     # if no query being done and we doing save this changs forever
                     # so redirect to HOME if url or listing.query is undefined
                     if mediator.collections.listings?.query?
-                        Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
+                        # Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
+                        Chaplin.utils.redirectTo url: "#{@route_params[1]['previous']['path']}?#{@route_params[1]['previous']['query']}"
                     else
                         Chaplin.utils.redirectTo {url: url ? "/"}
                 error:(model, response, options) =>
@@ -124,7 +125,8 @@ module.exports = class AddView extends View
                 # if no query being done and we doing save this changs forever
                 # so redirect to HOME if url or listing.query is undefined
                 if mediator.collections.listings?.query?
-                    Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
+                    # Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
+                    Chaplin.utils.redirectTo url: "#{@route_params[1]['previous']['path']}?#{@route_params[1]['previous']['query']}"
                 else
                     Chaplin.utils.redirectTo {url: url ? "/"}
             error:(model, response, options) =>

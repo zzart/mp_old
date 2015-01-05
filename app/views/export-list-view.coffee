@@ -14,6 +14,7 @@ module.exports = class ExportListView extends View
         @model = @collection_hard.get(e.target.dataset.export)
         url = "#{@model.urlRoot}/#{e.target.dataset.export}/pelny"
         @mp_request(@model, url, 'POST', 'Wszystkie oferty spełnające kryteria eksportu zostały zaznaczone')
+        $("a#set_full_export").text('Pełny')
 
     select_all_for_export: (e) =>
         @publishEvent('log:info', "#{@module_name} select_all_for_export id:#{e.target.id} data:#{e.target.dataset.export}")
