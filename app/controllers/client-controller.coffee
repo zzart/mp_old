@@ -67,7 +67,13 @@ module.exports = class ClientListController extends Controller
         # we need model.attributes to persist accross all controllers for quick access !
         # so before we get rid of everything let's deepCopy this obj
         @publishEvent('log:info', 'dispose method called cliet controller --------')
-        deepCopy = mediator.collections.clients.clone()
+        try
+            # if comming from home we won't have a collection ....
+            deepCopy = mediator.collections.clients.clone()
+        catch e
+            @publishEvent('log:warning', "dispose caught error #{e}" )
+            # better to set it undefined so when we checking _.isObject etc. it's cleaner to resolve
+            deepCopy = undefined
         super
         mediator.collections.clients = deepCopy
 

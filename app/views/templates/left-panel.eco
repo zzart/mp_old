@@ -111,19 +111,21 @@
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="location" data-expanded-icon="arrow-d">
             <h3>Narzędzia</h3>
             <ul data-role="listview" >
+            <!--
                 <li><a href="https://www.google.com/calendar/" target="_blank" >Kalendarz</a></li>
                 <li><a href="https://maps.google.com/" target="_blank" >MapyGoogle</a></li>
+            -->
                 <li><a href="http://www.openstreetmap.org" target="_blank" >OpenStreet</a></li>
                 <li><a href="https://ekw.ms.gov.pl/eukw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>
                 <li><a href="http://maps.geoportal.gov.pl/webclient/" target="_blank" >Geoportal</a></li>
                 <li><a href="http://mapy.geoportal.gov.pl/imap/?gpmap=gp0&actions=acShowWgPlot" target="_blank" >Wyszukaj działkę</a></li>
-                <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>
                 <!--
+                <li><a href="http://planmieszkania.pl/" target="_blank">Plan mieszkania</a></li>
                 <li><a href="/iframe/calendar">Kalendarz</a></li>
                 <li><a href="http://ekw.ms.gov.pl/pdcbdkw/pdcbdkw.html" target="_blank" >Księgi wieczyste</a></li>
                 -->
-                <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" target="_blank">Kalkulator kosztów</a></li>
                 <!--
+                <li><a href="http://www.nieruchomosci.222.pl/kalkulator_oplat.html" target="_blank">Kalkulator kosztów</a></li>
                 <li><a href="http://pfrn.pl/" >PFRN</a></li>
                 -->
                 <li data-role='list-divider' > </li>
@@ -153,7 +155,7 @@
         <li data-icon="shop">
             <a href='#' data-rel="popup" data-transition="pop" id='account-status-btn' data-position-to="window" >Status Konta</a>
         </li>
-        <li data-icon="power"> <a href="/login/koniec" id='first-name-placeholder' >Początek</a></li>
+        <li data-icon="power"><a href="#" id='logoff' >Wyloguj</a></li>
     </ul>
 
 

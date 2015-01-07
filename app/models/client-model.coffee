@@ -23,14 +23,17 @@ module.exports = class Client extends Model
     onChange: ->
         super
         @update()
+        @publishEvent('refresh_localstorage', 'clients')
 
     onDestroy: ->
         super
         @publishEvent('modelchanged', 'client')
+        @publishEvent('refresh_localstorage', 'clients')
 
     onRemove: ->
         super
         @update()
+        @publishEvent('refresh_localstorage', 'clients')
 
     module_name: ['klient', 'klienci']
     prefix: {}

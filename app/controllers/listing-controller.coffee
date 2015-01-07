@@ -60,6 +60,8 @@ module.exports = class ListingController extends Controller
         route_params = [params, route, options]
         #url = "/oferty?#{$.param(mediator.last_query)}"
         # @redirectTo {url} unless _.isObject(mediator.collections.listings.get(params.id))
+        # if _.isObject(mediator.collections.listings?.get(params.id))
+        console.log(mediator.collections.listings)
         if _.isObject(mediator.collections.listings?.get(params.id))
             @model = mediator.collections.listings.get(params.id)
             categories =_.invert(localStorage.getObject('categories'))
@@ -111,12 +113,14 @@ module.exports = class ListingController extends Controller
         # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
         # we need model.attributes to persist accross all controllers for quick access !
         # so before we get rid of everything let's deepCopy this obj
-        @publishEvent('log:info', 'dispose method called exports controller --------')
+        @publishEvent('log:info', 'dispose method called listing controller --------')
         try
             # if comming from home we won't have a collection ....
             deepCopy = mediator.collections.listings.clone()
         catch e
-            deepCopy = {}
+            @publishEvent('log:warning', "dispose caught error #{e}" )
+            # better to set it undefined so when we checking _.isObject etc. it's cleaner to resolve
+            deepCopy = undefined
         super
         mediator.collections.listings = deepCopy
 

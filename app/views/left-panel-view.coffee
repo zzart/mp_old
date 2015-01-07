@@ -28,10 +28,19 @@ module.exports = class LeftPanelView extends View
         @delegate 'click', '#account-status-btn', @account_status
         @delegate 'click', '.link_disabled', @paid_only
         @delegate 'click', 'a', @close_panel
+        @delegate 'click', '#logoff', @logoff
 
         #panel_self_close: =>
         #    @publishEvent('log:debug', 'panel self close')
         #    $('#left-panel').panel('close')
+
+
+    logoff: (e) =>
+        e.preventDefault()
+        @publishEvent('log:info', 'login off')
+        mediator.models.user = null
+        Chaplin.utils.redirectTo {url: 'login'}
+        @publishEvent 'tell_user', "Pomyślnie wylogowany"
 
     close_panel: =>
         @$el.panel('close')

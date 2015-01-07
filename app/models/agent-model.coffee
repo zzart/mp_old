@@ -22,3 +22,22 @@ module.exports = class Agent extends Model
     module_name: ['agent', 'agenci']
     sufix: {'username': "@#{mediator.models.user.get('company_name')}"}
     prefix: {'phone_primary':'+48'}
+
+    initialize: ->
+        super
+        @on('change:name', @onChange)
+
+    onChange: ->
+        super
+        @update()
+        @publishEvent('refresh_localstorage', 'agents')
+
+    onDestroy: ->
+        super
+        @publishEvent('modelchanged', 'client')
+        @publishEvent('refresh_localstorage', 'agents')
+
+    onRemove: ->
+        super
+        @update()
+        @publishEvent('refresh_localstorage', 'agents')
