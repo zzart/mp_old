@@ -20,7 +20,7 @@ module.exports = class ClientAddView extends View
                         # add it to collection so we don't need to use server ...
                         mediator.collections.clients.add(@model)
                     @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
-                    Chaplin.utils.redirectTo {url: url ? '/klienci'}
+                    Chaplin.utils.redirectTo @route_params[1]['previous']['name'], @route_params[1]['previous']['params']
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -40,7 +40,7 @@ module.exports = class ClientAddView extends View
             success: (event) =>
                 mediator.collections.clients.remove(@model)
                 @publishEvent 'tell_user', 'Rekord został usunięty'
-                Chaplin.utils.redirectTo {url: '/klienci'}
+                Chaplin.utils.redirectTo @route_params[1]['previous']['name'], @route_params[1]['previous']['params']
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']

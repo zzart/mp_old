@@ -14,7 +14,7 @@ module.exports = class Client extends Model
                  when 3 then 'wynajmujący'
                  when 4 then 'najemca'
         agent_func: ->
-            localStorage.getObject('agents')["#{@get('agent')}"]
+            localStorage.getObjectNames('agents')["#{@get('agent')}"]
 
     initialize: ->
         super
@@ -22,18 +22,15 @@ module.exports = class Client extends Model
 
     onChange: ->
         super
-        @update()
-        @publishEvent('refresh_localstorage', 'clients')
+        @publishEvent('localstorage:refresh', 'clients')
 
     onDestroy: ->
         super
-        @publishEvent('modelchanged', 'client')
-        @publishEvent('refresh_localstorage', 'clients')
+        @publishEvent('localstorage:refresh', 'clients')
 
     onRemove: ->
         super
-        @update()
-        @publishEvent('refresh_localstorage', 'clients')
+        @publishEvent('localstorage:refresh', 'clients')
 
     module_name: ['klient', 'klienci']
     prefix: {}

@@ -45,8 +45,8 @@ module.exports = class HeaderActionView extends View
 
     getTemplateData: =>
         super
-        agents: localStorage.getObject('agents')
-        clients: localStorage.getObject('clients')
+        agents: localStorage.getObjectNames('agents')
+        clients: localStorage.getObjectNames('clients')
         branches: localStorage.getObject('branches')
         listing_type: @ltype
 

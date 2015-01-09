@@ -48,19 +48,40 @@ module.exports = class ClientListController extends Controller
     show:(params, route, options) ->
         @publishEvent('log:info', 'in client show controller')
         route_params = [params, route, options]
-        @redirectTo {'/klienci'} unless _.isObject(mediator.collections.clients.get(params.id))
-        @schema =localStorage.getObject('client_schema')
-        @model = mediator.collections.clients.get(params.id)
-        @model.schema = _.clone(@schema)
-        @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
-        @publishEvent 'tell_viewed', @model.get_url()
-        @view = new ClientView {
-            form_name:'client_form'
-            model:@model
-            can_edit:@can_edit
-            region:'content'
-            route_params: route_params
-        }
+
+        @schema = localStorage.getObject('client_schema')
+
+        if _.isObject(mediator.collections.clients?.get(params.id))
+            @model = mediator.collections.clients.get(params.id)
+            @model.schema = _.clone(@schema)
+            @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
+            @publishEvent 'tell_viewed', @model.get_url()
+            @view = new ClientView {
+                form_name:'client_form'
+                model:@model
+                can_edit:@can_edit
+                region:'content'
+                route_params: route_params
+            }
+        else
+            console.log('no clinets ------------------')
+            mediator.models.client = new Model
+            @model = mediator.models.client
+            @model.set('id', params.id)
+            @model.schema = _.clone(@schema)
+            @model.fetch
+                success: =>
+                    @publishEvent('log:info', "data with #{params} fetched ok" )
+                    @publishEvent 'loading_stop'
+                    @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
+                    @publishEvent 'tell_viewed', @model.get_url()
+                    @view = new ClientView {
+                        form_name:'client_form'
+                        model:@model
+                        can_edit:@can_edit
+                        region:'content'
+                        route_params: route_params
+                    }
 
     dispose: ->
         # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)

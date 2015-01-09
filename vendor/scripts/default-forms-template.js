@@ -30,11 +30,13 @@
                 </fieldset>\
             ');
 
+        //<% if (link) { %> <a class="form-link ui-btn ui-icon-star ui-btn-icon-notext ui-corner-all"><%= link %></a> <% } %>\
 
+      //<label for="<%= editorId %>"><%= title %><% if (help) { %> <a class="form-help ui-btn ui-icon-info ui-btn-icon-notext ui-corner-all"><%= help %></a> <% } %>\
 
   Form.Field.template = _.template('\
         <div class="ui-field-contain" data-mini="true" data-editor >\
-      <label for="<%= editorId %>"><%= title %><% if (help) { %> <a class="form-help ui-btn ui-icon-info ui-btn-icon-notext ui-corner-all"><%= help %></a> <% } %>\
+      <label for="<%= editorId %>"><%= title %><% if (help) { %><a class="form-help ui-btn ui-icon-info ui-btn-icon-notext ui-corner-all"><%= help %></a><% } %><% if (link) { %><a class="form-link ui-btn ui-icon-plus ui-btn-icon-notext ui-corner-all"><%= link %></a><% } %>\
       <br />\
         <span class="help-block" data-error></span>\
       </label>\

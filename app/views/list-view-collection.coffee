@@ -174,8 +174,8 @@ module.exports = class ListView extends CollectionView
     getTemplateData: =>
         collection: @collection.toJSON()
         listing_type: @listing_type
-        agents: localStorage.getObject('agents')
-        clients: localStorage.getObject('clients')
+        agents: localStorage.getObjectNames('agents')
+        clients: localStorage.getObjectNames('clients')
         branches: localStorage.getObject('branches')
 
     render: =>

@@ -206,8 +206,8 @@ module.exports = class ListView extends View
     getTemplateData: =>
         collection: @collection.toJSON()
         listing_type: @listing_type
-        agents: localStorage.getObject('agents')
-        clients: localStorage.getObject('clients')
+        agents: localStorage.getObjectNames('agents')
+        clients: localStorage.getObjectNames('clients')
         branches: localStorage.getObject('branches')
 
     render: =>
@@ -309,10 +309,10 @@ module.exports = class ListView extends View
 
             if event.target.value == 'zmien_agenta'
                 str = ""
-                for k,v of localStorage.getObject('agents')
+                for k,v of localStorage.getObjectNames('agents')
                     str = "#{str}<li value='#{k}'><a id='#{k}'>#{v}</a></li>"
-                val = """<h5>Wybierz Agenta</h5><br />
-                <form class='ui-filterable'><input id='agent-choose-input' data-type='search'></form>
+                val = """<h5>Wybierz Agenta</h5>
+                <form class='ui-filterable'><input id='agent-choose-input' data-type='search' data-theme='a'></form>
                 <ul data-role='listview' id='agent-choose' data-filter='true' data-input='#agent-choose-input' >#{str}</ul>"""
                 $('#popgeneric').html(val)
                 $ul = $("#popgeneric")
@@ -341,10 +341,10 @@ module.exports = class ListView extends View
             # send email to client
             if event.target.value == 'send-listing-client'
                 str = ""
-                for k,v of localStorage.getObject('clients')
+                for k,v of localStorage.getObjectNames('clients')
                     str = "#{str}<li value='#{k}'><a id='#{k}'>#{v}</a></li>"
-                val = """<h5>Wybierz Klienta</h5><br />
-                <form class='ui-filterable'><input id='client-choose-input' data-type='search'></form>
+                val = """<h5>Wybierz Klienta</h5>
+                <form class='ui-filterable'><input id='client-choose-input' data-type='search' data-theme='a'></form>
                 <ul data-role='listview' id='client-choose' data-filter='true' data-input='#client-choose-input' >#{str}</ul>"""
                 try
                     $('#popgeneric').html(val).enhanceWithin()

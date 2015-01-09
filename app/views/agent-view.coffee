@@ -3,7 +3,7 @@ mediator = require 'mediator'
 module.exports = class View extends View
     initialize: (options) =>
         super
-        @publishEvent('log:info', 'edit vewq' )
+        @publishEvent('log:info', 'edit view' )
 
     save_action: =>
         super

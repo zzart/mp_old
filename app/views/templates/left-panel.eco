@@ -57,9 +57,9 @@
                 </div>
                         -->
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">
-                    <h3>Kontrahenci</h3>
+                    <h3>Klienci</h3>
                     <ul data-role="listview" >
-                        <li ><a href="/klienci/dodaj" >Dodaj Kontrahenta</a></li>
+                        <li ><a href="/klienci/dodaj" >Dodaj Klineta</a></li>
                         <li ><a href="/klienci" >Moi</a></li>
                         <li ><a href="/klienci-wspolni" >Wspólni</a></li>
                         <li data-role='list-divider' > </li>

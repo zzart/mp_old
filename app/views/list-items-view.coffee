@@ -8,8 +8,8 @@ module.exports = class View extends View
         @collection = options.collection
     getTemplateData: =>
         collection: @collection.toJSON()
-        agents: localStorage.getObject('agents')
-        clients: localStorage.getObject('clients')
+        agents: localStorage.getObjectNames('agents')
+        clients: localStorage.getObjectNames('clients')
         branches: localStorage.getObject('branches')
     render: =>
         super

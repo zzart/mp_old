@@ -836,6 +836,8 @@ Form.Field = Backbone.View.extend({
     return {
       help: schema.help || '',
       title: schema.title,
+//! added for linking models
+      link: schema.link || '',
       fieldAttrs: schema.fieldAttrs,
       editorAttrs: schema.editorAttrs,
       key: this.key,

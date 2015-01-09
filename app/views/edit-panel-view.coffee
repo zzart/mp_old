@@ -28,7 +28,7 @@ module.exports = class View extends View
 
     getTemplateData: =>
         # model: @model
-        clients: localStorage.getObject('clients')
+        clients: localStorage.getObjectNames('clients')
 
     attach: =>
         super

@@ -33,6 +33,7 @@ module.exports = class EditView extends View
         @subscribeEvent('save:clicked', @save_action)
         @subscribeEvent('back:clicked', @back_action)
         @delegate 'click', 'a.form-help', @form_help
+        @delegate 'click', 'a.form-link', @form_link
         @delegate 'click', '[data-role=\'navbar\']:first li', @refresh_resource
         # @delegate('DOMSubtreeModified','#resource_list', @refresh_resource )
         @delegate('click',"[name='resources'] li a:first-child", @resource_preview )
@@ -247,6 +248,22 @@ module.exports = class EditView extends View
         $('#upload input')[0].setAttribute('accept', 'image/*')
 
     # resource end --------------------------------------------
+    form_link:(event) =>
+        console.log(event)
+        window.link_event = event
+        #get label of select
+        for_label = event.target.parentElement.attributes.for.value
+        #grab selected option if nothing is selected then return false
+        selected = $("##{for_label}").val()
+        if (selected)
+            @publishEvent 'tell_user' , selected
+            #save temporary model so we can come back to it later
+            mediator.temp_model = @model.clone()
+            #redirect to client
+            Chaplin.utils.redirectTo {url: "klienci/#{selected}"}
+        else
+            Chaplin.utils.redirectTo {url: 'klienci/dodaj'}
+
 
     form_help:(event) =>
         @publishEvent 'tell_user' , event.target.text
@@ -259,7 +276,7 @@ module.exports = class EditView extends View
 
     back_action: (event) =>
         @publishEvent('log:info', 'back_action  caught')
-        Chaplin.utils.redirectTo @route_params[1]['previous']['name']
+        Chaplin.utils.redirectTo @route_params[1]['previous']['name'], @route_params[1]['previous']['params']
 
     get_form: =>
         @publishEvent('log:info',"form name: #{@form_name}")

@@ -34,9 +34,9 @@ module.exports = class Listing extends Model
         waluta_func: ->
             localStorage.getObject('choices')["#{@get('waluta')}"]
         agent_func: ->
-            localStorage.getObject('agents')["#{@get('agent')}"]
+            localStorage.getObjectNames('agents')["#{@get('agent')}"]
         client_func: ->
-            localStorage.getObject('clients')["#{@get('client')}"]
+            localStorage.getObjectNames('clients')["#{@get('client')}"]
         rynek_func: ->
             localStorage.getObject('choices')["#{@get('rynek')}"]
         wylacznosc_func: ->

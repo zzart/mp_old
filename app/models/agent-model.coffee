@@ -30,14 +30,14 @@ module.exports = class Agent extends Model
     onChange: ->
         super
         @update()
-        @publishEvent('refresh_localstorage', 'agents')
+        @publishEvent('localstorage:refresh', 'agents')
 
     onDestroy: ->
         super
         @publishEvent('modelchanged', 'client')
-        @publishEvent('refresh_localstorage', 'agents')
+        @publishEvent('localstorage:refresh', 'agents')
 
     onRemove: ->
         super
         @update()
-        @publishEvent('refresh_localstorage', 'agents')
+        @publishEvent('localstorage:refresh', 'agents')
