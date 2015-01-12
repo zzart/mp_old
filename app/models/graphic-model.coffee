@@ -30,4 +30,4 @@ module.exports = class Graphic extends Model
                  when 2 then 'lewy dolny'
                  when 3 then 'prawy dolny'
 
-    module_name: ['grafika', 'grafiki']
+    module_name: ['grafika', 'grafiki', 'graphic', 'graphics']

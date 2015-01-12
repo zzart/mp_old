@@ -38,31 +38,32 @@ module.exports = class RefreshController extends Controller
         #async relays on callback f() to be notyfied went we want the called f() to return
         # TODO: doing it in series is slow and involves multiple requests + involves additional lib
         # let's make it into one !!
+        @publishEvent 'log:error', 'TODO: refresh_dependencies! '
 
-        self = @
-        async.series([
-            (callback) ->
-                self.refresh_model('flat_rent/schema' , callback )
-            (callback) ->
-                self.refresh_model('flat_sell/schema' , callback )
-            (callback) ->
-                self.refresh_model('house_rent/schema', callback )
-            (callback) ->
-                self.refresh_model('house_sell/schema', callback )
-            (callback) ->
-                self.refresh_model('land_rent/schema', callback )
-            (callback) ->
-                self.refresh_model('land_sell/schema', callback )
-            (callback) ->
-                self.refresh_model('object_rent/schema', callback )
-            (callback) ->
-                self.refresh_model('object_sell/schema', callback )
-            (callback) ->
-                self.refresh_model('warehouse_rent/schema', callback )
-            (callback) ->
-                self.refresh_model('warehouse_sell/schema', callback )
-            (callback) ->
-                self.refresh_model('commercial_rent/schema', callback )
-            (callback) ->
-                self.refresh_model('commercial_sell/schema', callback )
-        ])
+        #self = @
+        #async.series([
+        #    (callback) ->
+        #        self.refresh_model('flat_rent/schema' , callback )
+        #    (callback) ->
+        #        self.refresh_model('flat_sell/schema' , callback )
+        #    (callback) ->
+        #        self.refresh_model('house_rent/schema', callback )
+        #    (callback) ->
+        #        self.refresh_model('house_sell/schema', callback )
+        #    (callback) ->
+        #        self.refresh_model('land_rent/schema', callback )
+        #    (callback) ->
+        #        self.refresh_model('land_sell/schema', callback )
+        #    (callback) ->
+        #        self.refresh_model('object_rent/schema', callback )
+        #    (callback) ->
+        #        self.refresh_model('object_sell/schema', callback )
+        #    (callback) ->
+        #        self.refresh_model('warehouse_rent/schema', callback )
+        #    (callback) ->
+        #        self.refresh_model('warehouse_sell/schema', callback )
+        #    (callback) ->
+        #        self.refresh_model('commercial_rent/schema', callback )
+        #    (callback) ->
+        #        self.refresh_model('commercial_sell/schema', callback )
+        #])

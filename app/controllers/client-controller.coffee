@@ -11,8 +11,11 @@ module.exports = class ClientListController extends Controller
         route_params = [params, route, options]
         mediator.collections.clients = new Collection
         # console.log(mediator.collections.clients)
+        mediator.last_query = _.clone(options.query)
+        mediator.collections.clients.query_add(options.query)
         mediator.collections.clients.fetch
-            data: params
+        #data: params
+            data: mediator.collections.clients.query
             beforeSend: =>
                 @publishEvent 'loading_start'
                 @publishEvent 'tell_user', 'Ładuje listę klientów ...'

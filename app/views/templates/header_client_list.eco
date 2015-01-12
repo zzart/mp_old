@@ -15,6 +15,14 @@
             <option value="drukuj" disabled>Drukuj</option>
             <option value="eksport" disabled>Eksport do pliku</option>
         </select>
+        <label for="agent-query" class="ui-hidden-accessible ui-icon-user">Filtr</label>
+        <select name="agent-query" id="agent-query" data-query='agent'>
+            <option selected disabled>Agent</option>
+            <option value="">Wszyscy</option>
+            <% for key, val of @agents : %>
+            <option value="<%= key %>"><%= val %></option>
+            <% end %>
+        </select>
         <label for="select-filter" class="ui-hidden-accessible ui-icon-user">Filtr</label>
         <select name="select-filter" id="select-filter" data-filter='client_type'>
             <option selected disabled>Filtr</option>

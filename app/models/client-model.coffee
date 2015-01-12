@@ -32,6 +32,6 @@ module.exports = class Client extends Model
         super
         @publishEvent('localstorage:refresh', 'clients')
 
-    module_name: ['klient', 'klienci']
+    module_name: ['klient', 'klienci', 'client', 'clients']
     prefix: {}
     sufix: {}

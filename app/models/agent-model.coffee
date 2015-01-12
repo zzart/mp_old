@@ -19,7 +19,7 @@ module.exports = class Agent extends Model
         branch_func: ->
             if @get('branch') then localStorage.getObject('branches')["#{@get('branch')}"]
 
-    module_name: ['agent', 'agenci']
+    module_name: ['agent', 'agenci', 'agent', 'agents']
     sufix: {'username': "@#{mediator.models.user.get('company_name')}"}
     prefix: {'phone_primary':'+48'}
 

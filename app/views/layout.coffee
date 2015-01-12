@@ -37,6 +37,7 @@ module.exports = class Layout extends Chaplin.Layout
         @subscribeEvent('log:info', @log_info)
         @subscribeEvent('log:warn', @log_warn)
         @subscribeEvent('log:error', @log_error)
+        @subscribeEvent('log:trace', @log_trace)
 
     jqm_loading_start: =>
         $.mobile.loading('show')
@@ -102,6 +103,8 @@ module.exports = class Layout extends Chaplin.Layout
         @log.warn(option)  if mediator.online is false
     log_error:(option) =>
         @log.error(option) if mediator.online is false
+    log_trace:() =>
+        @log.trace() if mediator.online is false
 
     jqm_init: =>
         #this will initialize page after page is ready

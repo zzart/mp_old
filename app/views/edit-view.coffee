@@ -268,11 +268,42 @@ module.exports = class EditView extends View
     form_help:(event) =>
         @publishEvent 'tell_user' , event.target.text
 
+    refresh_form: =>
+        Chaplin.utils.redirectTo {url: "/#{@model.module_name[1]}"}
+
     delete_action: =>
         @publishEvent('log:info', 'delete  caught')
+        @model.destroy
+            success: (event) =>
+                mediator.collections[@model.module_name[3]].remove(@model)
+                @publishEvent 'tell_user', 'Rekord został usunięty'
+                Chaplin.utils.redirectTo @route_params[1]['previous']['name'], @route_params[1]['previous']['params']
+            error:(model, response, options) =>
+                if response.responseJSON?
+                    Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                else
+                    Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
     save_action: (url) =>
+        # override this if custom stuff happens
         @publishEvent('log:info', 'save_action  caught')
+        # save form
+        if _.isUndefined(@form.commit({validate:true}))
+            @model.save({},{
+                success:(event) =>
+                    if mediator.collections[@model.module_name[3]]?
+                        # add it to collection so we don't need to use server ...
+                        mediator.collections[@model.module_name[3]].add(@model)
+                    @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
+                    Chaplin.utils.redirectTo @route_params[1]['previous']['name'], @route_params[1]['previous']['params']
+                error:(model, response, options) =>
+                    if response.responseJSON?
+                        Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
+                    else
+                        Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
+            })
+        else
+            @publishEvent 'tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.'
 
     back_action: (event) =>
         @publishEvent('log:info', 'back_action  caught')
@@ -288,9 +319,6 @@ module.exports = class EditView extends View
         # --- debug
         window.form = @form if mediator.online is false
         @form.render()
-
-    save_action: =>
-        @publishEvent('log:debug', 'save_action caugth')
 
     render: =>
         super

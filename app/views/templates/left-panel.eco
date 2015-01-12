@@ -3,10 +3,11 @@
 					<ul data-role="listview" >
 						<li data-icon="delete"> <a href="#header" data-rel="close">Zamknij menu</a></li>
 						<li data-icon="home"> <a href="/" >Początek</a></li>
+                        <li ><a href="/klienci" >Klienci</a></li>
                         <li data-role='list-divider'></li>
                     </ul>
     <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">
-                    <h3>Przeglądaj oferty</h3>
+                    <h3>Oferty</h3>
                     <ul data-role="listview" >
                         <li><a href="/oferty?category=flat_rent"    >Mieszkania Wynajem</a></li>
                         <li><a href="/oferty?category=flat_sell"    >Mieszkania Sprzedaż</a></li>
@@ -24,6 +25,7 @@
                     </ul>
                 </div>
 
+                        <!--
                 <div data-role="collapsible" data-inset="false"  data-collapsed-icon="plus" data-expanded-icon="arrow-d">
                     <h3>Dodaj ofertę</h3>
                     <ul data-role="listview">
@@ -42,7 +44,6 @@
                         <li data-role='list-divider' > </li>
                     </ul>
                 </div>
-                        <!--
     <div data-role="collapsible" data-inset="false"  data-collapsed-icon="tag" data-expanded-icon="arrow-d">
                     <h3>Etykiety</h3>
                     <ul data-role="listview" >
@@ -56,16 +57,6 @@
                     </ul>
                 </div>
                         -->
-    <div data-role="collapsible" data-inset="false" data-collapsed-icon="phone" data-expanded-icon="arrow-d">
-                    <h3>Klienci</h3>
-                    <ul data-role="listview" >
-                        <li ><a href="/klienci/dodaj" >Dodaj Klineta</a></li>
-                        <li ><a href="/klienci" >Moi</a></li>
-                        <li ><a href="/klienci-wspolni" >Wspólni</a></li>
-                        <li data-role='list-divider' > </li>
-                    </ul>
-                </div>
-
     <div data-role="collapsible" data-inset="false" data-collapsed-icon="gear" data-expanded-icon="arrow-d">
                     <h3>Ustawienia</h3>
                     <ul data-role="listview" >
@@ -150,13 +141,5 @@
                         <li data-role='list-divider' > </li>
                     </ul>
 </div>
-<br />
-    <ul data-role="listview" >
-        <li data-icon="shop">
-            <a href='#' data-rel="popup" data-transition="pop" id='account-status-btn' data-position-to="window" >Status Konta</a>
-        </li>
-        <li data-icon="power"><a href="#" id='logoff' >Wyloguj</a></li>
-    </ul>
-
 
 <!-- ##################################  PANEL -->

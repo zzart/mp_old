@@ -6,7 +6,7 @@ module.exports = class View extends View
         @publishEvent('log:info', 'edit view' )
 
     save_action: =>
-        super
+        @publishEvent('log:info', 'custom save_action  caught')
         @publishEvent('log:info','commmit form')
         #run model and schema validation
         if _.isUndefined(@form.commit({validate:true}))
@@ -21,7 +21,7 @@ module.exports = class View extends View
                         mediator.models.user.clear()
                         Chaplin.utils.redirectTo {url: '/login'}
                     else
-                        Chaplin.utils.redirectTo {url: '/agenci'}
+                        Chaplin.utils.redirectTo @route_params[1]['previous']['name'], @route_params[1]['previous']['params']
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -30,20 +30,6 @@ module.exports = class View extends View
             })
         else
             @publishEvent 'tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.'
-
-    delete_action: =>
-        super
-        # TODO: przepisać oferty , kontakty etc...
-        @model.destroy
-            success: (event) =>
-                mediator.collections.agents.remove(@model)
-                @publishEvent 'tell_user', "Rekord został usunięty"
-                Chaplin.utils.redirectTo {url: '/agenci'}
-            error:(model, response, options) =>
-                if response.responseJSON?
-                    Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
-                else
-                    Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
 
     attach: =>
         super

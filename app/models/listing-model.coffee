@@ -56,7 +56,7 @@ module.exports = class Listing extends Model
                  when 6 then 'umowa przedwstępna'
                  when 7 then 'usunięta'
 
-    module_name: ['oferta', 'oferty']
+    module_name: ['oferta', 'oferty', 'listing', 'listings']
     # TODO: let's do it when I get some time
     # changing tabs causing weird appending stuff ...
     # prefix: {}

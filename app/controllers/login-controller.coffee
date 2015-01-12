@@ -13,10 +13,9 @@ module.exports = class LoginController extends StructureController
         mediator.models.user = new Model
         @view = new LoginView {region:'login'}
 
-        #moved to left panel view
-        #logoff: ->
-        #logo@publishEvent('log:info', 'login off')
-        #logomediator.models.user = null
-        #logoChaplin.utils.redirectTo {url: ''}
-        #logo@publishEvent 'tell_user', "Pomyślnie wylogowany"
+    logoff: ->
+        @publishEvent('log:info', 'login off')
+        mediator.models.user = null
+        Chaplin.utils.redirectTo {url: ''}
+        @publishEvent 'tell_user', "Pomyślnie wylogowany"
 

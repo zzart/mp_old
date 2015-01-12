@@ -36,7 +36,7 @@ module.exports = class Export extends Model
         #          when 1 then 'prawy górny'
         #          when 2 then 'lewy dolny'
         #          when 3 then 'prawy dolny'
-    module_name: ['eksport', 'eksporty']
+    module_name: ['eksport', 'eksporty', 'export', 'exports']
 
     onChange: ->
         super

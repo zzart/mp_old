@@ -70,7 +70,7 @@ Backbone.sync = (method, model, options) ->
         # console.log(method, options, model)
 
     #calling the original sync funtion so we only overriding what we need
-    request = _sync.call( this, method, model, options )
+    request = _sync.call(this, method, model, options)
     request.done((msg) ->
         $.mobile.loading('hide')
         #console.log('request done')
@@ -78,13 +78,14 @@ Backbone.sync = (method, model, options) ->
     request.fail((jqXHR, textStatus) ->
         self.publishEvent('log:debug', "#{jqXHR.jqXHR}, #{textStatus}")
         $.mobile.loading('hide')
+        msg = if textStatus != 'error' then textStatus else ''
         if _.isObject(jqXHR)
             # lets check if we have responseText or responseJSON
             if jqXHR.responseText?.title or jqXHR.responseJSON?.title?
-                self.publishEvent('tell_user', "Błąd! #{jqXHR.responseJSON.title or jqXHR.responseText.title}, #{textStatus}")
+                self.publishEvent('tell_user', "#{jqXHR.responseJSON.title or jqXHR.responseText.title} #{msg}")
             else
-                self.publishEvent('tell_user', "Błąd! #{JSON.stringify(jqXHR)}, #{textStatus}")
+                self.publishEvent('tell_user', "#{JSON.stringify(jqXHR)} #{msg}")
         else
-            self.publishEvent('tell_user', "Błąd! #{jqXHR}, #{textStatus}")
+            self.publishEvent('tell_user', "#{jqXHR} #{msg}")
     )
 #AUTH -----------------------------------------------------------------------

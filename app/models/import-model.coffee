@@ -16,7 +16,7 @@ module.exports = class Import extends Model
         date_func: ->
             @get('date').substr?(0,10)
 
-    module_name: ['import', 'importy']
+    module_name: ['import', 'importy', 'import', 'imports']
 
     onChange: ->
         super

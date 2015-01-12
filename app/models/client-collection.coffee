@@ -4,8 +4,13 @@ Collection = require 'models/base/collection'
 
 module.exports = class ClientList extends Collection
     model: Model
-    #url: 'http://localhost:8080/v1/klienci'
     url: "#{mediator.server_url}v1/klienci"
+
+    query_defaults: ->
+        # query without status which differes from base-collection
+        branch: mediator.models.user.get('branch_id')
+        agent: mediator.models.user.get('id')
+
     #initialize: ->
     #    @on('change', @onChange)
     #    @on('add', @onAdd)

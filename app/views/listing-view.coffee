@@ -81,7 +81,7 @@ module.exports = class AddView extends View
 
 
     save_action: (url) =>
-        super
+        @publishEvent('log:info', 'custom save caught')
         # need to check before record is commited to the server and becomes old ....
         @is_new = @model.isNew()
         @publishEvent 'log:debug', "Rekord nowy : #{@is_new}"
@@ -116,7 +116,8 @@ module.exports = class AddView extends View
 
 
     delete_action: =>
-        super
+        #super
+        @publishEvent('log:info', 'custom delete caught')
         @model.destroy
             success: (event) =>
                 # type = _.invert(localStorage.getObject('category'))[@model.get('category')]
