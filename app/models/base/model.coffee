@@ -42,9 +42,3 @@ module.exports = class Model extends Chaplin.Model
     get_url: ->
         return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
 
-    clone: ->
-        new this.constructor(_.map(this.model, (m)->
-                m.clone()
-        ))
-    clone_shallow: ->
-        Backbone.Model.prototype.clone()

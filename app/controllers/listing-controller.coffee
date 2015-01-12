@@ -61,7 +61,7 @@ module.exports = class ListingController extends Controller
         #url = "/oferty?#{$.param(mediator.last_query)}"
         # @redirectTo {url} unless _.isObject(mediator.collections.listings.get(params.id))
         # if _.isObject(mediator.collections.listings?.get(params.id))
-        console.log(mediator.collections.listings)
+        #console.log(mediator.collections.listings)
         if _.isObject(mediator.collections.listings?.get(params.id))
             @model = mediator.collections.listings.get(params.id)
             categories =_.invert(localStorage.getObject('categories'))

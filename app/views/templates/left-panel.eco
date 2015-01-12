@@ -2,11 +2,11 @@
 
 					<ul data-role="listview" >
 						<li data-icon="delete"> <a href="#header" data-rel="close">Zamknij menu</a></li>
-						<li data-icon="home"> <a href="/" >Początek</a></li>
+						<li data-icon="heart"> <a href="/" >Początek</a></li>
                         <li ><a href="/klienci" >Klienci</a></li>
                         <li data-role='list-divider'></li>
                     </ul>
-    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="eye" data-expanded-icon="arrow-d">
+    <div data-role="collapsible" data-inset="false"  data-collapsed-icon="home" data-expanded-icon="arrow-d">
                     <h3>Oferty</h3>
                     <ul data-role="listview" >
                         <li><a href="/oferty?category=flat_rent"    >Mieszkania Wynajem</a></li>

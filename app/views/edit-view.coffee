@@ -40,6 +40,7 @@ module.exports = class EditView extends View
 
         # --- debug
         window.model = @model if mediator.online is false
+        window.route_params if mediator.onlien is false
 
     show_to_client: (e) =>
         @publishEvent("log:debug", "show_to_client cought")
@@ -251,15 +252,17 @@ module.exports = class EditView extends View
     form_link:(event) =>
         console.log(event)
         window.link_event = event
+        # freeze this model for later use
+        # this could be new model or saved one with unsaved changes
+        @form.commit()
+        console.log(@model)
+        localStorage.setObject('_listing', @model.clone())
         #get label of select
         for_label = event.target.parentElement.attributes.for.value
         #grab selected option if nothing is selected then return false
         selected = $("##{for_label}").val()
         if (selected)
             @publishEvent 'tell_user' , selected
-            #save temporary model so we can come back to it later
-            mediator.temp_model = @model.clone()
-            #redirect to client
             Chaplin.utils.redirectTo {url: "klienci/#{selected}"}
         else
             Chaplin.utils.redirectTo {url: 'klienci/dodaj'}

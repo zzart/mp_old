@@ -2,6 +2,7 @@ View = require 'views/edit-view'
 TabView = require 'views/listing-tab-view'
 mediator = require 'mediator'
 Collection = require 'models/listing-collection'
+Model = require 'models/listing-model'
 
 module.exports = class AddView extends View
     initialize: (params) =>
@@ -16,8 +17,17 @@ module.exports = class AddView extends View
         @delegate 'click', "#copy_address", @copy_address
         @rendered_tabs = []
         @categories = localStorage.getObject('categories')
+        # if there is unsaved model create new one from saved _listing
+        if _.isObject(localStorage.getObject('_listing'))
+            console.error('here --------------------------------')
+            @model = new Model(localStorage.getObject('_listing'))
+            # after jump route_params.options.query is gone ...
+            # so we using trick to get schema of already saved lising
+            cat = _.invert(localStorage.getObject('categories'))[@model.get('category')]
+            @model.schema = localStorage.getObject("#{cat}_schema")
+            console.log(@model)
+            console.log(@model.schema)
         @is_new = false
-        # console.log(@options)
 
     change_tab: (e)=>
         @publishEvent('log:info', "change tab #{e.target.dataset.id}")
@@ -113,6 +123,8 @@ module.exports = class AddView extends View
             })
         else
             @publishEvent 'tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.'
+        # delete unsaved_listing if there are any
+        localStorage.removeItem('_listing')
 
 
     delete_action: =>

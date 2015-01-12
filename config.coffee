@@ -26,7 +26,7 @@ exports.config =
                     'vendor/scripts/jquery.ui.touch-punch.js',
                     'vendor/scripts/jquery.mobile.setup.js',#!!!
                     #'vendor/scripts/jquery.mobile-1.4.0.js',
-                    'vendor/scripts/jquery.mobile-1.4.4.js',
+                    'vendor/scripts/jquery.mobile-1.4.5.js',
                     # 'vendor/scripts/queue.min.js',
                     #'vendor/scripts/async.js',
                     #'vendor/scripts/jquery.mobile-1.4.0-rc.1.js',
@@ -45,7 +45,7 @@ exports.config =
                     'vendor/scripts/hmac-sha256.js',
                     'vendor/scripts/enc-base64-min.js',
                     # 'vendor/scripts/fineuploader-4.2.1.js',
-                    'vendor/scripts/fineuploader-5.0.6.js',
+                    'vendor/scripts/fine-uploader.js',
                     'vendor/scripts/OpenLayers.js'
                     'vendor/scripts/jquery.cookie.js'
                     ]
@@ -64,7 +64,7 @@ exports.config =
                     #'vendor/styles/jquery.mobile.structure-1.4.0.min.css',
                     'vendor/styles/fineuploader-4.2.1.css',
                     # 'vendor/styles/fineuploader-5.0.3.css',
-                    'vendor/styles/jquery.mobile-1.4.4.css',
+                    'vendor/styles/jquery.mobile-1.4.5.css',
                     #'vendor/styles/jquery.mobile-1.4.0.min.css',
                     #'vendor/styles/jquery.mobile-1.4.0-rc.1.css',
                     #'vendor/styles/openlayers.css',
