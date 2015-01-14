@@ -17,16 +17,17 @@ module.exports = class AddView extends View
         @delegate 'click', "#copy_address", @copy_address
         @rendered_tabs = []
         @categories = localStorage.getObject('categories')
+
         # if there is unsaved model create new one from saved _listing
-        if _.isObject(localStorage.getObject('_listing'))
-            console.error('here --------------------------------')
-            @model = new Model(localStorage.getObject('_listing'))
-            # after jump route_params.options.query is gone ...
-            # so we using trick to get schema of already saved lising
-            cat = _.invert(localStorage.getObject('categories'))[@model.get('category')]
-            @model.schema = localStorage.getObject("#{cat}_schema")
-            console.log(@model)
-            console.log(@model.schema)
+        if _.isObject(localStorage.getObject('_unsaved'))
+            unsaved = localStorage.getObject('_unsaved')
+            # check route_params, destination if we have match then we coming back
+            if unsaved.destination is @route_params[1].previous.path
+                @model = new Model(localStorage.getObject('_unsaved').model)
+                # after jump route_params.options.query is gone ...
+                # so we using trick to get schema of already saved lising
+                cat = _.invert(localStorage.getObject('categories'))[@model.get('category')]
+                @model.schema = localStorage.getObject("#{cat}_schema")
         @is_new = false
 
     change_tab: (e)=>
@@ -112,7 +113,8 @@ module.exports = class AddView extends View
                     # so redirect to HOME if url or listing.query is undefined
                     if mediator.collections.listings?.query?
                         # Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
-                        Chaplin.utils.redirectTo url: "#{@route_params[1]['previous']['path']}?#{@route_params[1]['previous']['query']}"
+                        cat = _.invert(localStorage.getObject('categories'))[@model.get('category')]
+                        Chaplin.utils.redirectTo url: "/oferty?category=#{cat}"
                     else
                         Chaplin.utils.redirectTo {url: url ? "/"}
                 error:(model, response, options) =>
@@ -124,7 +126,7 @@ module.exports = class AddView extends View
         else
             @publishEvent 'tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.'
         # delete unsaved_listing if there are any
-        localStorage.removeItem('_listing')
+        @publishEvent('remove_unsaved')
 
 
     delete_action: =>
@@ -138,8 +140,8 @@ module.exports = class AddView extends View
                 # if no query being done and we doing save this changs forever
                 # so redirect to HOME if url or listing.query is undefined
                 if mediator.collections.listings?.query?
-                    # Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
-                    Chaplin.utils.redirectTo url: "#{@route_params[1]['previous']['path']}?#{@route_params[1]['previous']['query']}"
+                    cat = _.invert(localStorage.getObject('categories'))[@model.get('category')]
+                    Chaplin.utils.redirectTo url: "/oferty?category=#{cat}"
                 else
                     Chaplin.utils.redirectTo {url: url ? "/"}
             error:(model, response, options) =>
@@ -147,12 +149,14 @@ module.exports = class AddView extends View
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
                 else
                     Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
+        @publishEvent('remove_unsaved')
 
     back_action: =>
+        @publishEvent('remove_unsaved')
         # we can't just inherit it from view class
-        # as we also need to pass last query param if there was one
-        # so we using previous path?query
-        Chaplin.utils.redirectTo url: "#{@route_params[1]['previous']['path']}?#{@route_params[1]['previous']['query']}"
+        cat = _.invert(localStorage.getObject('categories'))[@model.get('category')]
+        Chaplin.utils.redirectTo url: "/oferty?category=#{cat}"
+        # Chaplin.utils.redirectTo url: "#{@route_params[1]['previous']['path']}?#{@route_params[1]['previous']['query']}"
 
     copy_address: (event) ->
         @publishEvent('log:debug', 'copy address event')

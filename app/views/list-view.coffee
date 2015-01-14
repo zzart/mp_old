@@ -15,6 +15,7 @@ module.exports = class ListView extends View
         @params = params
         @filter = {}
         @selected_items = []
+        @route_params = @params.route_params ? false
         @selected_items_pictures = {} # to keep icons of selected items
         @collection_hard = @params.collection
         # @collection = @params.collection
@@ -51,8 +52,9 @@ module.exports = class ListView extends View
         @publishEvent('log:debug', @params)
         @navigation_rendered = false
         # --- debug
-        window.col_hard = @collection_hard if mediator.online is false
-        window.col = @collection if mediator.online is false
+        window._col_hard = @collection_hard if mediator.online is false
+        window._col = @collection if mediator.online is false
+        window._route_params = @route_params if mediator.online is false
 
         #init_events: =>
         #    @delegate 'click',  ".ui-table-columntoggle-btn", @column_action

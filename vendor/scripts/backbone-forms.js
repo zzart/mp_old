@@ -326,14 +326,16 @@ var Form = Backbone.View.extend({
   commit: function(options) {
     //Validate
     options = options || {};
+    //mars: skip validation
+    //NOTE(mars): i want to have an opiton to non-validate fields if I want to
+    if (!options.skip_validation){
+        var validateOptions = {
+            skipModelValidate: !options.validate
+        };
 
-    var validateOptions = {
-        skipModelValidate: !options.validate
+        var errors = this.validate(validateOptions);
+        if (errors) return errors;
     };
-
-    var errors = this.validate(validateOptions);
-    if (errors) return errors;
-
     //Commit
     var modelError;
 

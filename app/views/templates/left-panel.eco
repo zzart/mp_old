@@ -2,7 +2,7 @@
 
 					<ul data-role="listview" >
 						<li data-icon="delete"> <a href="#header" data-rel="close">Zamknij menu</a></li>
-						<li data-icon="heart"> <a href="/" >Początek</a></li>
+						<li data-icon="bullets"> <a href="/" >Początek</a></li>
                         <li ><a href="/klienci" >Klienci</a></li>
                         <li data-role='list-divider'></li>
                     </ul>

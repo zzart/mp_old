@@ -66,6 +66,7 @@ h4 {
     color: yellow;
     background-color: black;
     text-shadow: none;
+
 }
 
 /*
@@ -88,3 +89,4 @@ additional style to .subscript .ui-controlgroup-controls otherwise subscript fie
 
 }
 .subscript .ui-controlgroup-controls {width:100%}
+#info{width:250px}

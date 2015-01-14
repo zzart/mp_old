@@ -8,7 +8,7 @@ mediator =  require 'mediator'
 
 module.exports = class ListingController extends Controller
     list:(params, route, options) ->
-        @publishEvent('log:debug', "ListingController")
+        @publishEvent('log:debug', "ListingController list")
         route_params = [params, route, options]
         mediator.last_query = _.clone(options.query)
         @listing_type = options.query.category
@@ -34,7 +34,7 @@ module.exports = class ListingController extends Controller
 
 
     add:(params, route, options) ->
-        @publishEvent('log:info', "in add property controller" )
+        @publishEvent('log:info', "ListingController add " )
         route_params = [params, route, options]
         #console.log(params, route, options)
         listing_type = options.query.type
@@ -42,7 +42,6 @@ module.exports = class ListingController extends Controller
         @schema =localStorage.getObject("#{listing_type}_schema")
         mediator.models.listing = new Model
         mediator.models.listing.schema = _.clone(@schema)
-        @publishEvent('log:debug', "init view property controller" )
         @view = new View {
             form_name: form,
             model:mediator.models.listing
@@ -52,11 +51,10 @@ module.exports = class ListingController extends Controller
             region: 'content'
             route_params: route_params
         }
-        @publishEvent('log:debug', "after init view property controller" )
 
 
     show:(params, route, options) ->
-        @publishEvent('log:debug', 'in listing show controller')
+        @publishEvent('log:debug', 'ListingController show ')
         route_params = [params, route, options]
         #url = "/oferty?#{$.param(mediator.last_query)}"
         # @redirectTo {url} unless _.isObject(mediator.collections.listings.get(params.id))

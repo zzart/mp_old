@@ -28,6 +28,7 @@ module.exports = class Layout extends Chaplin.Layout
             @subscribeEvent('disable_buttons', @disable_buttons)
             @subscribeEvent('disable_form', @disable_form)
             @subscribeEvent('table_refresh', @jqm_table_refresh)
+            @subscribeEvent('remove_unsaved', @remove_unsaved)
 
             @subscribeEvent('server_error', @server_error)
             @subscribeEvent('tell_user', @tell_user)
@@ -63,6 +64,9 @@ module.exports = class Layout extends Chaplin.Layout
             $("#info").popup("close")
         , 4000)
 
+    remove_unsaved: =>
+        localStorage.removeItem('_unsaved')
+
     server_error: =>
         @log.debug('server error')  if mediator.online is false
         $('#info').text('Upss, brak kontaktu z serwerem...')
@@ -85,15 +89,15 @@ module.exports = class Layout extends Chaplin.Layout
     disable_buttons:(can_edit, edit_type, delete_only, no_back) =>
         @log.debug('form buttons disable caught') if mediator.online is false
         if edit_type is 'add'
-            $("#delete-button").attr('disabled', true)
+            $("#delete-button").addClass('ui-state-disabled')
         if not can_edit
-            $("#delete-button").attr('disabled', true)
-            $("#save-button").attr('disabled', true)
+            $("#delete-button").addClass('ui-state-disabled')
+            $("#save-button").addClass('ui-state-disabled')
             # $("#back-button").attr('disabled', true)
         if delete_only
-            $("#save-button").attr('disabled', true)
+            $("#save-button").addClass('ui-state-disabled')
         if no_back
-            $("#back-button").attr('disabled', true)
+            $("#back-button").addClass('ui-state-disabled')
 
     log_debug:(option) =>
         @log.debug(option) if mediator.online is false

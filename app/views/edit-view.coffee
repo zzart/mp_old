@@ -39,8 +39,8 @@ module.exports = class EditView extends View
         @delegate('click',"[name='resources'] li a:first-child", @resource_preview )
 
         # --- debug
-        window.model = @model if mediator.online is false
-        window.route_params if mediator.onlien is false
+        window._model = @model if mediator.online is false
+        window._route_params = @route_params if mediator.online is false
 
     show_to_client: (e) =>
         @publishEvent("log:debug", "show_to_client cought")
@@ -250,22 +250,29 @@ module.exports = class EditView extends View
 
     # resource end --------------------------------------------
     form_link:(event) =>
-        console.log(event)
-        window.link_event = event
-        # freeze this model for later use
-        # this could be new model or saved one with unsaved changes
-        @form.commit()
-        console.log(@model)
-        localStorage.setObject('_listing', @model.clone())
+        window._link_event = event
         #get label of select
         for_label = event.target.parentElement.attributes.for.value
         #grab selected option if nothing is selected then return false
         selected = $("##{for_label}").val()
+        # TODO: more generic! get model name from label and use some
+        # mapping to point to right url name! For this applyies only to clients
         if (selected)
-            @publishEvent 'tell_user' , selected
-            Chaplin.utils.redirectTo {url: "klienci/#{selected}"}
+            destination = "klienci/#{selected}"
         else
-            Chaplin.utils.redirectTo {url: 'klienci/dodaj'}
+            destination = "klienci/dodaj"
+        # freeze this model for later use
+        # this could be new model or saved one with unsaved changes
+        # dont validate it at all !
+        @form.commit({skip_validation:true})
+        # set obj to be saved
+        obj =
+            route_params: @route_params
+            model: @model.clone()
+            destination: destination
+
+        localStorage.setObject('_unsaved', obj)
+        Chaplin.utils.redirectTo {url: destination}
 
 
     form_help:(event) =>
@@ -280,7 +287,7 @@ module.exports = class EditView extends View
             success: (event) =>
                 mediator.collections[@model.module_name[3]].remove(@model)
                 @publishEvent 'tell_user', 'Rekord został usunięty'
-                Chaplin.utils.redirectTo @route_params[1]['previous']['name'], @route_params[1]['previous']['params']
+                @return_path()
             error:(model, response, options) =>
                 if response.responseJSON?
                     Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -298,7 +305,7 @@ module.exports = class EditView extends View
                         # add it to collection so we don't need to use server ...
                         mediator.collections[@model.module_name[3]].add(@model)
                     @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
-                    Chaplin.utils.redirectTo @route_params[1]['previous']['name'], @route_params[1]['previous']['params']
+                    @return_path()
                 error:(model, response, options) =>
                     if response.responseJSON?
                         Chaplin.EventBroker.publishEvent 'tell_user', response.responseJSON['title']
@@ -308,9 +315,21 @@ module.exports = class EditView extends View
         else
             @publishEvent 'tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.'
 
+    return_path: =>
+        # for new object we need the ?query=....
+        if @route_params[1]['previous']['query']
+            Chaplin.utils.redirectTo
+                url: "#{@route_params[1]['previous']['path']}?#{@route_params[1]['previous']['query']}"
+        # for saved objects we need the {id: 123} params
+        else
+            Chaplin.utils.redirectTo(
+                @route_params[1]['previous']['name'],
+                @route_params[1]['previous']['params']
+            )
+
     back_action: (event) =>
         @publishEvent('log:info', 'back_action  caught')
-        Chaplin.utils.redirectTo @route_params[1]['previous']['name'], @route_params[1]['previous']['params']
+        @return_path()
 
     get_form: =>
         @publishEvent('log:info',"form name: #{@form_name}")
@@ -320,7 +339,7 @@ module.exports = class EditView extends View
             #templateData:{ }
 
         # --- debug
-        window.form = @form if mediator.online is false
+        window._form = @form if mediator.online is false
         @form.render()
 
     render: =>
@@ -388,6 +407,9 @@ module.exports = class EditView extends View
         super
         @publishEvent('log:info', 'view: edit-view afterRender()')
         @publishEvent 'disable_buttons', @can_edit ? false , @edit_type, @delete_only
+        #we don't want to be able to delete models which are not saved ever !
+        if @model.isNew()
+            $("#delete-button").addClass('ui-state-disabled')
         #move listing inints into listing view
         if not @form_name.match('rent|sell')
             @subscript()

@@ -12,8 +12,8 @@ exports.config =
                 'javascripts/app.js': /^app/
                 'javascripts/vendor.js': /^vendor/
                 #'javascripts/vendor.js': /^vendor/
-                #'test/javascripts/test.js': /^test[\\/](?!vendor)/
-                #'test/javascripts/test-vendor.js': /^test[\\/](?=vendor)/
+                'test/javascripts/test.js': /^test[\\/](?!vendor)/
+                'test/javascripts/test-vendor.js': /^test[\\/](?=vendor)/
             order:
                 # Files in `vendor` directories are compiled before other files
                 # even if they aren't specified in order.before.
@@ -56,12 +56,9 @@ exports.config =
         stylesheets:
             joinTo:
                 'stylesheets/app.css': /^(app|vendor)/
-                #'test/stylesheets/test.css': /^test/
+                'test/stylesheets/test.css': /^test/
             order:
                 before: [
-                    #'vendor/styles/jquery.mobile-1.3.min.css'
-                    #'vendor/styles/jquery.mobile-1.4.0.css',
-                    #'vendor/styles/jquery.mobile.structure-1.4.0.min.css',
                     'vendor/styles/fineuploader-4.2.1.css',
                     # 'vendor/styles/fineuploader-5.0.3.css',
                     'vendor/styles/jquery.mobile-1.4.5.css',
