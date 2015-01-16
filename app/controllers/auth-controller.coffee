@@ -31,12 +31,12 @@ module.exports = class AuthController extends StructureController
 
 _sync = Backbone.sync
 Backbone.sync = (method, model, options) ->
-    # console.log('mediator: ',  Chaplin.mediator )
-    # console.log('model: ',  model)
-    # console.log('method: ',  method)
-    # console.log('options: ',  options )
-    # console.log('options data: ',  options.data )
-    # console.log('is new?:',  model.isNew?())
+    console.log('mediator: ',  Chaplin.mediator )
+    console.log('model: ',  model)
+    console.log('method: ',  method)
+    console.log('options: ',  options )
+    console.log('options data: ',  options.data )
+    console.log('is new?:',  model.isNew?())
     $.mobile.loading('show')
     self = @
     #$.mobile.loading('show')
@@ -73,7 +73,11 @@ Backbone.sync = (method, model, options) ->
     request = _sync.call(this, method, model, options)
     request.done((msg) ->
         $.mobile.loading('hide')
-        #console.log('request done')
+        # let's save this to localStorage
+        # model in this case could mean model or collection
+        if method is 'read'
+            if(!!model.models) # check if we have collection
+                localStorage.setObject("#{model.model.prototype.module_name[2]}_data", model.models)
     )
     request.fail((jqXHR, textStatus) ->
         self.publishEvent('log:debug', "#{jqXHR.jqXHR}, #{textStatus}")

@@ -10,3 +10,4 @@ module.exports = class Bon extends Chaplin.Model
     sufix: {}
     get_url: ->
         return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
+    admin_only_edit_allowed: true

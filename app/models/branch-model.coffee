@@ -10,3 +10,4 @@ module.exports = class Branch extends Model
     module_name: ['oddział', 'oddzialy', 'branch', 'branches']
     prefix: {'website':'http://', 'phone':'+48'}
     sufix: {}
+    admin_only_edit_allowed: true

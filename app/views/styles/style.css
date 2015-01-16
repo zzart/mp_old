@@ -68,7 +68,14 @@ h4 {
     text-shadow: none;
 
 }
-
+.aktywna{color:green}
+.nieaktywna{color:red}
+.archiwalna{color:gray}
+.robocza{color:blue}
+.sprzedana{color:yellow}
+.wynajta{color:pink}
+.umowa-przedwstpna{color:purple}
+.usunita{color:black}
 /*
 fix for horizontal.control.group mess -> applicable only to chrome
 https://github.com/jquery/jquery-mobile/issues/7793

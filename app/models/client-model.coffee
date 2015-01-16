@@ -32,6 +32,8 @@ module.exports = class Client extends Model
         super
         @publishEvent('localstorage:refresh', 'clients')
 
+    author: 'agent'
+    branch_edit_allowed: true
     module_name: ['klient', 'klienci', 'client', 'clients']
     prefix: {}
     sufix: {}

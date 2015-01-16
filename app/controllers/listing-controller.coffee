@@ -46,7 +46,6 @@ module.exports = class ListingController extends Controller
             form_name: form,
             model:mediator.models.listing
             listing_type: listing_type
-            can_edit:true
             edit_type: 'add'
             region: 'content'
             route_params: route_params
@@ -69,12 +68,10 @@ module.exports = class ListingController extends Controller
             @schema =localStorage.getObject(schema)
             # console.log(categories, @schema, @model.get('category'))
             @model.schema = _.clone(@schema)
-            @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
             @publishEvent 'tell_viewed', @model.get_url()
             @view = new View {
                 form_name:form
                 model:@model
-                can_edit:@can_edit
                 region:'content'
                 route_params: route_params
             }
@@ -93,12 +90,10 @@ module.exports = class ListingController extends Controller
                     @schema =localStorage.getObject(schema)
                     # console.log(categories, @schema, @model.get('category'))
                     @model.schema = _.clone(@schema)
-                    @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
                     @publishEvent 'tell_viewed', @model.get_url()
                     @view = new View {
                         form_name:form
                         model:@model
-                        can_edit:@can_edit
                         region:'content'
                         route_params: route_params
                     }

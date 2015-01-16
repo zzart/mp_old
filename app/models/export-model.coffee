@@ -37,6 +37,7 @@ module.exports = class Export extends Model
         #          when 2 then 'lewy dolny'
         #          when 3 then 'prawy dolny'
     module_name: ['eksport', 'eksporty', 'export', 'exports']
+    admin_only_edit_allowed: true
 
     onChange: ->
         super

@@ -42,7 +42,6 @@ module.exports = class ClientListController extends Controller
         @view = new ClientView {
             form_name:'client_form'
             model:@model
-            can_edit:true
             edit_type:'add'
             region:'content'
             route_params: route_params
@@ -57,17 +56,14 @@ module.exports = class ClientListController extends Controller
         if _.isObject(mediator.collections.clients?.get(params.id))
             @model = mediator.collections.clients.get(params.id)
             @model.schema = _.clone(@schema)
-            @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
             @publishEvent 'tell_viewed', @model.get_url()
             @view = new ClientView {
                 form_name:'client_form'
                 model:@model
-                can_edit:@can_edit
                 region:'content'
                 route_params: route_params
             }
         else
-            console.log('no clinets ------------------')
             mediator.models.client = new Model
             @model = mediator.models.client
             @model.set('id', params.id)
@@ -76,12 +72,10 @@ module.exports = class ClientListController extends Controller
                 success: =>
                     @publishEvent('log:info', "data with #{params} fetched ok" )
                     @publishEvent 'loading_stop'
-                    @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
                     @publishEvent 'tell_viewed', @model.get_url()
                     @view = new ClientView {
                         form_name:'client_form'
                         model:@model
-                        can_edit:@can_edit
                         region:'content'
                         route_params: route_params
                     }

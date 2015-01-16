@@ -31,3 +31,4 @@ module.exports = class Graphic extends Model
                  when 3 then 'prawy dolny'
 
     module_name: ['grafika', 'grafiki', 'graphic', 'graphics']
+    admin_only_edit_allowed: true

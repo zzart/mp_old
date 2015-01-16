@@ -87,13 +87,7 @@ module.exports = class Application extends Chaplin.Application
         console.log(mediator.server_url)
     mediator.upload_url = "#{mediator.server_url}v1/pliki"
     mediator.app_key = 'mp'
-    mediator.app = 'cebd2771-f0af-43ca-8fad-c18a1d042a36'
-    mediator.can_edit = (is_admin, author_id, user_id) ->
-        if is_admin
-            return true
-        if author_id == user_id
-            return true
-        return false
+    mediator.app = 'd5260e35-868a-4b4d-861f-dbcc93d146d3'
     # Seal the mediator
     mediator.gen_token = (url) =>
         apphash = CryptoJS.HmacSHA256(url, mediator.app_key)

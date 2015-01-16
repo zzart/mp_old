@@ -56,7 +56,25 @@ module.exports = class Listing extends Model
                  when 6 then 'umowa przedwstępna'
                  when 7 then 'usunięta'
 
+        # TODO: somehow we can't reference status_func
+        # if we do then slugify() loses context ...
+        # anyway, do this better if boared
+        status_func_slug: ->
+            status = switch @get('status')
+                 when 0 then 'nieaktywna'
+                 when 1 then 'aktywna'
+                 when 2 then 'archiwalna'
+                 when 3 then 'robocza'
+                 when 4 then 'sprzedana'
+                 when 5 then 'wynajęta'
+                 when 6 then 'umowa przedwstępna'
+                 when 7 then 'usunięta'
+            Model.prototype.slugify(status or '')
+
+
     module_name: ['oferta', 'oferty', 'listing', 'listings']
+    author: 'agent'
+    branch_edit_allowed: true
     # TODO: let's do it when I get some time
     # changing tabs causing weird appending stuff ...
     # prefix: {}

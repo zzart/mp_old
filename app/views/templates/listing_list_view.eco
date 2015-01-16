@@ -45,7 +45,7 @@ data-filter="true" data-input="#filterTable-input">
          <td><%= item['powierzchnia_calkowita'] %> m2</td>
          <td><%= item['liczba_pokoi'] %> pk</td>
          <td><%= item['pietro'] %> pt</td>
-         <td><%= item['status_func'] %></td>
+         <td class='<%= item['status_func_slug'] %>'><%= item['status_func'] %></td>
          <td><%= item['rynek_func'] %></td>
          <td><%= item['wylacznosc_func'] %></td>
          <td><%= item['date_created_func'] %></td>

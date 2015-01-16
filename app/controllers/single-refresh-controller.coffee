@@ -30,9 +30,8 @@ module.exports = class SingleRefreshController extends Controller
                         localStorage.setObject("#{params.model}", @model.attributes[params.model])
                         self.publishEvent 'localstorage:updated', model
                 error: =>
-                    #self.publishEvent 'tell_user', 'Brak połączenia z serwerem - dane nie zostały odświerzone'
-                    console.log('error')
-        , 30)
+                    self.publishEvent 'log:error', 'Brak połączenia z serwerem - dane nie zostały odświerzone'
+        , 100)
 
     update_schema: (model) ->
         @publishEvent('log:info', "update_schema of #{model}" )

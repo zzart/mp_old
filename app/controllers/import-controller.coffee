@@ -39,7 +39,6 @@ module.exports = class ImportController extends Controller
         @view = new View {
             form_name:'export_form'
             model:@model
-            can_edit:true
             edit_type:'add'
             region:'content'
             route_params: route_params
@@ -52,12 +51,10 @@ module.exports = class ImportController extends Controller
         @schema =localStorage.getObject('export_schema')
         @model = mediator.collections.exports.get(params.id)
         @model.schema = _.clone(@schema)
-        @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),@model.get('agent'), mediator.models.user.get('id'))
         @publishEvent 'tell_viewed', @model.get_url()
         @view = new View {
             form_name:'export_form'
             model:@model
-            can_edit:@can_edit
             region:'content'
             route_params: route_params
         }

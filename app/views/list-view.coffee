@@ -333,6 +333,7 @@ module.exports = class ListView extends View
                         # TODO: this might take a while so we could do progress bar of some sorts....
                         #console.log(@value, id)
                         model = self.collection_hard.get(id)
+                        # add query params so that server knows that we INTEND to change owner
                         # set (change:agent) will trigger sync on model
                         model.set('agent', @value)
                     # Remove click event !!!!!!!!!!!!!!!!!

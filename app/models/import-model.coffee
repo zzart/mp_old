@@ -17,6 +17,7 @@ module.exports = class Import extends Model
             @get('date').substr?(0,10)
 
     module_name: ['import', 'importy', 'import', 'imports']
+    admin_only_edit_allowed: true
 
     onChange: ->
         super

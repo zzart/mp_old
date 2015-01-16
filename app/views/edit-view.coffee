@@ -16,13 +16,12 @@ module.exports = class EditView extends View
         @model = @params.model
         @form_name = @params.form_name
         @edit_panel_template = @params.form_name
-        @can_edit = @params.can_edit
         @edit_type = @params.edit_type
         @listing_type = @params.listing_type ? false
         @delete_only = @params.delete_only ? false
         @upload_multiple = true
         @edit_panel_rendered = false
-        @publishEvent('log:debug', "form_name:#{@form_name}, can_edit:#{@can_edit}, listing_type:#{@listing_type}, delete_only:#{@delete_only} ")
+        @publishEvent('log:debug', "form_name:#{@form_name}, listing_type:#{@listing_type}, delete_only:#{@delete_only} ")
         # events
         @subscribeEvent('edit_panel:show_to_client', @show_to_client)
         @subscribeEvent('edit_panel:show_history', @show_history)
@@ -406,7 +405,7 @@ module.exports = class EditView extends View
     attach: =>
         super
         @publishEvent('log:info', 'view: edit-view afterRender()')
-        @publishEvent 'disable_buttons', @can_edit ? false , @edit_type, @delete_only
+        @publishEvent 'disable_buttons', @model.can_edit(@edit_type) ? false , @edit_type, @delete_only
         #we don't want to be able to delete models which are not saved ever !
         if @model.isNew()
             $("#delete-button").addClass('ui-state-disabled')

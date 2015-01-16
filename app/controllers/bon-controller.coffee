@@ -6,7 +6,6 @@ mediator = require 'mediator'
 module.exports = class BonController extends Controller
     show:(params, route, options) ->
         route_params = [params, route, options]
-        @can_edit = mediator.can_edit(mediator.models.user.get('is_admin'),1,0)
         @schema =localStorage.getObject('company_schema')
         @publishEvent('log:info', 'in bon show controller')
         if _.isObject(mediator.models.bon)
@@ -14,7 +13,6 @@ module.exports = class BonController extends Controller
             @view = new View {
                 form_name:'bon_form'
                 model:mediator.models.bon
-                can_edit:@can_edit
                 region:'content'
                 route_params: route_params
             }
@@ -33,7 +31,6 @@ module.exports = class BonController extends Controller
                     @view = new View {
                         form_name:'bon_form'
                         model:mediator.models.bon
-                        can_edit:@can_edit
                         region:'content'
                         route_params: route_params
                     }

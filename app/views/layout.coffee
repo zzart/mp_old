@@ -87,13 +87,13 @@ module.exports = class Layout extends Chaplin.Layout
             $("form [data-role='controlgroup'] select").selectmenu( "disable" )
 
     disable_buttons:(can_edit, edit_type, delete_only, no_back) =>
-        @log.debug('form buttons disable caught') if mediator.online is false
-        if edit_type is 'add'
-            $("#delete-button").addClass('ui-state-disabled')
+        @log.debug("caugth disable_buttons: #{can_edit}, #{edit_type}, #{delete_only}, #{no_back}") if mediator.online is false
         if not can_edit
             $("#delete-button").addClass('ui-state-disabled')
             $("#save-button").addClass('ui-state-disabled')
             # $("#back-button").attr('disabled', true)
+        if edit_type is 'add'
+            $("#delete-button").addClass('ui-state-disabled')
         if delete_only
             $("#save-button").addClass('ui-state-disabled')
         if no_back
