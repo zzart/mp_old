@@ -1,11 +1,12 @@
 mediator = require 'mediator'
+Model = require 'models/base/model'
 
-module.exports = class Bon extends Chaplin.Model
+module.exports = class Company extends Model
     urlRoot: "#{mediator.server_url}v1/biura"
     schema: {}
     # defaults:
     #     is_private: '' # for booleans
-    module_name: ['biuro', 'biura', 'bon', 'bons']
+    module_name: ['biuro', 'biura', 'company', 'companies']
     prefix: {'website':'http://', 'phone':'+48'}
     sufix: {}
     get_url: ->

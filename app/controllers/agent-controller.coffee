@@ -51,12 +51,8 @@ module.exports = class AgentController extends Controller
                         @publishEvent('log:info', "data with #{params} fetched ok" )
                         @publishEvent 'loading_stop'
                         mediator.models.user.update_db()
-                        @schema =localStorage.getObject('agent_schema')
-                        @model.schema = _.clone(@schema)
                         @view = new EditView {
-                            form_name:'agent_form'
                             model:@model
-                            edit_type:'add'
                             region:'content'
                             route_params: route_params
                         }
@@ -87,17 +83,9 @@ module.exports = class AgentController extends Controller
                                 Chaplin.utils.redirectTo {url: '/agenci'}
                             @publishEvent('log:info', 'in agent show controller fetch')
                             @model = mediator.collections.agents.get(params.id)
-                            @edit_type = ''
-                            if mediator.models.user.get('id') is @model.get('id')
-                                @edit_type = 'add'
-                            @schema = localStorage.getObject('agent_schema')
-                            #@model.schema = @schema
-                            @model.schema = _.clone(@schema)
                             @publishEvent 'tell_viewed', @model.get_url()
                             @view = new EditView {
-                                form_name:'agent_form'
                                 model:@model
-                                edit_type:@edit_type
                                 region:'content'
                                 route_params: route_params
                             }
@@ -107,17 +95,9 @@ module.exports = class AgentController extends Controller
                 else
                     @publishEvent('log:info', 'in agent show Else')
                     @model = mediator.collections.agents.get(params.id)
-                    # this is so user can't delete themself!!
-                    @edit_type = ''
-                    if mediator.models.user.get('id') is @model.get('id')
-                        @edit_type = 'add'
-                    @schema =localStorage.getObject('agent_schema')
-                    @model.schema = _.clone(@schema)
                     @publishEvent 'tell_viewed', @model.get_url()
                     @view = new EditView {
-                        form_name:'agent_form'
                         model:@model
-                        edit_type:@edit_type
                         region:'content'
                         route_params: route_params
                     }

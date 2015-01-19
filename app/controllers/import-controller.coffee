@@ -33,13 +33,9 @@ module.exports = class ImportController extends Controller
         @publishEvent('log:info', 'in import controller')
         route_params = [params, route, options]
         mediator.models.export = new Model
-        @schema =localStorage.getObject('import_schema')
         @model = mediator.models.export
-        @model.schema = _.clone(@schema)
         @view = new View {
-            form_name:'export_form'
             model:@model
-            edit_type:'add'
             region:'content'
             route_params: route_params
         }
@@ -48,12 +44,9 @@ module.exports = class ImportController extends Controller
         @publishEvent('log:info', 'in import show controller')
         route_params = [params, route, options]
         @redirectTo {'/importy'} unless _.isObject(mediator.collections.imports.get(params.id))
-        @schema =localStorage.getObject('export_schema')
         @model = mediator.collections.exports.get(params.id)
-        @model.schema = _.clone(@schema)
         @publishEvent 'tell_viewed', @model.get_url()
         @view = new View {
-            form_name:'export_form'
             model:@model
             region:'content'
             route_params: route_params

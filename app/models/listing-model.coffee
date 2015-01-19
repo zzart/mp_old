@@ -75,6 +75,22 @@ module.exports = class Listing extends Model
     module_name: ['oferta', 'oferty', 'listing', 'listings']
     author: 'agent'
     branch_edit_allowed: true
+
+    get_category: ->
+        _.invert(localStorage.getObject('categories'))[@.get('category')]
+
+    get_schema: ->
+        # override base schema so we can have categories
+        localStorage.getObject("#{@get_category()}_schema")
+
+    get_form_name: ->
+        # override base schema so we can have categories
+        "#{@get_category()}_form"
+
+    get_form: ->
+        # override base schema so we can have categories
+        localStorage.getObject("#{@get_category()}_form")
+
     # TODO: let's do it when I get some time
     # changing tabs causing weird appending stuff ...
     # prefix: {}

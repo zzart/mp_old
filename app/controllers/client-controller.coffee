@@ -36,13 +36,9 @@ module.exports = class ClientListController extends Controller
         @publishEvent('log:info', 'in clientadd controller')
         route_params = [params, route, options]
         mediator.models.client = new Model
-        @schema =localStorage.getObject('client_schema')
         @model = mediator.models.client
-        @model.schema = _.clone(@schema)
         @view = new ClientView {
-            form_name:'client_form'
             model:@model
-            edit_type:'add'
             region:'content'
             route_params: route_params
         }
@@ -51,14 +47,10 @@ module.exports = class ClientListController extends Controller
         @publishEvent('log:info', 'in client show controller')
         route_params = [params, route, options]
 
-        @schema = localStorage.getObject('client_schema')
-
         if _.isObject(mediator.collections.clients?.get(params.id))
             @model = mediator.collections.clients.get(params.id)
-            @model.schema = _.clone(@schema)
             @publishEvent 'tell_viewed', @model.get_url()
             @view = new ClientView {
-                form_name:'client_form'
                 model:@model
                 region:'content'
                 route_params: route_params
@@ -67,14 +59,12 @@ module.exports = class ClientListController extends Controller
             mediator.models.client = new Model
             @model = mediator.models.client
             @model.set('id', params.id)
-            @model.schema = _.clone(@schema)
             @model.fetch
                 success: =>
                     @publishEvent('log:info', "data with #{params} fetched ok" )
                     @publishEvent 'loading_stop'
                     @publishEvent 'tell_viewed', @model.get_url()
                     @view = new ClientView {
-                        form_name:'client_form'
                         model:@model
                         region:'content'
                         route_params: route_params

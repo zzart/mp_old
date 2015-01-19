@@ -37,7 +37,7 @@ module.exports = class StructureController extends Controller
             'branch#show',
             'agent#add',
             'agent#show',
-            'bon#show',
+            'company#show',
         ]
         single_header = [
             'graphic#show',
@@ -70,7 +70,7 @@ module.exports = class StructureController extends Controller
             'branch#show',
             'agent#add',
             'agent#show',
-            'bon#show'
+            'company#show'
             'graphic#add',
             'graphic#show'
             'export#add',
@@ -82,7 +82,7 @@ module.exports = class StructureController extends Controller
             'client-public#list',
             'branch#list',
             'agent#list',
-            'bon#list'
+            'company#list'
             'graphic#list'
             'export#list'
             ]

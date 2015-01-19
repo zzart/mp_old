@@ -38,15 +38,13 @@ module.exports = class ListingController extends Controller
         route_params = [params, route, options]
         #console.log(params, route, options)
         listing_type = options.query.type
-        form = "#{listing_type}_form"
-        @schema =localStorage.getObject("#{listing_type}_schema")
         mediator.models.listing = new Model
-        mediator.models.listing.schema = _.clone(@schema)
+        # set right category from the start
+        mediator.models.listing.set('category', localStorage.getObject('categories')[listing_type])
+        mediator.models.listing.set('branch', mediator.models.user.get('branch_id'))
         @view = new View {
-            form_name: form,
             model:mediator.models.listing
             listing_type: listing_type
-            edit_type: 'add'
             region: 'content'
             route_params: route_params
         }
@@ -61,16 +59,9 @@ module.exports = class ListingController extends Controller
         #console.log(mediator.collections.listings)
         if _.isObject(mediator.collections.listings?.get(params.id))
             @model = mediator.collections.listings.get(params.id)
-            categories =_.invert(localStorage.getObject('categories'))
-            category = categories[@model.get('category')]
-            form = "#{category}_form"
-            schema = "#{category}_schema"
-            @schema =localStorage.getObject(schema)
             # console.log(categories, @schema, @model.get('category'))
-            @model.schema = _.clone(@schema)
             @publishEvent 'tell_viewed', @model.get_url()
             @view = new View {
-                form_name:form
                 model:@model
                 region:'content'
                 route_params: route_params
@@ -83,16 +74,8 @@ module.exports = class ListingController extends Controller
             # data: {id: params.id}
                 success: =>
                     @publishEvent('log:info', "data with #{params} fetched ok" )
-                    categories =_.invert(localStorage.getObject('categories'))
-                    category = categories[@model.get('category')]
-                    form = "#{category}_form"
-                    schema = "#{category}_schema"
-                    @schema =localStorage.getObject(schema)
-                    # console.log(categories, @schema, @model.get('category'))
-                    @model.schema = _.clone(@schema)
                     @publishEvent 'tell_viewed', @model.get_url()
                     @view = new View {
-                        form_name:form
                         model:@model
                         region:'content'
                         route_params: route_params

@@ -32,13 +32,9 @@ module.exports = class GraphicController extends Controller
         @publishEvent('log:info', 'in graphic controller')
         route_params = [params, route, options]
         mediator.models.graphic = new Model
-        @schema =localStorage.getObject('graphic_schema')
         @model = mediator.models.graphic
-        @model.schema = _.clone(@schema)
         @view = new View {
-            form_name:'graphic_form'
             model:@model
-            edit_type:'add'
             region:'content'
             route_params: route_params
         }
@@ -47,12 +43,9 @@ module.exports = class GraphicController extends Controller
         @publishEvent('log:info', 'in graphic show controller')
         route_params = [params, route, options]
         @redirectTo {'/grafiki'} unless _.isObject(mediator.collections.graphics.get(params.id))
-        @schema =localStorage.getObject('graphic_schema')
         @model = mediator.collections.graphics.get(params.id)
-        @model.schema = _.clone(@schema)
         @publishEvent 'tell_viewed', @model.get_url()
         @view = new View {
-            form_name:'graphic_form'
             model:@model
             region:'content'
             route_params: route_params

@@ -76,6 +76,7 @@ h4 {
 .wynajta{color:pink}
 .umowa-przedwstpna{color:purple}
 .usunita{color:black}
+.hidden{display:none}
 /*
 fix for horizontal.control.group mess -> applicable only to chrome
 https://github.com/jquery/jquery-mobile/issues/7793

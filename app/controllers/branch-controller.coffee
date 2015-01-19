@@ -38,10 +38,7 @@ module.exports = class BranchController extends Controller
         route_params = [params, route, options]
         mediator.models.branch = new Model
         @model = mediator.models.branch
-        @schema = localStorage.getObject('branch_schema')
-        @model.schema = _.clone(@schema)
         @view = new View {
-            form_name:'branch_form'
             model:@model
             region:'content'
             route_params: route_params
@@ -53,11 +50,8 @@ module.exports = class BranchController extends Controller
         @redirectTo {'/oddzialy'} unless _.isObject(mediator.collections.branches.get(params.id))
         @model = mediator.collections.branches.get(params.id)
         window.modell = @model
-        @schema = localStorage.getObject('branch_schema')
-        @model.schema = _.clone(@schema)
         @publishEvent 'tell_viewed', @model.get_url()
         @view = new View {
-            form_name:'branch_form'
             model:@model
             region:'content'
             route_params: route_params

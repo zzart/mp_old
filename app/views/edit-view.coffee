@@ -14,9 +14,9 @@ module.exports = class EditView extends View
         @params = params
         @route_params = @params.route_params ? false
         @model = @params.model
-        @form_name = @params.form_name
-        @edit_panel_template = @params.form_name
-        @edit_type = @params.edit_type
+        @model.schema = @model.get_schema()
+        @form_name = @model.get_form_name()
+        @edit_panel_template = @model.get_form_name()
         @listing_type = @params.listing_type ? false
         @delete_only = @params.delete_only ? false
         @upload_multiple = true
@@ -249,7 +249,7 @@ module.exports = class EditView extends View
 
     # resource end --------------------------------------------
     form_link:(event) =>
-        window._link_event = event
+        # window._link_event = event
         #get label of select
         for_label = event.target.parentElement.attributes.for.value
         #grab selected option if nothing is selected then return false
@@ -334,7 +334,7 @@ module.exports = class EditView extends View
         @publishEvent('log:info',"form name: #{@form_name}")
         @form = new Backbone.Form
             model:  @model
-            template: _.template(localStorage.getObject(@form_name))
+            template: _.template(@model.get_form())
             #templateData:{ }
 
         # --- debug
@@ -405,7 +405,7 @@ module.exports = class EditView extends View
     attach: =>
         super
         @publishEvent('log:info', 'view: edit-view afterRender()')
-        @publishEvent 'disable_buttons', @model.can_edit(@edit_type) ? false , @edit_type, @delete_only
+        @publishEvent 'disable_buttons', @model.can_edit(@model.get_edit_type()) ? false , @model.get_edit_type(), @delete_only
         #we don't want to be able to delete models which are not saved ever !
         if @model.isNew()
             $("#delete-button").addClass('ui-state-disabled')

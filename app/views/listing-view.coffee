@@ -26,8 +26,7 @@ module.exports = class AddView extends View
                 @model = new Model(localStorage.getObject('_unsaved').model)
                 # after jump route_params.options.query is gone ...
                 # so we using trick to get schema of already saved lising
-                cat = _.invert(localStorage.getObject('categories'))[@model.get('category')]
-                @model.schema = localStorage.getObject("#{cat}_schema")
+                @model.schema = @model.get_schema()
         @is_new = false
 
     change_tab: (e)=>
@@ -44,7 +43,7 @@ module.exports = class AddView extends View
             # flip categories dict and construct ie. flat_sell_schema
             cat = _.invert(@categories)
             @form_name = "#{cat[selected_id]}_form"
-            @model.schema = localStorage.getObject("#{cat[selected_id]}_schema")
+            @model.schema = @model.get_schema()
             @rendered_tabs = []
             $("#content").empty()
             @render()
@@ -113,8 +112,7 @@ module.exports = class AddView extends View
                     # so redirect to HOME if url or listing.query is undefined
                     if mediator.collections.listings?.query?
                         # Chaplin.utils.redirectTo {url: url ? "/oferty?#{$.param(mediator.collections.listings.query)}"}
-                        cat = _.invert(localStorage.getObject('categories'))[@model.get('category')]
-                        Chaplin.utils.redirectTo url: "/oferty?category=#{cat}"
+                        Chaplin.utils.redirectTo url: "/oferty?category=#{@model.get_category()}"
                     else
                         Chaplin.utils.redirectTo {url: url ? "/"}
                 error:(model, response, options) =>
@@ -140,8 +138,7 @@ module.exports = class AddView extends View
                 # if no query being done and we doing save this changs forever
                 # so redirect to HOME if url or listing.query is undefined
                 if mediator.collections.listings?.query?
-                    cat = _.invert(localStorage.getObject('categories'))[@model.get('category')]
-                    Chaplin.utils.redirectTo url: "/oferty?category=#{cat}"
+                    Chaplin.utils.redirectTo url: "/oferty?category=#{@model.get_category()}"
                 else
                     Chaplin.utils.redirectTo {url: url ? "/"}
             error:(model, response, options) =>
@@ -154,8 +151,7 @@ module.exports = class AddView extends View
     back_action: =>
         @publishEvent('remove_unsaved')
         # we can't just inherit it from view class
-        cat = _.invert(localStorage.getObject('categories'))[@model.get('category')]
-        Chaplin.utils.redirectTo url: "/oferty?category=#{cat}"
+        Chaplin.utils.redirectTo url: "/oferty?category=#{@model.get_category()}"
         # Chaplin.utils.redirectTo url: "#{@route_params[1]['previous']['path']}?#{@route_params[1]['previous']['query']}"
 
     copy_address: (event) ->

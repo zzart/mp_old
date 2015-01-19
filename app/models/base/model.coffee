@@ -56,7 +56,7 @@ module.exports = class Model extends Chaplin.Model
 
         if @branch_edit_allowed
             # see which branch model belongs to and which branch is the user
-            if @.get('branch') == branch_id
+            if parseInt(@.get('branch')) is branch_id
                 return true
         else
             # else comare based on authors
@@ -87,6 +87,21 @@ module.exports = class Model extends Chaplin.Model
         @get('name')
     get_url: ->
         return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
+
+    get_schema: ->
+        localStorage.getObject("#{@module_name[2]}_schema")
+
+    get_form_name: ->
+        "#{@module_name[2]}_form"
+
+    get_form: ->
+        localStorage.getObject("#{@module_name[2]}_form")
+
+    get_edit_type: ->
+        if @.isNew()
+            'add'
+        else
+            'edit'
 
     slugify: (text) ->
         text.toString().toLowerCase()
