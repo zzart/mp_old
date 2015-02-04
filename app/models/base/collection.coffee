@@ -1,5 +1,6 @@
 # Chaplin = require 'chaplin'
 Model = require 'models/base/model'
+mediator = require 'mediator'
 
 module.exports = class Collection extends Chaplin.Collection
     # Mixin a synchronization state machine
@@ -19,15 +20,15 @@ module.exports = class Collection extends Chaplin.Collection
         @on('sync', @onSync)
 
     onSync: ->
-        @publishEvent('log:info',"--> collection #{@module_name()[0]} sync")
+        @publishEvent('log:debug',"--> collection #{@module_name()[0]} sync")
     onChange: ->
-        @publishEvent('log:info',"--> collection #{@module_name()[0]} changed")
+        @publishEvent('log:debug',"--> collection #{@module_name()[0]} changed")
     onAdd: ->
-        @publishEvent('log:info',"--> collection #{@module_name()[0]} add")
+        @publishEvent('log:debug',"--> collection #{@module_name()[0]} add")
     onDestroy: ->
-        @publishEvent('log:info',"--> collection #{@module_name()[0]} destroyed")
+        @publishEvent('log:debug',"--> collection #{@module_name()[0]} destroyed")
     onRemove: ->
-        @publishEvent('log:info',"--> collection #{@module_name()[0]} remove")
+        @publishEvent('log:debug',"--> collection #{@module_name()[0]} remove")
 
     module_name: ->
         @model.prototype.module_name

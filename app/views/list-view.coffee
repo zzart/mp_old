@@ -7,14 +7,14 @@ module.exports = class ListView extends View
     autoRender: true
     containerMethod: "html"
     #attributes: { 'data-role':'content' }
-    id: 'content'
-    className: 'ui-content'
     initialize: (params) ->
         super
-        # send url data from controler
         @params = params
+        id: params.id or 'content'  #params.id for subview or content for all rest
+        className: "iu-#{params.class}" or 'ui-content'  # the same as above
         @filter = {}
         @selected_items = []
+        @mobile = params.mobile or bowser.mobile
         @route_params = @params.route_params ? false
         @selected_items_pictures = {} # to keep icons of selected items
         @collection_hard = @params.collection
@@ -23,7 +23,7 @@ module.exports = class ListView extends View
         @listing_type = @params.listing_type ? false
         @navigation = require "views/templates/#{@params.template}_navigation"
         # when we on mobile we want lists and not tables
-        if bowser.mobile is true
+        if @mobile
             # look for mobile template and use default if not found
             try
                 @template = require "views/templates/#{@params.template}_mobile"
@@ -283,7 +283,8 @@ module.exports = class ListView extends View
                         #model = mediator.collections.branches.get($(i).attr('id'))
                         # TODO: przepisać oferty tego brancha do innego ?
                         model.destroy
-                            wait: true # we would like confirmation from server before removing it from the collection
+                        # we would like confirmation from server before removing it from the collection
+                            wait: true
                             success: (event) =>
                                 Chaplin.EventBroker.publishEvent('log:info', "Element usunięty id#{model.get('id')}")
                                 self.collection_hard.remove(model)
@@ -311,10 +312,11 @@ module.exports = class ListView extends View
 
             if event.target.value == 'zmien_agenta'
                 str = ""
-                for k,v of localStorage.getObjectNames('agents')
-                    str = "#{str}<li value='#{k}'><a id='#{k}'>#{v}</a></li>"
+                for agent in localStorage.getObject('agents')
+                    str = "#{str}<li value='#{agent.id}' data-filtertext='#{agent.first_name} #{agent.surname} #{agent.username} #{agent.email}'><a id='#{agent.id}'>#{agent.first_name} #{agent.surname}</a></li>"
                 val = """<h5>Wybierz Agenta</h5>
-                <form class='ui-filterable'><input id='agent-choose-input' data-type='search' data-theme='a'></form>
+                <form class='ui-filterable'>
+                <input id='agent-choose-input' data-type='search' data-theme='a'></form>
                 <ul data-role='listview' id='agent-choose' data-filter='true' data-input='#agent-choose-input' >#{str}</ul>"""
                 $('#popgeneric').html(val)
                 $ul = $("#popgeneric")
@@ -344,8 +346,8 @@ module.exports = class ListView extends View
             # send email to client
             if event.target.value == 'send-listing-client'
                 str = ""
-                for k,v of localStorage.getObjectNames('clients')
-                    str = "#{str}<li value='#{k}'><a id='#{k}'>#{v}</a></li>"
+                for client in localStorage.getObject('clients')
+                    str = "#{str}<li value='#{client.id}' data-filtertext='#{client.first_name} #{client.surname} #{client.email} #{client.notes} #{client.pesel} #{client.phone} #{client.company_name} #{client.requirements}'><a id='#{client.id}'>#{client.first_name} #{client.surname}</a></li>"
                 val = """<h5>Wybierz Klienta</h5>
                 <form class='ui-filterable'><input id='client-choose-input' data-type='search' data-theme='a'></form>
                 <ul data-role='listview' id='client-choose' data-filter='true' data-input='#client-choose-input' >#{str}</ul>"""

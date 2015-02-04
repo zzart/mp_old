@@ -373,6 +373,7 @@ module.exports = class EditView extends View
         @publishEvent('log:info', "change tab #{e.target.dataset.id}")
         tab_id = "tab_#{e.target.dataset.id}"
         @render_tabs(tab_id)
+        @publishEvent('edit-view:tab_changed', "#{tab_id}")
 
     render_edit_panel: =>
         @publishEvent('log:debug', "render edit_panel")

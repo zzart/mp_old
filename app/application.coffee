@@ -95,12 +95,17 @@ module.exports = class Application extends Chaplin.Application
         userhash = CryptoJS.HmacSHA256(url, mediator.models.user.get('user_pass'))
         userhash_hexed = userhash.toString(CryptoJS.enc.Hex)
         header_string = "#{mediator.app},#{apphash_hexed},#{mediator.models.user.get('username')}@#{mediator.models.user.get('company_name')},#{userhash_hexed}"
+        if mediator.online is false
+            console.info("get_token url: #{url}, apphash_hexed: #{apphash_hexed},
+                userhash:#{userhash}, userhash_hexed:#{userhash_hexed}")
         auth_header = btoa(header_string)
 
     mediator.seal()
+
     # for debugging
     if mediator.online is false
         window.mediator = mediator
+    # Offline.options = {checks: {xhr: {url: "#{mediator.server_url}ping"}}}
 
   checkBrowser: ->
     # check for browser compatybilty

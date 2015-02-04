@@ -13,6 +13,15 @@ module.exports = class Client extends Model
                  when 2 then 'sprzedający'
                  when 3 then 'wynajmujący'
                  when 4 then 'najemca'
+
+        client_type_func_slug: ->
+            type = switch @get('client_type')
+                 when 1 then 'kupujący'
+                 when 2 then 'sprzedający'
+                 when 3 then 'wynajmujący'
+                 when 4 then 'najemca'
+            Model.prototype.slugify(type or '')
+
         agent_func: ->
             localStorage.getObjectNames('agents')["#{@get('agent')}"]
 

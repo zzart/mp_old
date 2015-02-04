@@ -20,6 +20,7 @@ exports.config =
                 before: [
                     'vendor/scripts/console-helper.js',
                     'vendor/scripts/bowser.js',
+                    # 'vendor/scripts/offline.min.js',
                     #'vendor/scripts/log4javascript.js',
                     'vendor/scripts/jquery-1.11.1.min.js',
                     'vendor/scripts/jquery-ui-1.10.4.custom.js',
@@ -34,6 +35,7 @@ exports.config =
                     'vendor/scripts/underscore-1.4.3.js',
                     'vendor/scripts/backbone-1.10.js',
                     'vendor/scripts/chaplin-1.0.1.js',
+                    'vendor/scripts/backbone.dualstorage.coffee',
                     #'vendor/scripts/chaplin-0.12.js',
                     'vendor/scripts/backbone-forms.js',
                     'vendor/scripts/bootstrap.js',
@@ -46,8 +48,9 @@ exports.config =
                     'vendor/scripts/enc-base64-min.js',
                     # 'vendor/scripts/fineuploader-4.2.1.js',
                     'vendor/scripts/fine-uploader.js',
-                    'vendor/scripts/OpenLayers.js'
+                    #'vendor/scripts/OpenLayers.js'
                     'vendor/scripts/jquery.cookie.js'
+                    'vendor/scripts/gmap.js'
                     ]
                 after: [
                     'test/vendor/scripts/test-helper.js'

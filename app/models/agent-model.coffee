@@ -22,7 +22,7 @@ module.exports = class Agent extends Model
     module_name: ['agent', 'agenci', 'agent', 'agents']
     sufix: {'username': "@#{mediator.models.user.get('company_name')}"}
     prefix: {'phone_primary':'+48'}
-    author: 'agent'
+    author: 'id'
 
     initialize: ->
         super

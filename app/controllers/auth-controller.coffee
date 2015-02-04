@@ -31,12 +31,12 @@ module.exports = class AuthController extends StructureController
 
 _sync = Backbone.sync
 Backbone.sync = (method, model, options) ->
-    console.log('mediator: ',  Chaplin.mediator )
-    console.log('model: ',  model)
-    console.log('method: ',  method)
-    console.log('options: ',  options )
-    console.log('options data: ',  options.data )
-    console.log('is new?:',  model.isNew?())
+    # console.log('mediator: ',  Chaplin.mediator )
+    # console.log('model: ',  model)
+    # console.log('method: ',  method)
+    # console.log('options: ',  options )
+    # console.log('options data: ',  options.data )
+    # console.log('is new?:',  model.isNew?())
     $.mobile.loading('show')
     self = @
     #$.mobile.loading('show')
@@ -70,7 +70,7 @@ Backbone.sync = (method, model, options) ->
         # console.log(method, options, model)
 
     #calling the original sync funtion so we only overriding what we need
-    request = _sync.call(this, method, model, options)
+    request = _sync.call(@, method, model, options)
     request.done((msg) ->
         $.mobile.loading('hide')
         # let's save this to localStorage

@@ -9,10 +9,10 @@ data-filter="true" data-input="#filterTable-input">
          <th data-priority="2">Nazwisko&nbsp;&nbsp;</th>
          <th data-priority="2">Email&nbsp;&nbsp;</th>
          <th data-priority="4">Telefon&nbsp;&nbsp;</th>
+         <th data-priority="6">Typ&nbsp;&nbsp;</th>
          <th data-priority="5">Firma&nbsp;&nbsp;</th>
          <th data-priority="6">Adres&nbsp;&nbsp;</th>
          <th data-priority="6">Budżet&nbsp;&nbsp;</th>
-         <th data-priority="6">Typ&nbsp;&nbsp;</th>
        </tr>
      </thead>
      <tbody>
@@ -26,10 +26,10 @@ data-filter="true" data-input="#filterTable-input">
          <td><a href='/klienci/<%= item['id'] %>'><%= item['surname'] %></a></td>
          <td><%= item['email'] %></td>
          <td><%= item['phone'] %></td>
+         <td class='<%= item['client_type_func_slug'] %>'><%= item['client_type_func'] %></td>
          <td><%= item['company_name'] %></td>
          <td><%= item['address'] %></td>
          <td><%= item['budget'] %></td>
-         <td><%= item['client_type_func'] %></td>
        </tr>
       <% end %>
      </tbody>

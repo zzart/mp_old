@@ -25,37 +25,28 @@ module.exports = class StructureController extends Controller
         #@view = new StructureView
         #@view.render().attach()
         # HEADER -------------------------------------
-        edit_listing_header = [
-            'listing#add',
-            'listing#show',
-        ]
-        edit_header = [
-            'client#add',
-            'client#show',
-            'client-public#show',
-            'branch#add',
-            'branch#show',
-            'agent#add',
-            'agent#show',
-            'company#show',
-        ]
-        single_header = [
-            'graphic#show',
-            'graphic#add',
-            'export#add',
-            'export#show',
-        ]
+        tabs = {
+            'listing#add': ['Oferta', 'Adres', 'Nieruchomość', 'Szczegóły', 'Pozostałe', 'Zdjęcia / Eksporty' ]
+            'listing#show': ['Oferta', 'Adres', 'Nieruchomość', 'Szczegóły', 'Pozostałe', 'Zdjęcia / Eksporty' ]
+            'client#add': ['Szczegóły','Pliki', 'Szukaj/Pokazuj ']
+            'client#show': ['Szczegóły','Pliki','Szukaj/Pokazuj' ]
+            #'client-public#show',
+            'branch#add': ['Szczegóły','Pliki']
+            'branch#show': ['Szczegóły','Pliki']
+            'agent#add': ['Szczegóły','Pliki']
+            'agent#show': ['Szczegóły','Pliki']
+            'company#show': ['Szczegóły','Pliki']
+            'graphic#show': ['Szczegóły']
+            'graphic#add': ['Szczegóły']
+            'export#add': ['Szczegóły']
+            'export#show': ['Szczegóły']
+        }
 
-        if route.name in edit_listing_header
+        if tabs.hasOwnProperty(route.name)
             # NOTE: doing different tabs depending on category doesn't work
             # we don't know listing category when clicked on
             # we can only tell category (route.query/options.query) when user adds NEW one
-            @reuse 'header-edit', EditHeader, tabs: [
-                'Oferta', 'Adres', 'Nieruchomość', 'Szczegóły', 'Pozostałe', 'Zdjęcia / Eksporty' ]
-        else if route.name in edit_header
-            @reuse 'header-edit', EditHeader, tabs: ['Szczegóły','Pliki']
-        else if route.name in single_header
-            @reuse 'header-edit', EditHeader, tabs: ['Szczegóły']
+            @reuse 'header-edit', EditHeader, tabs: tabs[route.name]
         else
             @reuse 'header', Header, {params:params, route:route, options:options}
 

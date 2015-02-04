@@ -88,15 +88,18 @@ module.exports = class Layout extends Chaplin.Layout
 
     disable_buttons:(can_edit, edit_type, delete_only, no_back) =>
         @log.debug("caugth disable_buttons: #{can_edit}, #{edit_type}, #{delete_only}, #{no_back}") if mediator.online is false
-        if not can_edit
+        if can_edit is false
+            @log.debug('permissions can_edit') if mediator.online is false
             $("#delete-button").addClass('ui-state-disabled')
             $("#save-button").addClass('ui-state-disabled')
             # $("#back-button").attr('disabled', true)
         if edit_type is 'add'
             $("#delete-button").addClass('ui-state-disabled')
-        if delete_only
+        if !!delete_only
+            @log.debug('permissions delete_only') if mediator.online is false
             $("#save-button").addClass('ui-state-disabled')
-        if no_back
+        if !!no_back
+            @log.debug('permissions no_back') if mediator.online is false
             $("#back-button").addClass('ui-state-disabled')
 
     log_debug:(option) =>
