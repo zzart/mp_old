@@ -343,6 +343,34 @@ module.exports = class ListView extends View
                     self.render()
                     self.clean_after_action()
 
+            # show client a listing
+            if event.target.value == 'show-listing-client'
+                str = ""
+                for client in localStorage.getObject('clients')
+                    str = "#{str}<li value='#{client.id}' data-filtertext='#{client.first_name} #{client.surname} #{client.email} #{client.notes} #{client.pesel} #{client.phone} #{client.company_name} #{client.requirements}'><a id='#{client.id}'>#{client.first_name} #{client.surname}</a></li>"
+                val = """<h5>Wybierz Klienta</h5>
+                <form class='ui-filterable'><input id='client-choose-input' data-type='search' data-theme='a'></form>
+                <ul data-role='listview' id='client-choose' data-filter='true' data-input='#client-choose-input' >#{str}</ul>"""
+                try
+                    $('#popgeneric').html(val).enhanceWithin()
+                catch error
+                    @publishEvent("log:warn", error)
+                $('#popgeneric').popup('open',{ transition:"fade" })
+                # unbind is for stopping it firing multiple times
+                $("#client-choose li").unbind().click ->
+                    $('#popgeneric').popup('close')
+                    # inside click f() we can reference attributes of element on which click was established
+                    # so @value is list item 'value' attribute
+                    for id in self.selected_items
+                        # console.log(@value, i.id)
+                        model = self.collection_hard.get(id)
+                        url = "#{model.urlRoot}/#{id}/pokaz/#{@value}"
+                        self.mp_request(model, url, 'GET', 'Oferta zaznaczona do pokazania')
+                    # Remove click event !!!!!!!!!!!!!!!!!
+                    $(@).off('click')
+                    self.render()
+                    self.clean_after_action()
+
             # send email to client
             if event.target.value == 'send-listing-client'
                 str = ""

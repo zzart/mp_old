@@ -1,7 +1,7 @@
 dotenv = require 'dotenv'
 dotenv.load()
 production = Boolean(process.env.ENVIRONMENT)
-console.log("production set to : #{process.env.ENVIRONMENT}, for production envoke ENVIRONMENT=\"production\" brunch b --config config-release.coffee")
+#console.log("production set to : #{process.env.ENVIRONMENT}, for production envoke ENVIRONMENT=\"production\" brunch b --config config-release.coffee")
 exports.config =
   # See http://brunch.readthedocs.org/en/latest/config.html for documentation.
   # NOTE: WATCH FOR COMMMMMMMMMMMMMMAS !!!!!!!!!!!!!!!!!
@@ -48,9 +48,8 @@ exports.config =
                     'vendor/scripts/enc-base64-min.js',
                     # 'vendor/scripts/fineuploader-4.2.1.js',
                     'vendor/scripts/fine-uploader.js',
-                    #'vendor/scripts/OpenLayers.js'
+                    'vendor/scripts/OpenLayers.js',
                     'vendor/scripts/jquery.cookie.js'
-                    'vendor/scripts/gmap.js'
                     ]
                 after: [
                     'test/vendor/scripts/test-helper.js'

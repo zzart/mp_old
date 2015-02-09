@@ -1,14 +1,23 @@
-module.exports = class OpenMap
-    initialize: (params) =>
-        super
-        @delegate 'filterablebeforefilter', '#autocomplete', @address_search
-        @delegate 'click', '.address_suggestion', @fill_address
+View = require 'views/base/view'
+mediator = require 'mediator'
 
+module.exports = class OpenMap extends View
 
+    initialize: (options) =>
+        @options = options
+        @model = options.model
+        #@subscribeEvent('map:address_chosen', @fill_address)
+        $('#autocomplete').on('filterablebeforefilter', @address_autocomplete)
+        if !!@options.render_map
+            @openstreet()
 
-    fill_address: (event) ->
+        # --- debug
+        @publishEvent('log:debug', 'init openstreet map')
+        window._omap = @ if not !!mediator.online
+
+    fill_address: (event) =>
         @publishEvent('log:debug', 'fill address event')
-        @address_reset()
+        @publishEvent('map:address_reset')
         obj = @response[event.target.value]
         $("[name='postcode']").val(obj.address.postcode)
         $("[name='street']").val(obj.address.road or obj.address.pedestrian)
@@ -33,16 +42,18 @@ module.exports = class OpenMap
         $('ul#autocomplete.ui-listview > li').remove()
         $ul.listview "refresh"
 
-        #set point on the map
-        projection = new OpenLayers.Projection("EPSG:4326")
-        openlayers_projection = new OpenLayers.Projection("EPSG:900913")
-        position =  new OpenLayers.LonLat(obj.lon,obj.lat).transform( projection, openlayers_projection)
-        newPx = @map.getLayerPxFromLonLat(position)
-        @marker.moveTo(newPx)
-        zoom = 14
-        @map.setCenter(position, zoom)
+        if @options.render_map is true
+            #set point on the map
+            projection = new OpenLayers.Projection("EPSG:4326")
+            openlayers_projection = new OpenLayers.Projection("EPSG:900913")
+            position =  new OpenLayers.LonLat(obj.lon,obj.lat).transform( projection, openlayers_projection)
+            newPx = @map.getLayerPxFromLonLat(position)
+            @marker.moveTo(newPx)
+            zoom = 14
+            @map.setCenter(position, zoom)
 
-    address_search: (e,data)->
+    address_autocomplete: (e, data) =>
+        @publishEvent('log:debug', "address_autocomplete called #{e} #{data}")
         self = @
         $ul = $('ul#autocomplete.ui-listview')
         $input = $(data.input)
@@ -66,25 +77,23 @@ module.exports = class OpenMap
                 success:(response, type, rbody) ->
                     self.publishEvent('log:debug', "response from address server #{JSON.stringify(response)}")
                     self.response = response
-                    i =0
+                    i = 0
                     for obj in response
                         html += "<li class='address_suggestion' value=#{i}>#{obj.display_name}</li>"
                         i++
-
                     $ul.html(html)
                     $ul.listview "refresh"
                     $ul.trigger "updatelayout"
                     # let do it manually anyway as jqm is crap
                     $('#autocomplete>li').removeClass('ui-screen-hidden')
+                    #self.delegate 'click', '.address_suggestion', self.fill_address
+                    $('.address_suggestion').on('click', self.fill_address)
                 error:(error) ->
                     self.publishEvent('log:error', "no response from address server #{error}")
                     self.publishEvent('tell_user', 'Nie można połączyć się z serwerem adresowym')
 
-    init_openstreet: =>
-        @publishEvent('log:debug', 'init openstreet map')
-        @openstreet()
 
-    openstreet: ->
+    openstreet: =>
         @publishEvent('log:debug', 'opentstreet called')
         OpenLayers.ImgPath = "#{mediator.static_url}img/"
         $("#openmap").css('height', '400px')
@@ -158,5 +167,4 @@ module.exports = class OpenMap
             new_position = marker.lonlat.transform(openlayers_projection, projection)
             $("[name='lat']").val(new_position.lat)
             $("[name='lon']").val(new_position.lon)
-
 

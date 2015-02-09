@@ -14,6 +14,7 @@
             <option value="wydruk-klienta">Wydruk dla klienta</option>
             <option value="zmien_agenta">Zmień Agenta</option>
             <option value="send-listing-client">Wyślij ofertę klientowi</option>
+            <option value="show-listing-client">Pokaż klientowi</option>
             <option value="send-listing-address">Wyślij ofertę ...</option>
             <option value="usun">Usuń</option>
             <option value="eksport" disabled>Eksport do pliku</option>

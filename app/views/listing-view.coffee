@@ -3,22 +3,20 @@ TabView = require 'views/listing-tab-view'
 mediator = require 'mediator'
 Collection = require 'models/listing-collection'
 Model = require 'models/listing-model'
-Gmap = require 'views/gmap'
+#Gmap = require 'views/gmap'
+Omap = require 'views/openmap'
 
-module.exports = class AddView extends View
+module.exports = class ListingView extends View
     initialize: (params) =>
         super
-        # send url data from controler
-        #@delegate 'filterablebeforefilter', '#autocomplete', @address_search
-        # @delegate 'filterablebeforefilter', '#autocomplete', _.debounce(@address_search,1500)
-        #@delegate 'click', '.address_suggestion', @fill_address
-        #@delegate 'click', "[data-role='navbar'] a", @change_tab
         @subscribeEvent('header:change_tab', @change_tab)
         @subscribeEvent('map:place_set', @set_address)
+        @subscribeEvent('map:address_reset', @address_reset)
         @delegate 'change', "[name='category']", @rerender_form
         @delegate 'click', "#copy_address", @copy_address
         @rendered_tabs = []
         @categories = localStorage.getObject('categories')
+        @map = undefined
 
         # if there is unsaved model create new one from saved _listing
         if _.isObject(localStorage.getObject('_unsaved'))
@@ -30,11 +28,6 @@ module.exports = class AddView extends View
                 # so we using trick to get schema of already saved lising
                 @model.schema = @model.get_schema()
         @is_new = false
-        @map = new Gmap(
-            autocomplete: true
-            map:true
-        )
-        window.gmap = @map
 
     change_tab: (e)=>
         @publishEvent('log:info', "change tab #{e.target.dataset.id}")
@@ -186,27 +179,6 @@ module.exports = class AddView extends View
         $("[name='internet_borough']").val( $("[name='borough']").val())
         $("[name='internet_county']").val($("[name='county']").val())
 
-    address_reset: ->
-        @publishEvent('log:debug', 'address reset')
-        $("[name='internet_postcode']").val('')
-        $("[name='postcode']").val('')
-        $("[name='internet_street']").val('')
-        $("[name='street']").val('')
-        $("[name='internet_town']").val('')
-        $("[name='town']").val('')
-        $("[name='internet_province']").val('')
-        $("[name='province']").val('')
-        $("[name='internet_town_district']").val('')
-        $("[name='town_district']").val('')
-        $("[name='internet_lat']").val('')
-        $("[name='lat']").val('')
-        $("[name='internet_lon']").val('')
-        $("[name='lon']").val('')
-        $("[name='internet_borough']").val('')
-        $("[name='borough']").val('')
-        $("[name='internet_county']").val('')
-        $("[name='county']").val('')
-        $("[name='number']").val('')
 
 
 
@@ -229,8 +201,7 @@ module.exports = class AddView extends View
             # console.log('---> ', @form.el, $temp, tab_id)
             @subview tab_id, new TabView container: @el, template: $temp, id: "content_#{tab_id}"
             @subview(tab_id).render()
-            #if tab_id is 'tab_2'
-            #    @map.init()
+
             if tab_id is 'tab_6'
                 @init_events()
                 @init_uploader()
@@ -240,14 +211,47 @@ module.exports = class AddView extends View
                 current_form_name = @form_name.substring(0, @form_name.length - 5)
                 current_category_id = @categories[current_form_name]
                 $("[name='category']").val(current_category_id)
+
             @publishEvent 'jqm_refersh:render'
             @rendered_tabs.push(tab_id)
+
+            # adres autocomplete has to attach itself AFTER render
+            if tab_id is 'tab_2'
+                # check if we have an instance already
+                if @map is undefined
+                    @map = new Omap model:@model, render_map:true
         else
             #we've rendered this tab already so just make it visible
             $('div[id^=content_tab_]').css('display', 'none')
             # unhide the one we need
             $("#content_#{tab_id}").css('display', 'inline')
 
+    fill_address_call: (e) ->
+        # this is incredibly stupid by i can't register event inside Omap class
+        # TODO : ?
+        @map.fill_address(e)
+
+    address_reset: ->
+        @publishEvent('log:debug', 'address reset')
+        $("[name='internet_postcode']").val('')
+        $("[name='postcode']").val('')
+        $("[name='internet_street']").val('')
+        $("[name='street']").val('')
+        $("[name='internet_town']").val('')
+        $("[name='town']").val('')
+        $("[name='internet_province']").val('')
+        $("[name='province']").val('')
+        $("[name='internet_town_district']").val('')
+        $("[name='town_district']").val('')
+        $("[name='internet_lat']").val('')
+        $("[name='lat']").val('')
+        $("[name='internet_lon']").val('')
+        $("[name='lon']").val('')
+        $("[name='internet_borough']").val('')
+        $("[name='borough']").val('')
+        $("[name='internet_county']").val('')
+        $("[name='county']").val('')
+        $("[name='number']").val('')
 
     attach: =>
         super

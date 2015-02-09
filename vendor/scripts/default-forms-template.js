@@ -37,7 +37,6 @@
   Form.Field.template = _.template('\
         <div class="ui-field-contain" data-mini="true" data-editor >\
       <label for="<%= editorId %>"><%= title %><% if (help) { %><a class="form-help ui-btn ui-icon-info ui-btn-icon-notext ui-corner-all"><%= help %></a><% } %><% if (link) { %><a class="form-link ui-btn ui-icon-forward ui-btn-icon-notext ui-corner-all ui-btn-b"><%= link %></a><% } %>\
-      <br />\
         <span class="help-block" data-error></span>\
       </label>\
         </div>\

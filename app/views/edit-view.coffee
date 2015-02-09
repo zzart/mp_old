@@ -2,6 +2,7 @@ View = require 'views/base/view'
 mediator = require 'mediator'
 upload_template = require 'views/templates/upload'
 EditPanelView = require 'views/edit-panel-view'
+Omap = require 'views/openmap'
 
 module.exports = class EditView extends View
     autoRender: true
@@ -419,6 +420,8 @@ module.exports = class EditView extends View
                 @init_events()
                 @init_uploader()
                 @init_sortable()
+        #for autocompleting address
+        @map = new Omap model:@model
         @publishEvent 'jqm_refersh:render'
 
 

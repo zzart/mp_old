@@ -1,20 +1,24 @@
+mediator = require 'mediator'
+View = require 'views/base/view'
 
-module.exports = class Gmap
+module.exports = class Gmap extends View
 
     initialize: (options) ->
         super
+        @options = options
         @map_div = document.getElementById(options.map_div or 'openmap')
-        @autocomplete_div = document.getElementById(options.autocomplete_div) or document.querySelectorAll('[data-type=search]')
+        @autocomplete_div = document.querySelectorAll('[data-type=search]')[0]
+        @subscribeEvent('map:place_set', @set_map)
+        #@autocomplete_div = document.getElementById(options.autocomplete_div) or document.querySelectorAll('[data-type=search]')[0]
         @map = undefined
-        @places = undefined
+        #@places = undefined
         @markers = []
         @autocomplete = undefined
-
-        if !!options.autocomplete
+        if !!@options.autocomplete
             @init_autocomplete()
-        if !!options.map
+        if !!@options.map
             @init_map()
-        @publishEvent 'log:debug','Gmap instantiated'
+        @publishEvent 'log:debug',"Gmap instantiated #{@autocomplete_div},  #{@map_div}"
 
     init_map: =>
         @countries =
@@ -39,30 +43,40 @@ module.exports = class Gmap
     init_autocomplete: =>
         #map.controls[google.maps.ControlPosition.TOP_LEFT].push(input)
         options =
-            types: ['address'],
+            #types: ['address'],
+            types: ['geocode'],
             componentRestrictions: {country:'pl'}
         @autocomplete = new google.maps.places.Autocomplete(@autocomplete_div, options)
-        @places = new google.maps.places.PlacesService(@map)
+        #@places = new google.maps.places.PlacesService(@map)
         # set up listener for user selection
         google.maps.event.addListener @autocomplete, "place_changed", @onPlaceChanged
 
+
+    set_map: =>
+        if !!@options.map
+            google.maps.event.trigger(@map, 'resize')
+            if @place.geometry
+                #  df { k=50.08383310000001, B=19.962080900000046
+                @publishEvent('log:debug', "got coordinates: #{@place.geometry.location}")
+                @map.panTo @place.geometry.location
+                @map.setZoom 14
 
 # When the user selects a city, get the place details for the city and
 # zoom the map in on the city.
     onPlaceChanged: =>
         #$("##{@map_div}").css("display", "block")
-        google.maps.event.trigger(@map, 'resize')
-        @place = self.autocomplete.getPlace()
-        if @place.geometry
-            #  df { k=50.08383310000001, B=19.962080900000046
-            @publishEvent('log:debug', "got coordinates: #{@place.geometry.location}")
-            @map.panTo @place.geometry.location
-            @map.setZoom 14
-        else
-            document.getElementById("autocomplete").placeholder = "Wprowadz adres"
+        @place = @autocomplete.getPlace()
 
         #TODO: let's parse values ....
-        @publishEvent('map:place_set', @place.geometry)
+        address = {}
+        for i in @place.address_components
+            address[i.types[0]] = i.long_name
+        address.lon = @place.geometry.location.k
+        address.lat = @place.geometry.location.D
+        address.id = @place.place_id
+        console.log(@place)
+        console.log(address)
+        @publishEvent('map:place_set', address)
 
 # Search for hotels in the selected city, within the viewport of the map.
     display_markers: =>
@@ -74,7 +88,7 @@ module.exports = class Gmap
         # Use marker animation to drop the icons incrementally on the map.
         marker = new google.maps.Marker(
             position: new google.maps.LatLng(
-                @place.geometry.location['k'], @place.geometry.location['B'])
+                @place.geometry.location['k'], @place.geometry.location['D'])
             animation: google.maps.Animation.DROP
             icon: markerIcon
             #id: listing.id

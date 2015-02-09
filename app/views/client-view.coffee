@@ -39,8 +39,8 @@ module.exports = class ClientView extends View
         else if tab_id is 'tab_3'
             @publishEvent('log:info', "client-view: additional_info tab 4")
             mediator.collections.client_showed = new Collection
+            mediator.collections.client_showed.url = "#{mediator.server_url}v1/klienci/#{@model.id}/akcja/5"
             mediator.collections.client_showed.fetch
-                data: {'client': @model.id}
                 success: =>
                     @publishEvent('log:debug', "data fetched ok" )
                     @subview "client_showed", new SubView(
@@ -57,8 +57,8 @@ module.exports = class ClientView extends View
                 error: =>
                     @publishEvent 'server_error'
             mediator.collections.client_sent = new Collection
+            mediator.collections.client_sent.url = "#{mediator.server_url}v1/klienci/#{@model.id}/akcja/4"
             mediator.collections.client_sent.fetch
-                data: {'client': @model.id}
                 success: =>
                     @publishEvent('log:debug', "data fetched ok" )
                     @subview "client_sent", new SubView(
@@ -74,8 +74,6 @@ module.exports = class ClientView extends View
                     @subview("client_showed").render()
                 error: =>
                     @publishEvent 'server_error'
-
-
 
     attach: =>
         super
