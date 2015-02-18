@@ -1,6 +1,8 @@
     <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-left">
         <a href='#left-panel' class='ui-btn ui-icon-bars ui-btn-icon-notext' data-theme="b">Menu</a>
+        <!--
         <a href='#right-panel' class='ui-btn ui-icon-grid ui-btn-icon-notext' data-theme="b">Menu</a>
+        -->
     </div>
 
     <h1 class='ui-title'>MobilnyPośrednik</h1>

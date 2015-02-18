@@ -27,7 +27,8 @@ exports.config =
                     'vendor/scripts/jquery.ui.touch-punch.js',
                     'vendor/scripts/jquery.mobile.setup.js',#!!!
                     #'vendor/scripts/jquery.mobile-1.4.0.js',
-                    'vendor/scripts/jquery.mobile-1.4.5.js',
+                    # 'vendor/scripts/jquery.mobile-1.4.5.js',
+                    'vendor/scripts/jquery.mobile.js',
                     # 'vendor/scripts/queue.min.js',
                     #'vendor/scripts/async.js',
                     #'vendor/scripts/jquery.mobile-1.4.0-rc.1.js',

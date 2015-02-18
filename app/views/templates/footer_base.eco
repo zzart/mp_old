@@ -1,2 +1,2 @@
-<h1 class="ui-title"><a href='pixey.pl'>Pixey.pl</a> &copy; <%= @browser_name %>/<%= @browser_version %> <%= @browser_mobile %></h1>
+<h1 class="ui-title"><a href='http://pixey.pl' target='blank'>Pixey.pl</a> &copy; <%= @browser_name %>/<%= @browser_version %> <%= @browser_mobile %></h1>
 

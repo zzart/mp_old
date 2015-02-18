@@ -16,17 +16,11 @@ module.exports = class HeaderBase extends View
         as = localStorage.getObject('account')
         account = "Liczba ofert: <b>#{as.total_listings}</b><br />Przestrzeń dysku: <b>#{as.disk_usage}</b><br />Status konta: <b>#{as.status}</b><br />Pakiet: <b>#{as.price_plan}</b>"
         # info -------
-        str = ""
-        for i in _.last(mediator.info, 10)
-            str = "#{str}<li>#{i}</li>"
         val = """
             <h3>#{mediator.models.user.get('first_name')} #{mediator.models.user.get('surname')}</h3>
             <p>#{mediator.models.user.get('email')}</p>
             <p>#{account}</p>
-            <p><a href="/login" id='logoff' data-role="button" data-theme="a">Wyloguj</a></p>
-            <br />
-            <h5>Ostatnie komunikaty:</h5>
-            <p><ul style="padding-left:10px">#{str}</ul></p>"""
+            <p><a href="/login" id='logoff' data-role="button" data-theme="a">Wyloguj</a></p>"""
         $('#info').html(val)
         $ul = $("#info")
         try
@@ -36,10 +30,17 @@ module.exports = class HeaderBase extends View
         $('#info').popup('open',{ positionTo: "#info-btn", transition:"fade" })
 
     viewed_screen: ->
+        last = ""
+        for i in _.last(mediator.info, 10)
+            last = "#{last}<li>#{i}</li>"
         str = ""
         for i in _.last(_.uniq(mediator.viewed), 20)
             str = "#{str}<li>#{i}</li>"
-        val = "<h5>Ostatio oglądane</h5><br /> <ul data-role='listview' >#{str}</ul>"
+        val = """<h5>Ostatio oglądane</h5>
+            <ul data-role='listview' >#{str}</ul>
+            <br />
+            <h5>Ostatnie komunikaty</h5>
+            <p><ul style="padding-left:10px; list-style:none">#{last}</ul></p>"""
         $('#viewed').html(val)
         $ul = $("#viewed")
         try

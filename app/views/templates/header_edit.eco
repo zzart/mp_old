@@ -1,6 +1,8 @@
     <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-left">
         <a href='#left-panel' class='ui-btn ui-icon-bars ui-btn-icon-notext' data-theme="b">Menu</a>
+        <!--
         <a href='#right-panel' class='ui-btn ui-icon-grid ui-btn-icon-notext' data-theme="b">Menu</a>
+        -->
     </div>
 
     <h1 class='ui-title'>MobilnyPośrednik</h1>
@@ -9,10 +11,12 @@
     <a data-rel="popup" data-transition="pop" data-iconpos="notext" id='viewed-btn' data-position-to="origin" class="ui-btn ui-btn-b ui-icon-eye ui-btn-icon-notext">Ostatnio</a>
     <a data-rel="popup" data-transition="pop" data-iconpos="notext" id='info-btn' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-power ui-btn-icon-notext">Konto</a>
     </div>
+   	<div data-role='tabs'>
    	<div id='edit_tabs' data-role='navbar'>
    	<ul>
    	<% for val, index in @tabs : %>
         <li><a href="#content_tab_<%= index + 1 %>" data-id='<%= index + 1 %>' data-theme="b" data-ajax="false"><%= val %></a></li>
     <% end %>
    	</ul>
+    </div>
     </div>

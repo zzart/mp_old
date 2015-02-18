@@ -1,0 +1,20 @@
+<ul data-role="listview" data-inset="true" data-filter="true" data-input="#filterTable-input" data-autodividers="true" >
+    <% for item in @collection : %>
+    <li>
+        <a href="#klienci/<%= item['id'] %>" data-id='<%= item['id'] %>'>
+        <%- item['thumbnail_func'] %>
+            <p><b style='font-size:15px'><%= item['surname'] %>
+            <%= item['first_name'] %></b>
+                <%= item['phone'] %>
+                <%= item['email'] %>
+                <span class='<%= item['client_type_func_slug'] %>'><%= item['client_type_func'] %></span>
+                <%= item['company_name'] %>
+                <%= item['town'] %>
+                <%= item['street'] %>
+                <%= item['postcode'] %>
+                <%= item['province'] %>
+                </p>
+        </a>
+    </li>
+    <% end %>
+</ul>

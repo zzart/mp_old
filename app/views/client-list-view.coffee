@@ -3,6 +3,7 @@ mediator = require 'mediator'
 
 module.exports = class ClientListView extends View
     initialize: (params) ->
+        params.mobile = true  # just so we displaying mobile version as default
         super
 
     query_action: (event) =>

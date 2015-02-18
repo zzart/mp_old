@@ -32,6 +32,4 @@
             </li>
       <% end %>
 
-<li data-role="list-divider">Status Eksportów</li>
-<li><a href="#eksporty">OK</a></li>
 </ul>

@@ -6,6 +6,13 @@ module.exports = class Client extends Model
     urlRoot: "#{mediator.server_url}v1/klienci"
     schema: {}
     defaults:
+        thumbnail_func: ->
+                img = new Image()
+                img.src = 'images/checkbox.png'
+                img.width = 16
+                img.className = 'ui-li-icon'
+                img.outerHTML
+
         is_private: '' # for booleans
         client_type_func: ->
             switch @get('client_type')
@@ -20,7 +27,7 @@ module.exports = class Client extends Model
                  when 2 then 'sprzedający'
                  when 3 then 'wynajmujący'
                  when 4 then 'najemca'
-            Model.prototype.slugify(type or '')
+            Model::slugify(type or '')
 
         agent_func: ->
             localStorage.getObjectNames('agents')["#{@get('agent')}"]
