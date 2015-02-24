@@ -40,11 +40,15 @@ $ ->
             arr.push({val:"#{item.id}", label: "#{item.first_name} #{item.surname}"})
         return arr
 
-    # check for online status every 10 sec
-    # if mediator.online
-    # window.setInterval(Offline.check, 20000)
+    jQuery.fn.exists = ->
+        # convience method for checking if selector is found
+        @length != 0
 
-    # Offline.on('up', upfunc, context)
+# check for online status every 10 sec
+# if mediator.online
+# window.setInterval(Offline.check, 20000)
 
-    # upfunc: ->
-    #     console.log('uppppp')
+# Offline.on('up', upfunc, context)
+
+# upfunc: ->
+#     console.log('uppppp')

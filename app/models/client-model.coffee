@@ -8,7 +8,7 @@ module.exports = class Client extends Model
     defaults:
         thumbnail_func: ->
                 img = new Image()
-                img.src = 'images/checkbox.png'
+                img.src = 'images/untick.png'
                 img.width = 16
                 img.className = 'ui-li-icon'
                 img.outerHTML

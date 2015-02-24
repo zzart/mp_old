@@ -1,6 +1,6 @@
 /*!
 * jQuery Mobile 1.5.0-pre
-* Git HEAD hash: ab24dd41c0d835be3d10bb700cb3767d79d1a766 <> Date: Mon Feb 9 2015 23:11:38 UTC
+* Date: Mon Feb 23 2015 08:40:24 UTC
 * http://jquerymobile.com
 *
 * Copyright 2010, 2015 jQuery Foundation, Inc. and other contributors
@@ -6071,9 +6071,8 @@ $.fn.grid = function( options ) {
 							grid = letter;
 						}
 					}
-				} else if ($kids.length % 3 == 0){
+				} else if ( $kids.length % 3 == 0 ){
 					grid = "b";
-
 				} else {
 					grid = "a";
 					$this.addClass( "ui-grid-duo" );

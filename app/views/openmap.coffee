@@ -6,8 +6,9 @@ module.exports = class OpenMap extends View
     initialize: (options) =>
         @options = options
         @model = options.model
+        @div = options.div or ''
         #@subscribeEvent('map:address_chosen', @fill_address)
-        $('#autocomplete').on('filterablebeforefilter', @address_autocomplete)
+        $("##{@div} #autocomplete").on('filterablebeforefilter', @address_autocomplete)
         if !!@options.render_map
             @openstreet()
 
@@ -16,17 +17,18 @@ module.exports = class OpenMap extends View
         window._omap = @ if not !!mediator.online
 
     fill_address: (event) =>
-        @publishEvent('log:debug', 'fill address event')
+        # this needs to only work for tab
+        @publishEvent('log:debug', "fill address event #{event}")
         @publishEvent('map:address_reset')
         obj = @response[event.target.value]
-        $("[name='postcode']").val(obj.address.postcode)
-        $("[name='street']").val(obj.address.road or obj.address.pedestrian)
-        $("[name='town']").val(obj.address.city or obj.address.village)
-        $("[name='province']").val(obj.address.state.replace('województwo ', ''))
-        $("[name='number']").val(obj.address.house_number)
-        $("[name='town_district']").val(obj.address.city_district or obj.address.suburb)
-        $("[name='lat']").val(obj.lat)
-        $("[name='lon']").val(obj.lon)
+        $("##{@div} [name='postcode']").val(obj.address.postcode)
+        $("##{@div} [name='street']").val(obj.address.road or obj.address.pedestrian)
+        $("##{@div} [name='town']").val(obj.address.city or obj.address.town or obj.address.village)
+        $("##{@div} [name='province']").val(obj.address.state.replace('województwo ', ''))
+        $("##{@div} [name='number']").val(obj.address.house_number)
+        $("##{@div} [name='town_district']").val(obj.address.city_district or obj.address.suburb)
+        $("##{@div} [name='lat']").val(obj.lat)
+        $("##{@div} [name='lon']").val(obj.lon)
         full_name = obj.display_name.split(',')
         for item in full_name
             # console.log('looping', item)
@@ -35,8 +37,8 @@ module.exports = class OpenMap extends View
             else if item.indexOf('gmina') > -1
                 borough = item
         @publishEvent('log:debug', "county:#{county}, borough:#{borough}, address.county:#{obj.address.county}, address.borough:#{obj.address.borough}")
-        $("[name='borough']").val(borough or obj.address.borough or obj.address.village or obj.address.city)
-        $("[name='county']").val(county or obj.address.county or '')
+        $("##{@div} [name='borough']").val(borough or obj.address.borough or obj.address.village or obj.address.city)
+        $("##{@div} [name='county']").val(county or obj.address.county or '')
         #clean suggested list items
         $ul = $('ul#autocomplete.ui-listview')
         $('ul#autocomplete.ui-listview > li').remove()
@@ -76,9 +78,13 @@ module.exports = class OpenMap extends View
                     countrycodes: 'pl'
                 success:(response, type, rbody) ->
                     self.publishEvent('log:debug', "response from address server #{JSON.stringify(response)}")
-                    self.response = response
+                    # self.response = response
+                    # sort array by uniqie display names so we don't get them
+                    self.response = _.uniq(response, (x)->
+                        x.display_name
+                    )
                     i = 0
-                    for obj in response
+                    for obj in self.response
                         html += "<li class='address_suggestion' value=#{i}>#{obj.display_name}</li>"
                         i++
                     $ul.html(html)

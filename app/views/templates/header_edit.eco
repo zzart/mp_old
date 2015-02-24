@@ -11,12 +11,10 @@
     <a data-rel="popup" data-transition="pop" data-iconpos="notext" id='viewed-btn' data-position-to="origin" class="ui-btn ui-btn-b ui-icon-eye ui-btn-icon-notext">Ostatnio</a>
     <a data-rel="popup" data-transition="pop" data-iconpos="notext" id='info-btn' data-position-to="origin" class="ui-btn ui-btn-b ui-btn-inline ui-icon-power ui-btn-icon-notext">Konto</a>
     </div>
-   	<div data-role='tabs'>
    	<div id='edit_tabs' data-role='navbar'>
    	<ul>
    	<% for val, index in @tabs : %>
         <li><a href="#content_tab_<%= index + 1 %>" data-id='<%= index + 1 %>' data-theme="b" data-ajax="false"><%= val %></a></li>
     <% end %>
    	</ul>
-    </div>
     </div>

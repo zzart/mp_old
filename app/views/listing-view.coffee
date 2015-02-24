@@ -31,8 +31,8 @@ module.exports = class ListingView extends View
 
     change_tab: (e)=>
         @publishEvent('log:info', "change tab #{e.target.dataset.id}")
-        tab_id = "tab_#{e.target.dataset.id}"
-        @render_subview(tab_id)
+        @tab_id = "tab_#{e.target.dataset.id}"
+        @render_subview(@tab_id)
 
     rerender_form: (e) =>
         selected_id = parseInt(e.target.value)
@@ -219,7 +219,7 @@ module.exports = class ListingView extends View
             if tab_id is 'tab_2'
                 # check if we have an instance already
                 if @map is undefined
-                    @map = new Omap model:@model, render_map:true
+                    @map = new Omap model:@model, render_map:true, div: tab_id
         else
             #we've rendered this tab already so just make it visible
             $('div[id^=content_tab_]').css('display', 'none')

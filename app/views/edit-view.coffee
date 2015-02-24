@@ -22,6 +22,7 @@ module.exports = class EditView extends View
         @delete_only = @params.delete_only ? false
         @upload_multiple = true
         @edit_panel_rendered = false
+        @tab_id = 'tab_1'
         @publishEvent('log:debug', "form_name:#{@form_name}, listing_type:#{@listing_type}, delete_only:#{@delete_only} ")
         # events
         @subscribeEvent('edit_panel:show_to_client', @show_to_client)
@@ -41,6 +42,7 @@ module.exports = class EditView extends View
         # --- debug
         window._model = @model if mediator.online is false
         window._route_params = @route_params if mediator.online is false
+        window._tab_id = @current_tab() if mediator.online is false
 
     show_to_client: (e) =>
         @publishEvent("log:debug", "show_to_client cought")
@@ -357,6 +359,10 @@ module.exports = class EditView extends View
         if @edit_panel_rendered is false
             @render_edit_panel()
 
+    current_tab: =>
+        # we want to render autocomplete and maps for specific tab
+        @tab_id
+
     render_tabs: (tab_id='tab_1') =>
         # lets hide / show the tab which is required
         # if we have divs named tab_\d need to create tabs
@@ -370,11 +376,19 @@ module.exports = class EditView extends View
         # the secound tab with resouces doesn't refreshes itself propely
         @$el.find('[data-role="listview"]').listview().listview('refresh')
 
+
+    init_autocomplete: =>
+        @publishEvent('log:info', "init_autocomplete on #{@tab_id}")
+        # if you find #autocomlete in currently rendered tab then add Omap to it
+        if @$el.find("##{@tab_id}").find('#autocomplete').exists() is true
+            @map = new Omap model:@model, div: @tab_id
+
     change_tab: (e)=>
         @publishEvent('log:info', "change tab #{e.target.dataset.id}")
-        tab_id = "tab_#{e.target.dataset.id}"
-        @render_tabs(tab_id)
-        @publishEvent('edit-view:tab_changed', "#{tab_id}")
+        @tab_id = "tab_#{e.target.dataset.id}"
+        @render_tabs(@tab_id)
+        @init_autocomplete()
+        @publishEvent('edit-view:tab_changed', "#{@tab_id}")
 
     render_edit_panel: =>
         @publishEvent('log:debug', "render edit_panel")
@@ -420,8 +434,7 @@ module.exports = class EditView extends View
                 @init_events()
                 @init_uploader()
                 @init_sortable()
-        #for autocompleting address
-        @map = new Omap model:@model
+        @init_autocomplete()
         @publishEvent 'jqm_refersh:render'
 
 
