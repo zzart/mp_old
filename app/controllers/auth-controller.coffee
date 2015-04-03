@@ -87,9 +87,13 @@ Backbone.sync = (method, model, options) ->
             # lets check if we have responseText or responseJSON
             if jqXHR.responseText?.title or jqXHR.responseJSON?.title?
                 self.publishEvent('tell_user', "#{jqXHR.responseJSON.title or jqXHR.responseText.title} #{msg}")
+                self.publishEvent('log:debug', "AUTH error msg: got title response")
             else
-                self.publishEvent('tell_user', "#{JSON.stringify(jqXHR)} #{msg}")
+                self.publishEvent('tell_user', "Błąd połączenia")
+                #self.publishEvent('tell_user', "#{JSON.stringify(jqXHR)} #{msg}")
+                self.publishEvent('log:debug', "AUTH error msg: not got title. Server returned: #{JSON.stringify(jqXHR)} #{msg}")
         else
-            self.publishEvent('tell_user', "#{jqXHR} #{msg}")
+            self.publishEvent('tell_user', "Błąd połączenia")
+            self.publishEvent('log:debug', "AUTH error msg: got nothing. Server returned: #{jqXHR} #{msg}")
     )
 #AUTH -----------------------------------------------------------------------

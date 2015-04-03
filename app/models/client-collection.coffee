@@ -11,6 +11,8 @@ module.exports = class ClientList extends Collection
         branch: mediator.models.user.get('branch_id')
         agent: mediator.models.user.get('id')
 
+    comparator: (item) ->
+            item.get('surname')
     #initialize: ->
     #    @on('change', @onChange)
     #    @on('add', @onAdd)

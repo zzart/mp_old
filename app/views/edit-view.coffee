@@ -33,6 +33,8 @@ module.exports = class EditView extends View
         @subscribeEvent('popupbeforeposition', @popup_position)
         @subscribeEvent('save:clicked', @save_action)
         @subscribeEvent('back:clicked', @back_action)
+        @delegate 'keyup', '[name=\'prowizja_procent\']', @calculate_percent
+        @delegate 'keyup', '[name=\'cena\']', @calculate_percent
         @delegate 'click', 'a.form-help', @form_help
         @delegate 'click', 'a.form-link', @form_link
         @delegate 'click', '[data-role=\'navbar\']:first li', @refresh_resource
@@ -43,6 +45,14 @@ module.exports = class EditView extends View
         window._model = @model if mediator.online is false
         window._route_params = @route_params if mediator.online is false
         window._tab_id = @current_tab() if mediator.online is false
+
+
+    calculate_percent: =>
+        @publishEvent("log:debug", "calculate percent")
+        price = parseFloat($('[name=\'cena\']').val())
+        percent = parseFloat($('[name=\'prowizja_procent\']').val())
+        result = price * (percent/100)
+        $('[name=\'prowizja_kwota\']').val(result.toFixed(2))
 
     show_to_client: (e) =>
         @publishEvent("log:debug", "show_to_client cought")
