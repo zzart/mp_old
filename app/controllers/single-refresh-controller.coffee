@@ -24,17 +24,19 @@ module.exports = class SingleRefreshController extends Controller
             @model.fetch
                 data: params
                 success: =>
-                    self.publishEvent('log:info', "data with #{params.model} #{params.type} fetched ok" )
+                    self.publishEvent('log:debug', "data with #{params.model} #{params.type} fetched ok" )
                     #NOTE: @model.get() doesn't work here as returned is an object
                     if _.isObject(@model.attributes[params.model])
                         localStorage.setObject("#{params.model}", @model.attributes[params.model])
-                        self.publishEvent 'localstorage:updated', model
+                        setTimeout(->
+                            self.publishEvent 'localstorage:updated', model
+                        , 300)
                 error: =>
                     self.publishEvent 'log:error', 'Brak połączenia z serwerem - dane nie zostały odświerzone'
         , 100)
 
     update_schema: (model) ->
-        @publishEvent('log:info', "update_schema of #{model}" )
+        @publishEvent('log:debug', "update_schema of #{model}" )
         # every time localStorage is updated
         # instead of refreshing every single schema conserned
         # we can make some rules here and use data from localStorage to
@@ -58,8 +60,10 @@ module.exports = class SingleRefreshController extends Controller
             # get client from each schema and replace it with a new one
             for sh in listings
                 # clone schema
+                new_clients = localStorage.getObjectForSchema('clients')
+                #@publishEvent('log:debug', "replacing schema #{sh}...with #{JSON.stringify(new_clients)}" )
                 oldsh = _.clone(localStorage.getObject(sh))
                 # replace certain entries
-                oldsh.client.options = localStorage.getObjectForSchema('clients')
+                oldsh.client.options = new_clients
                 localStorage.setObject(sh, oldsh)
-        @publishEvent('log:info', "update_schema of #{model} done !" )
+        @publishEvent('log:debug', "update_schema of #{model} done !" )

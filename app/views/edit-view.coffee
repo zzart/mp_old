@@ -269,7 +269,7 @@ module.exports = class EditView extends View
         selected = $("##{for_label}").val()
         # TODO: more generic! get model name from label and use some
         # mapping to point to right url name! For this applyies only to clients
-        if (selected)
+        if (!!selected)
             destination = "klienci/#{selected}"
         else
             destination = "klienci/dodaj"
@@ -310,7 +310,8 @@ module.exports = class EditView extends View
         # override this if custom stuff happens
         @publishEvent('log:info', 'save_action  caught')
         # save form
-        if _.isUndefined(@form.commit({validate:true}))
+        errors = @form.commit({validate:true})
+        if _.isUndefined(errors)
             @model.save({},{
                 success:(event) =>
                     if mediator.collections[@model.module_name[3]]?
@@ -325,7 +326,7 @@ module.exports = class EditView extends View
                         Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
             })
         else
-            @publishEvent 'tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.'
+            @publishEvent 'tell_user', "Błąd w formularzu! Pola #{@get_errors(errors)} należy wypełnić."
 
     return_path: =>
         # for new object we need the ?query=....

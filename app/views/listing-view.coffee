@@ -23,10 +23,14 @@ module.exports = class ListingView extends View
             unsaved = localStorage.getObject('_unsaved')
             # check route_params, destination if we have match then we coming back
             if unsaved.destination is @route_params[1].previous.path
-                @model = new Model(localStorage.getObject('_unsaved').model)
+                @model = new Model(unsaved.model)
                 # after jump route_params.options.query is gone ...
-                # so we using trick to get schema of already saved lising
+                # so we using trick to get schema of already saved listing
                 @model.schema = @model.get_schema()
+                @publishEvent('log:error', "comming back!")
+            # cleanup
+            #localStorage.removeItem('_unsaved')
+
         @is_new = false
 
     change_tab: (e)=>
@@ -98,7 +102,8 @@ module.exports = class ListingView extends View
 
         @publishEvent('log:debug','commmit form')
         #run model and schema validation
-        if _.isUndefined(@form.commit({validate:true}))
+        errors = @form.commit({validate:true})
+        if _.isUndefined(errors)
             @model.save({},{
                 success:(event) =>
                     wait: true
@@ -122,7 +127,7 @@ module.exports = class ListingView extends View
                         Chaplin.EventBroker.publishEvent 'tell_user', 'Brak kontaktu z serwerem'
             })
         else
-            @publishEvent 'tell_user', 'Błąd w formularzu! Pola zaznaczone pogrubioną czcionką należy wypełnić.'
+            @publishEvent 'tell_user', "Błąd w formularzu! Pola #{@get_errors(errors)} należy wypełnić."
         # delete unsaved_listing if there are any
         @publishEvent('remove_unsaved')
 
@@ -257,3 +262,29 @@ module.exports = class ListingView extends View
         super
         @publishEvent('log:debug', "listing-add attach")
         @render_subview()
+        @add_jump_option()
+        @check_inserted()
+
+    check_inserted: =>
+        # TODO: do something comparing names ... but make sure we are not doubling on options
+        # TODO: make generic
+        # this checks if choice fields have all selections as needed
+        # in case they don't we will insert them manually
+        ls = localStorage.getObjectForSchema('clients')
+        sh = @model.schema.client.options
+        # take only val field and compare two objects
+        arr = []
+        for obj in sh
+            arr.push(parseInt(obj.val))
+        for obj in ls
+            if _.contains(arr, parseInt(obj.val)) is false
+                @publishEvent('log:warning', "check_inserted: field missing #{parseInt(obj.val)} from array #{arr}")
+                #get el
+                el = $("select[id$='client']")
+                el.append("<option value='#{parseInt(obj.val)}'>#{obj.label}</option>")
+
+    add_jump_option: =>
+        # TODO: make generic
+        el = $("select[id$='client']")
+        el.prepend("<option value=''>-- dodaj nowy --</option>")
+

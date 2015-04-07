@@ -81,7 +81,11 @@ module.exports = class Listing extends Model
 
     get_schema: ->
         # override base schema so we can have categories
+        @publishEvent('log:debug', "#{@module_name[2]} get_schema called")
         localStorage.getObject("#{@get_category()}_schema")
+
+    clear_interval: ->
+        clearInterval(@interval)
 
     get_form_name: ->
         # override base schema so we can have categories
@@ -89,6 +93,7 @@ module.exports = class Listing extends Model
 
     get_form: ->
         # override base schema so we can have categories
+        @publishEvent('log:debug', "#{@module_name[2]} get_form called")
         localStorage.getObject("#{@get_category()}_form")
 
     # TODO: let's do it when I get some time

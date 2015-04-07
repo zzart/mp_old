@@ -34,7 +34,7 @@ module.exports = class HomePageView extends View
     attach: =>
         super
         if @latest_exist is false
-            @publishEvent 'tell_user', 'Witaj w programie MobilnyPośrednik!<br /> Menu <a class="ui-btn ui-shadow ui-corner-all ui-icon-bars ui-btn-icon-notext ui-btn-inline">bars</a>jest do nawigacji <br /> Menu <a class="ui-btn ui-shadow ui-corner-all ui-icon-grid ui-btn-icon-notext ui-btn-inline">bars</a>jest do dodawania ofert'
+            @publishEvent 'tell_user', 'Witaj w programie MobilnyPośrednik!<br /> Menu <a class="ui-btn ui-shadow ui-corner-all ui-icon-bars ui-btn-icon-notext ui-btn-inline">bars</a>jest do nawigacji.'
         @publishEvent('log:info', 'HomeView: attach()')
         @publishEvent 'jqm_refersh:render'
 

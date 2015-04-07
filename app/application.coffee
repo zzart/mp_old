@@ -86,6 +86,7 @@ module.exports = class Application extends Chaplin.Application
         mediator.server_url = 'http://localhost:8080/'
         mediator.static_url = ''
         console.log(mediator.server_url)
+    mediator.sync = false
     mediator.upload_url = "#{mediator.server_url}v1/pliki"
     mediator.app_key = 'mp'
     mediator.app = 'd5260e35-868a-4b4d-861f-dbcc93d146d3'
