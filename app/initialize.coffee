@@ -40,6 +40,13 @@ $ ->
             arr.push({val:"#{item.id}", label: "#{item.first_name} #{item.surname}"})
         return arr
 
+    Storage::getSizes = ->
+        for x,val of localStorage
+            console.log("#{x} = #{((localStorage[x].length * 2)/1024/1024).toFixed(2)} MB")
+
+    Storage::getTotal = ->
+        console.log("#{((unescape(encodeURIComponent(JSON.stringify(localStorage))).length *2)/1024/1024).toFixed(2)} MB")
+
     jQuery.fn.exists = ->
         # convience method for checking if selector is found
         @length != 0

@@ -37,6 +37,12 @@ module.exports = class View extends Chaplin.View
                     self.publishEvent("log:debug", "errorThrown: #{errorThrown}")
         )
 
+
+    add_jump_option: (id) =>
+        # given selector id add empty option
+        el = $("select[id$='_#{id}']")
+        el.prepend("<option value=''>-- dodaj nowy --</option>")
+
     get_errors: (errors) ->
         # strip HTML tags
         pattern = /<(?:.|\n)*?>/gm

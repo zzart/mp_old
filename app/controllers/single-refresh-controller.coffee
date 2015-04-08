@@ -10,6 +10,7 @@ module.exports = class SingleRefreshController extends Controller
     initialize: ->
         @subscribeEvent('localstorage:refresh', @refresh_localstorage)
         @subscribeEvent('localstorage:updated', @update_schema)
+        @subscribeEvent('login:success', @load_scripts)
 
     refresh_localstorage: (model) =>
         # after change in name need to regenerate forms and localStorage
@@ -28,9 +29,7 @@ module.exports = class SingleRefreshController extends Controller
                     #NOTE: @model.get() doesn't work here as returned is an object
                     if _.isObject(@model.attributes[params.model])
                         localStorage.setObject("#{params.model}", @model.attributes[params.model])
-                        setTimeout(->
-                            self.publishEvent 'localstorage:updated', model
-                        , 300)
+                        self.publishEvent 'localstorage:updated', model
                 error: =>
                     self.publishEvent 'log:error', 'Brak połączenia z serwerem - dane nie zostały odświerzone'
         , 100)
@@ -67,3 +66,12 @@ module.exports = class SingleRefreshController extends Controller
                 oldsh.client.options = new_clients
                 localStorage.setObject(sh, oldsh)
         @publishEvent('log:debug', "update_schema of #{model} done !" )
+
+    load_scripts: ->
+        # load scripts after initial successful login
+        # timeout is so the download doesn't block page rendering
+        setTimeout(->
+            $.getScript("#{mediator.static_url}/asyncscripts/OpenLayers.js")
+            $.getScript("#{mediator.static_url}/asyncscripts/jquery.fine-uploader.js")
+        , 5000)
+

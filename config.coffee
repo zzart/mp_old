@@ -28,15 +28,14 @@ exports.config =
                     #'vendor/scripts/jquery-ui-1.10.4.custom.js',
                     'vendor/scripts/jquery.ui.touch-punch.js',
                     'vendor/scripts/jquery.mobile.setup.js',#!!!
-                    #'vendor/scripts/jquery.mobile-1.4.0.js',
                     # 'vendor/scripts/jquery.mobile-1.4.5.js',
                     'vendor/scripts/jquery.mobile.js', #1.4.5 custom
                     # 'vendor/scripts/queue.min.js',
                     #'vendor/scripts/async.js',
-                    'vendor/scripts/underscore-1.4.3.js',
+                    'vendor/scripts/underscore-1.8.3.js',
                     'vendor/scripts/backbone-1.10.js',
                     'vendor/scripts/chaplin-1.0.1.js',
-                    'vendor/scripts/backbone.dualstorage.coffee',
+                    #'vendor/scripts/backbone.dualstorage.coffee',
                     #'vendor/scripts/chaplin-0.12.js',
                     'vendor/scripts/backbone-forms.js',
                     'vendor/scripts/bootstrap.js',
@@ -47,9 +46,9 @@ exports.config =
                     'vendor/scripts/jquery.tablesorter.min.js',
                     'vendor/scripts/hmac-sha256.js',
                     'vendor/scripts/enc-base64-min.js',
-                    # 'vendor/scripts/fineuploader-4.2.1.js',
-                    'vendor/scripts/fine-uploader.js',
-                    'vendor/scripts/OpenLayers.js',
+                    # moved to async
+                    #'vendor/scripts/fine-uploader.js',
+                    #'vendor/scripts/OpenLayers.js',
                     'vendor/scripts/jquery.cookie.js'
                     ]
                 after: [

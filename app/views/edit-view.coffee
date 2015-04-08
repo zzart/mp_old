@@ -318,6 +318,7 @@ module.exports = class EditView extends View
                         # add it to collection so we don't need to use server ...
                         mediator.collections[@model.module_name[3]].add(@model)
                     @publishEvent 'tell_user', "Rekord #{@model.get_url()} zapisany"
+                    localStorage.setObject("_model_saved", @model.attributes)
                     @return_path()
                 error:(model, response, options) =>
                     if response.responseJSON?

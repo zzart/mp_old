@@ -55,6 +55,7 @@ module.exports = class LoginView extends View
                 $('#bon-config-link').attr('href', "/biura/#{@model.get('company_id')}")
                 $('#agent-config-link').attr('href', "/agenci/#{@model.get('id')}")
                 $('#login').popup('close')
+                @publishEvent 'login:success' #loads additional scripts
                 @publishEvent 'tell_user', "Logowanie zakończone."
                 Chaplin.utils.redirectTo {url: ''}
             error:(model, response, options) =>

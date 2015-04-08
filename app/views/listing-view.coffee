@@ -27,7 +27,7 @@ module.exports = class ListingView extends View
                 # after jump route_params.options.query is gone ...
                 # so we using trick to get schema of already saved listing
                 @model.schema = @model.get_schema()
-                @publishEvent('log:error', "comming back!")
+                #@publishEvent('log:error', "comming back!")
             # cleanup
             #localStorage.removeItem('_unsaved')
 
@@ -184,9 +184,6 @@ module.exports = class ListingView extends View
         $("[name='internet_borough']").val( $("[name='borough']").val())
         $("[name='internet_county']").val($("[name='county']").val())
 
-
-
-
     render: =>
         #NOTE:
         #we want to split it into parts which we can render quickly
@@ -262,29 +259,31 @@ module.exports = class ListingView extends View
         super
         @publishEvent('log:debug', "listing-add attach")
         @render_subview()
-        @add_jump_option()
+        @add_jump_option('client') # moved to base/view.coffee
         @check_inserted()
 
     check_inserted: =>
-        # TODO: do something comparing names ... but make sure we are not doubling on options
         # TODO: make generic
         # this checks if choice fields have all selections as needed
         # in case they don't we will insert them manually
-        ls = localStorage.getObjectForSchema('clients')
+        ls = localStorage.getObject('_model_saved')
+        if !!ls is false
+            return  # if nothing was saved lately then return
         sh = @model.schema.client.options
         # take only val field and compare two objects
         arr = []
         for obj in sh
             arr.push(parseInt(obj.val))
-        for obj in ls
-            if _.contains(arr, parseInt(obj.val)) is false
-                @publishEvent('log:warning', "check_inserted: field missing #{parseInt(obj.val)} from array #{arr}")
-                #get el
-                el = $("select[id$='client']")
-                el.append("<option value='#{parseInt(obj.val)}'>#{obj.label}</option>")
-
-    add_jump_option: =>
-        # TODO: make generic
-        el = $("select[id$='client']")
-        el.prepend("<option value=''>-- dodaj nowy --</option>")
+        if _.contains(arr, parseInt(ls.id)) is false
+            @publishEvent('log:warning', "check_inserted: field missing #{parseInt(ls.id)} from array #{arr}")
+            #get el
+            el = $("select[id$='_client']")
+            el.append("<option value='#{parseInt(ls.id)}'>#{ls.first_name} #{ls.surname}</option>")
+        else # just check for right name
+            @publishEvent('log:info', "check_inserted: check name val= #{parseInt(ls.id)}")
+            el = $("select[id$='_client'] option[value='#{parseInt(ls.id)}']")
+                .html("#{ls.first_name} #{ls.surname}")
+                .attr('selected', true)
+                .siblings('option').removeAttr('selected')
+            $("select[id$='_client']").selectmenu("refresh", true)
 
