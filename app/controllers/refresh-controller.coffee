@@ -12,7 +12,7 @@ module.exports = class RefreshController extends Controller
 
     refresh_model: (model, callback) ->
         #accepts 'model/form or schema' str
-        #@publishEvent('log:info', "refresh called with #{model} param")
+        #@publishEvent('log:debug', "refresh called with #{model} param")
         @callback = callback
         data = model.split('/')
         params = {}
@@ -22,7 +22,7 @@ module.exports = class RefreshController extends Controller
         @model.fetch
             data: params
             success: =>
-                @publishEvent('log:info', "data with #{params.model}_#{params.type} fetched ok" )
+                @publishEvent('log:debug', "data with #{params.model}_#{params.type} fetched ok" )
                 #NOTE: @model.get() doesn't work here as returned is an object
                 #console.log(@model.attributes, @model.attributes[params.type])
                 if _.isObject(@model.attributes[params.type]["#{params.model}_#{params.type}"])

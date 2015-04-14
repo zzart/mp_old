@@ -18,7 +18,7 @@ module.exports = class Login extends Model
         localStorage.setObject('clients', @.get('clients'))
         localStorage.setObject('account', @.get('account'))
         localStorage.setObject('latest', @.get('latest'))
-        localStorage.setObject('latest_modyfied', @.get('latest_modyfied'))
+        localStorage.setObject('latest_modified', @.get('latest_modified'))
         localStorage.setObject('update_needed', @.get('update_needed'))
         localStorage.setObject('portals', @.get('portals'))
         @.set({is_logged:true})

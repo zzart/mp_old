@@ -7,7 +7,7 @@ module.exports = class CompanyController extends Controller
 
     show:(params, route, options) ->
         route_params = [params, route, options]
-        @publishEvent('log:info', 'in bon show controller')
+        @publishEvent('log:debug', 'in bon show controller')
         if _.isObject(mediator.models.company)
             @view = new View {
                 model:mediator.models.company
@@ -23,7 +23,7 @@ module.exports = class CompanyController extends Controller
                     @publishEvent 'loading_start'
                     @publishEvent 'tell_user', 'Ładuje ustawienia biura ...'
                 success: =>
-                    @publishEvent('log:info', "data with #{params} fetched ok" )
+                    @publishEvent('log:debug', "data with #{params} fetched ok" )
                     @publishEvent 'loading_stop'
                     @view = new View {
                         model:mediator.models.company

@@ -8,7 +8,7 @@ module.exports = class View extends View
         @id = options.id # corresponds to yaml file tab id
     render: =>
         super
-        @publishEvent('log:info', 'tabview: tab-view render()')
+        @publishEvent('log:debug', 'tabview: tab-view render()')
         @$el.append(@template)
     attach: =>
         #NOTE: not calling SUPER here so we can manually append EL to CONTAINER the way we want it
@@ -18,4 +18,4 @@ module.exports = class View extends View
         $("div[id^=content_tab_]").css('display', 'none')
         # unhide the one we need
         $("##{@id}").css('display', 'inline')
-        @publishEvent('log:info', 'tabview: tab-view afterAttach()')
+        @publishEvent('log:debug', 'tabview: tab-view afterAttach()')

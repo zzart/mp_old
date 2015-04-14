@@ -7,7 +7,7 @@ mediator = require 'mediator'
 
 module.exports = class GraphicController extends Controller
     list:(params, route, options) ->
-        @publishEvent('log:info', 'in graphic list controller ---------')
+        @publishEvent('log:debug', 'in graphic list controller ---------')
         route_params = [params, route, options]
         mediator.collections.graphics = new Collection
         mediator.collections.graphics.fetch
@@ -16,7 +16,7 @@ module.exports = class GraphicController extends Controller
                 @publishEvent 'loading_start'
                 @publishEvent 'tell_user', 'Ładuje listę grafik ...'
             success: =>
-                @publishEvent('log:info', "data with #{params} fetched ok" )
+                @publishEvent('log:debug', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
                 @view = new ListView {
                     collection:mediator.collections.graphics
@@ -29,7 +29,7 @@ module.exports = class GraphicController extends Controller
                 @publishEvent 'server_error'
 
     add:(params, route, options) ->
-        @publishEvent('log:info', 'in graphic controller')
+        @publishEvent('log:debug', 'in graphic controller')
         route_params = [params, route, options]
         mediator.models.graphic = new Model
         @model = mediator.models.graphic
@@ -40,7 +40,7 @@ module.exports = class GraphicController extends Controller
         }
 
     show:(params, route, options) ->
-        @publishEvent('log:info', 'in graphic show controller')
+        @publishEvent('log:debug', 'in graphic show controller')
         route_params = [params, route, options]
         @redirectTo {'/grafiki'} unless _.isObject(mediator.collections.graphics.get(params.id))
         @model = mediator.collections.graphics.get(params.id)
@@ -55,7 +55,7 @@ module.exports = class GraphicController extends Controller
         # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
         # we need model.attributes to persist accross all controllers for quick access !
         # so before we get rid of everything let's deepCopy this obj
-        @publishEvent('log:info', 'dispose method called graphic controller --------')
+        @publishEvent('log:debug', 'dispose method called graphic controller --------')
         deepCopy = mediator.collections.graphics.clone()
         super
         mediator.collections.graphics = deepCopy

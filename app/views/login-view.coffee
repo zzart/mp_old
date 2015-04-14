@@ -39,7 +39,7 @@ module.exports = class LoginView extends View
         apphash_hexed = apphash.toString(CryptoJS.enc.Hex)
         userhash = CryptoJS.HmacSHA256(@model.url, @pass)
         userhash_hexed = userhash.toString(CryptoJS.enc.Hex)
-        header_string = "#{mediator.app},#{apphash_hexed},#{@user},#{userhash_hexed}"
+        header_string = "#{mediator.app}|#{apphash_hexed}|#{@user}|#{userhash_hexed}"
         auth_header = btoa(header_string)
         # -------------------------
         @model.fetch

@@ -23,6 +23,15 @@ module.exports = class EditView extends View
         @upload_multiple = true
         @edit_panel_rendered = false
         @tab_id = 'tab_1'
+
+        # we need to initiate @form here so we can set form events in classes which
+        # inherit this class @ their initailze method (see client-view)
+        # form.on('title:change', function(form, titleEditor, extra) {....
+        @form = new Backbone.Form
+            model:  @model
+            template: _.template(@model.get_form())
+            #templateData:{ }
+
         @publishEvent('log:debug', "form_name:#{@form_name}, listing_type:#{@listing_type}, delete_only:#{@delete_only} ")
         # events
         @subscribeEvent('edit_panel:show_to_client', @show_to_client)
@@ -45,6 +54,7 @@ module.exports = class EditView extends View
         window._model = @model if mediator.online is false
         window._route_params = @route_params if mediator.online is false
         window._tab_id = @current_tab() if mediator.online is false
+        window._form = @form if mediator.online is false
 
 
     calculate_percent: =>
@@ -93,7 +103,7 @@ module.exports = class EditView extends View
         # if user clicks on img then we don't have all data required. Let's force them to click on main content link only
         if uuid
             preview = e.target.dataset.preview
-            @publishEvent("log:info", "#{uuid},#{preview}, #{e}")
+            @publishEvent("log:debug", "#{uuid},#{preview}, #{e}")
             img = new Image()
             if preview is "true"
                 img.src = "#{mediator.upload_url}/#{uuid}/#{mediator.models.user.get('company_name')}"
@@ -127,7 +137,7 @@ module.exports = class EditView extends View
             @publishEvent("log:warn", error)
 
         # set button to disabled if we allowing only one upload per element
-        @publishEvent("log:info",  "resources empty: #{_.isEmpty(@form.fields.resources.editor.getValue())}")
+        @publishEvent("log:debug",  "resources empty: #{_.isEmpty(@form.fields.resources.editor.getValue())}")
         if @upload_multiple is false and not _.isEmpty(@form.fields.resources.editor.getValue())
             @publishEvent("log:info", "one upload allowed  - removing button ")
             $("#upload a:first").addClass('ui-state-disabled')
@@ -294,7 +304,7 @@ module.exports = class EditView extends View
         Chaplin.utils.redirectTo {url: "/#{@model.module_name[1]}"}
 
     delete_action: =>
-        @publishEvent('log:info', 'delete  caught')
+        @publishEvent('log:debug', 'delete  caught')
         @model.destroy
             success: (event) =>
                 mediator.collections[@model.module_name[3]].remove(@model)
@@ -308,7 +318,7 @@ module.exports = class EditView extends View
 
     save_action: (url) =>
         # override this if custom stuff happens
-        @publishEvent('log:info', 'save_action  caught')
+        @publishEvent('log:debug', 'save_action  caught')
         # save form
         errors = @form.commit({validate:true})
         if _.isUndefined(errors)
@@ -342,30 +352,22 @@ module.exports = class EditView extends View
             )
 
     back_action: (event) =>
-        @publishEvent('log:info', 'back_action  caught')
+        @publishEvent('log:debug', 'back_action  caught')
         @return_path()
 
     get_form: =>
-        @publishEvent('log:info',"form name: #{@form_name}")
-        @form = new Backbone.Form
-            model:  @model
-            template: _.template(@model.get_form())
-            #templateData:{ }
-
-        # --- debug
-        window._form = @form if mediator.online is false
         @form.render()
 
     render: =>
         super
-        @publishEvent('log:info', 'view: edit-view beforeRender()')
+        @publishEvent('log:debug', 'view: edit-view beforeRender()')
         #we want to override render method higher if it's listing stuff
         if not @form_name.match('rent|sell')
         #set the template context of @el to our rendered form - otherwise backbone.forms get out of context
             @get_form()
             @$el.append(@form.el)
             # console.log(@$el, @form.el, @template, @form_name)
-            @publishEvent('log:info', 'view: edit-view RenderEnd()')
+            @publishEvent('log:debug', 'view: edit-view RenderEnd()')
         @render_tabs()
         #so we only render nav once !
         if @edit_panel_rendered is false
@@ -396,7 +398,7 @@ module.exports = class EditView extends View
             @map = new Omap model:@model, div: @tab_id
 
     change_tab: (e)=>
-        @publishEvent('log:info', "change tab #{e.target.dataset.id}")
+        @publishEvent('log:debug', "change tab #{e.target.dataset.id}")
         @tab_id = "tab_#{e.target.dataset.id}"
         @render_tabs(@tab_id)
         @init_autocomplete()
@@ -432,7 +434,7 @@ module.exports = class EditView extends View
 
     attach: =>
         super
-        @publishEvent('log:info', 'view: edit-view afterRender()')
+        @publishEvent('log:debug', 'view: edit-view afterRender()')
         @publishEvent 'disable_buttons', @model.can_edit(@model.get_edit_type()) ? false , @model.get_edit_type(), @delete_only
         #we don't want to be able to delete models which are not saved ever !
         if @model.isNew()
@@ -442,7 +444,7 @@ module.exports = class EditView extends View
             @subscript()
             # init resources when they are needed
             if _.isObject(@model.schema.resources)
-                @publishEvent('log:info', 'view: attach initate uploader , sortable, events ')
+                @publishEvent('log:debug', 'view: attach initate uploader , sortable, events ')
                 @init_events()
                 @init_uploader()
                 @init_sortable()

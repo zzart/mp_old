@@ -7,7 +7,7 @@ mediator = require 'mediator'
 
 module.exports = class ImportController extends Controller
     list:(params, route, options) ->
-        @publishEvent('log:info', 'in client list controller')
+        @publishEvent('log:debug', 'in client list controller')
         route_params = [params, route, options]
         mediator.collections.imports = new Collection
         # console.log(mediator.collections.clients)
@@ -17,7 +17,7 @@ module.exports = class ImportController extends Controller
                 @publishEvent 'loading_start'
                 @publishEvent 'tell_user', 'Ładuje listę importów ...'
             success: =>
-                @publishEvent('log:info', "data with #{params} fetched ok" )
+                @publishEvent('log:debug', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
                 @view = new ListView {
                     collection:mediator.collections.imports
@@ -30,7 +30,7 @@ module.exports = class ImportController extends Controller
                 @publishEvent 'server_error'
 
     add:(params, route, options) ->
-        @publishEvent('log:info', 'in import controller')
+        @publishEvent('log:debug', 'in import controller')
         route_params = [params, route, options]
         mediator.models.export = new Model
         @model = mediator.models.export
@@ -41,7 +41,7 @@ module.exports = class ImportController extends Controller
         }
 
     show:(params, route, options) ->
-        @publishEvent('log:info', 'in import show controller')
+        @publishEvent('log:debug', 'in import show controller')
         route_params = [params, route, options]
         @redirectTo {'/importy'} unless _.isObject(mediator.collections.imports.get(params.id))
         @model = mediator.collections.exports.get(params.id)

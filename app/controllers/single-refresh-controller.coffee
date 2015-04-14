@@ -73,5 +73,5 @@ module.exports = class SingleRefreshController extends Controller
         setTimeout(->
             $.getScript("#{mediator.static_url}/asyncscripts/OpenLayers.js")
             $.getScript("#{mediator.static_url}/asyncscripts/jquery.fine-uploader.js")
-        , 5000)
+        , 3000)
 

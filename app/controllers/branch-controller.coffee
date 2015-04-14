@@ -8,7 +8,7 @@ mediator = require 'mediator'
 module.exports = class BranchController extends Controller
 
     list:(params, route, options) ->
-        @publishEvent('log:info', 'in branch list controller')
+        @publishEvent('log:debug', 'in branch list controller')
         route_params = [params, route, options]
         # check if collection is already fetched from server
         # NOTE: this is so after save operation we don't do unnessesery fetch
@@ -20,7 +20,7 @@ module.exports = class BranchController extends Controller
                 @publishEvent 'loading_start'
                 @publishEvent 'tell_user', 'Ładuje listę oddziałów ...'
             success: =>
-                @publishEvent('log:info', "data with #{params} fetched ok" )
+                @publishEvent('log:debug', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
                 @view = new ListView {
                     collection: mediator.collections.branches
@@ -34,7 +34,7 @@ module.exports = class BranchController extends Controller
                 @publishEvent 'server_error'
 
     add:(params, route, options) ->
-        @publishEvent('log:info', 'in branchadd controller')
+        @publishEvent('log:debug', 'in branchadd controller')
         route_params = [params, route, options]
         mediator.models.branch = new Model
         @model = mediator.models.branch
@@ -45,7 +45,7 @@ module.exports = class BranchController extends Controller
         }
 
     show:(params, route, options) ->
-        @publishEvent('log:info', 'in branch show controller')
+        @publishEvent('log:debug', 'in branch show controller')
         route_params = [params, route, options]
         @redirectTo {'/oddzialy'} unless _.isObject(mediator.collections.branches.get(params.id))
         @model = mediator.collections.branches.get(params.id)
@@ -62,7 +62,7 @@ module.exports = class BranchController extends Controller
         # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
         # we need model.attributes to persist accross all controllers for quick access !
         # so before we get rid of everything let's deepCopy this obj
-        @publishEvent('log:info', 'dispose method called branch controller --------')
+        @publishEvent('log:debug', 'dispose method called branch controller --------')
         deepCopy = mediator.collections.branches.clone()
         super
         mediator.collections.branches = deepCopy

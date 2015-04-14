@@ -5,6 +5,6 @@ mediator = require 'mediator'
 
 module.exports = class IFrameController extends Controller
     show:(params)->
-        @publishEvent('log:info', 'controller:home')
+        @publishEvent('log:debug', 'controller:iframe')
         @view = new View {region: 'content', template:params.template}
 

@@ -49,7 +49,7 @@ data-filter="true" data-input="#filterTable-input">
          <td><%= item['rynek_func'] %></td>
          <td><%= item['wylacznosc_func'] %></td>
          <td><%= item['date_created_func'] %></td>
-         <td><%= item['date_modyfied_func'] %></td>
+         <td><%= item['date_modified_func'] %></td>
          <td style="display:none;" ><%= item['tytul'] %></td>
          <td style="display:none;" ><%= item['opis'] %></td>
        </tr>

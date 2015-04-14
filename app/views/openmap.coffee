@@ -16,10 +16,36 @@ module.exports = class OpenMap extends View
         @publishEvent('log:debug', 'init openstreet map')
         window._omap = @ if not !!mediator.online
 
+    address_reset: ->
+        @publishEvent('log:debug', 'address reset')
+        $("##{@div} [name='internet_postcode']").val('')
+        $("##{@div} [name='postcode']").val('')
+        $("##{@div} [name='internet_street']").val('')
+        $("##{@div} [name='street']").val('')
+        $("##{@div} [name='internet_town']").val('')
+        $("##{@div} [name='town']").val('')
+        $("##{@div} [name='internet_province']").val('')
+        $("##{@div} [name='province']").val('')
+        $("##{@div} [name='internet_town_district']").val('')
+        $("##{@div} [name='town_district']").val('')
+        $("##{@div} [name='internet_lat']").val('')
+        $("##{@div} [name='lat']").val('')
+        $("##{@div} [name='internet_lon']").val('')
+        $("##{@div} [name='lon']").val('')
+        $("##{@div} [name='internet_borough']").val('')
+        $("##{@div} [name='borough']").val('')
+        $("##{@div} [name='internet_county']").val('')
+        $("##{@div} [name='county']").val('')
+        $("##{@div} [name='number']").val('')
+        $("##{@div} [name='search_address']").val()
+        $("##{@div} [name='bbox']").val()
+
     fill_address: (event) =>
         # this needs to only work for tab
-        @publishEvent('log:debug', "fill address event #{event}")
+        @publishEvent('log:debug', "fill address event #{JSON.stringify(event.target.value)}")
+        # NOTE: lets signal BEFORE we set values so the fields have a chance to reset themselves
         @publishEvent('map:address_reset')
+        @address_reset()
         obj = @response[event.target.value]
         $("##{@div} [name='postcode']").val(obj.address.postcode)
         $("##{@div} [name='street']").val(obj.address.road or obj.address.pedestrian)
@@ -29,13 +55,15 @@ module.exports = class OpenMap extends View
         $("##{@div} [name='town_district']").val(obj.address.city_district or obj.address.suburb)
         $("##{@div} [name='lat']").val(obj.lat)
         $("##{@div} [name='lon']").val(obj.lon)
+        $("##{@div} [name='search_address']").val(obj.display_name)
+        $("##{@div} [name='bbox']").val(obj.boundingbox)
         full_name = obj.display_name.split(',')
         for item in full_name
             # console.log('looping', item)
-            if item.indexOf('powiat') > -1
-                county = item
-            else if item.indexOf('gmina') > -1
-                borough = item
+                if item.indexOf('powiat') > -1
+                    county = item
+                else if item.indexOf('gmina') > -1
+                    borough = item
         @publishEvent('log:debug', "county:#{county}, borough:#{borough}, address.county:#{obj.address.county}, address.borough:#{obj.address.borough}")
         $("##{@div} [name='borough']").val(borough or obj.address.borough or obj.address.village or obj.address.city)
         $("##{@div} [name='county']").val(county or obj.address.county or '')
@@ -43,6 +71,8 @@ module.exports = class OpenMap extends View
         $ul = $('ul#autocomplete.ui-listview')
         $('ul#autocomplete.ui-listview > li').remove()
         $ul.listview "refresh"
+        # NOTE: lets publish signal ONLY AFTER values in editor are set!!
+        @publishEvent('map:fill_address')
 
         if @options.render_map is true
             #set point on the map
@@ -53,6 +83,7 @@ module.exports = class OpenMap extends View
             @marker.moveTo(newPx)
             zoom = 14
             @map.setCenter(position, zoom)
+
 
     address_autocomplete: (e, data) =>
         @publishEvent('log:debug', "address_autocomplete called #{e} #{data}")
@@ -81,7 +112,8 @@ module.exports = class OpenMap extends View
                     # self.response = response
                     # sort array by uniqie display names so we don't get them
                     self.response = _.uniq(response, (x)->
-                        x.display_name
+                        # take first 4 names or whole display_name
+                        x.display_name.split(',')[0..3].toString() or x.display_name
                     )
                     i = 0
                     for obj in self.response

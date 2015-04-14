@@ -7,7 +7,7 @@ mediator = require 'mediator'
 
 module.exports = class ExportController extends Controller
     list:(params, route, options) ->
-        @publishEvent('log:info', 'in client list controller')
+        @publishEvent('log:debug', 'in client list controller')
         route_params = [params, route, options]
         mediator.collections.exports = new Collection
         # console.log(mediator.collections.clients)
@@ -17,7 +17,7 @@ module.exports = class ExportController extends Controller
                 @publishEvent 'loading_start'
                 @publishEvent 'tell_user', 'Ładuje listę eksportów ...'
             success: =>
-                @publishEvent('log:info', "data with #{params} fetched ok" )
+                @publishEvent('log:debug', "data with #{params} fetched ok" )
                 @publishEvent 'loading_stop'
                 @view = new ListView {
                     collection:mediator.collections.exports
@@ -30,7 +30,7 @@ module.exports = class ExportController extends Controller
                 @publishEvent 'server_error'
 
     add:(params, route, options) ->
-        @publishEvent('log:info', 'in export add controller')
+        @publishEvent('log:debug', 'in export add controller')
         route_params = [params, route, options]
         mediator.models.export = new Model
         @model = mediator.models.export
@@ -41,7 +41,7 @@ module.exports = class ExportController extends Controller
         }
 
     show:(params, route, options) ->
-        @publishEvent('log:info', 'in export show controller')
+        @publishEvent('log:debug', 'in export show controller')
         route_params = [params, route, options]
         @redirectTo {'/eksporty'} unless _.isObject(mediator.collections.exports.get(params.id))
         @model = mediator.collections.exports.get(params.id)
@@ -57,7 +57,7 @@ module.exports = class ExportController extends Controller
         # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
         # we need model.attributes to persist accross all controllers for quick access !
         # so before we get rid of everything let's deepCopy this obj
-        @publishEvent('log:info', 'dispose method called exports controller --------')
+        @publishEvent('log:debug', 'dispose method called exports controller --------')
         deepCopy = mediator.collections.exports.clone()
         super
         mediator.collections.exports = deepCopy

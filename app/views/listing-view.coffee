@@ -11,7 +11,6 @@ module.exports = class ListingView extends View
         super
         @subscribeEvent('header:change_tab', @change_tab)
         @subscribeEvent('map:place_set', @set_address)
-        @subscribeEvent('map:address_reset', @address_reset)
         @delegate 'change', "[name='category']", @rerender_form
         @delegate 'click', "#copy_address", @copy_address
         @rendered_tabs = []
@@ -59,22 +58,22 @@ module.exports = class ListingView extends View
         # instead of doing another fetch and putting it to localstorage we can do it now
         # look for ids in localstorage and replace or add this new model
         # NOTE: JSON.stringify to comply with a server response ( which is a string type )
-        # for LATEST_MODYFIED models on home page
-        latest_modyfied = new Collection
-        latest_modyfied.set(JSON.parse(localStorage.getObject('latest_modyfied')))
-        @publishEvent('log:debug', "check for latest_modyfied: #{latest_modyfied.get(@model.id)}")
-        if _.isUndefined(latest_modyfied.get(@model.id))
+        # for LATEST_modified models on home page
+        latest_modified = new Collection
+        latest_modified.set(JSON.parse(localStorage.getObject('latest_modified')))
+        @publishEvent('log:debug', "check for latest_modified: #{latest_modified.get(@model.id)}")
+        if _.isUndefined(latest_modified.get(@model.id))
             #remove one form the back
-            latest_modyfied.pop()
+            latest_modified.pop()
             # append new one to the beginning
-            latest_modyfied.unshift(@model)
-            localStorage.setObject('latest_modyfied', JSON.stringify(latest_modyfied))
+            latest_modified.unshift(@model)
+            localStorage.setObject('latest_modified', JSON.stringify(latest_modified))
         else
             #get rid of old model
-            latest_modyfied.remove(@model.id)
+            latest_modified.remove(@model.id)
             # append new one to the beginning
-            latest_modyfied.unshift(@model)
-            localStorage.setObject('latest_modyfied', JSON.stringify(latest_modyfied))
+            latest_modified.unshift(@model)
+            localStorage.setObject('latest_modified', JSON.stringify(latest_modified))
 
         # for NEW models on home page
         if @is_new
@@ -232,28 +231,6 @@ module.exports = class ListingView extends View
         # this is incredibly stupid by i can't register event inside Omap class
         # TODO : ?
         @map.fill_address(e)
-
-    address_reset: ->
-        @publishEvent('log:debug', 'address reset')
-        $("[name='internet_postcode']").val('')
-        $("[name='postcode']").val('')
-        $("[name='internet_street']").val('')
-        $("[name='street']").val('')
-        $("[name='internet_town']").val('')
-        $("[name='town']").val('')
-        $("[name='internet_province']").val('')
-        $("[name='province']").val('')
-        $("[name='internet_town_district']").val('')
-        $("[name='town_district']").val('')
-        $("[name='internet_lat']").val('')
-        $("[name='lat']").val('')
-        $("[name='internet_lon']").val('')
-        $("[name='lon']").val('')
-        $("[name='internet_borough']").val('')
-        $("[name='borough']").val('')
-        $("[name='internet_county']").val('')
-        $("[name='county']").val('')
-        $("[name='number']").val('')
 
     attach: =>
         super

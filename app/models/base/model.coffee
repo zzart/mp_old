@@ -89,14 +89,14 @@ module.exports = class Model extends Chaplin.Model
         return "<a href=\'/#{@module_name[1]}/#{@get('id')}\'>#{@module_name[0].toUpperCase()} ##{@get('id')}</a>"
 
     get_schema: ->
-        @publishEvent('log:info', "#{@module_name[2]} get_schema called")
+        @publishEvent('log:debug', "#{@module_name[2]} get_schema called")
         localStorage.getObject("#{@module_name[2]}_schema")
 
     get_form_name: ->
         "#{@module_name[2]}_form"
 
     get_form: ->
-        @publishEvent('log:info', "#{@module_name[2]} get_form called")
+        @publishEvent('log:debug', "#{@module_name[2]} get_form called")
         localStorage.getObject("#{@module_name[2]}_form")
 
     get_edit_type: ->

@@ -21,7 +21,7 @@ module.exports = class Import extends Model
 
     onChange: ->
         super
-        # @publishEvent('log:info',"--> #{@module_name[0]} changed")
+        # @publishEvent('log:debug',"--> #{@module_name[0]} changed")
         # after change in name need to regenerate forms and localStorage
         # all needs to take off with a slight delay so that model has a chance to save itself
         self = @
@@ -30,12 +30,12 @@ module.exports = class Import extends Model
         , 30)
     onAdd: ->
         super
-        @publishEvent('log:info',"--> #{@module_name[0]} add")
+        @publishEvent('log:debug',"--> #{@module_name[0]} add")
     onDestroy: ->
         super
-        # @publishEvent('log:info',"--> #{@module_name[0]} destroyed")
+        # @publishEvent('log:debug',"--> #{@module_name[0]} destroyed")
         @publishEvent('modelchanged', 'client')
     onRemove: ->
         super
-        @publishEvent('log:info',"--> #{@module_name[0]} removed")
+        @publishEvent('log:debug',"--> #{@module_name[0]} removed")
 

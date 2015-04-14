@@ -17,14 +17,14 @@ module.exports = class ExportListView extends View
         $("a#set_full_export").text('Pełny')
 
     select_all_for_export: (e) =>
-        @publishEvent('log:info', "#{@module_name} select_all_for_export id:#{e.target.id} data:#{e.target.dataset.export}")
+        @publishEvent('log:debug', "#{@module_name} select_all_for_export id:#{e.target.id} data:#{e.target.dataset.export}")
         e.preventDefault()
         @model = @collection_hard.get(e.target.dataset.export)
         url = "#{@model.urlRoot}/#{e.target.dataset.export}/zaznacz"
         @mp_request(@model, url, 'POST', 'Wszystkie oferty spełnające kryteria eksportu zostały zaznaczone')
 
     delete_all_for_export: (e) =>
-        @publishEvent('log:info', "#{@module_name} delete_all_for_export id:#{e.target.id} data:#{e.target.dataset.export}")
+        @publishEvent('log:debug', "#{@module_name} delete_all_for_export id:#{e.target.id} data:#{e.target.dataset.export}")
         e.preventDefault()
         @model = @collection_hard.get(e.target.dataset.export)
         url = "#{@model.urlRoot}/#{e.target.dataset.export}/odznacz"
@@ -32,5 +32,5 @@ module.exports = class ExportListView extends View
 
     attach: =>
         super
-        @publishEvent('log:info', "#{@module_name} afterRender()")
+        @publishEvent('log:debug', "#{@module_name} afterRender()")
 

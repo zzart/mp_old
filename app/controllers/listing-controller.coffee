@@ -34,7 +34,7 @@ module.exports = class ListingController extends Controller
 
 
     add:(params, route, options) ->
-        @publishEvent('log:info', "ListingController add " )
+        @publishEvent('log:debug', "ListingController add " )
         route_params = [params, route, options]
         #console.log(params, route, options)
         listing_type = options.query.type
@@ -73,7 +73,7 @@ module.exports = class ListingController extends Controller
             @model.fetch
             # data: {id: params.id}
                 success: =>
-                    @publishEvent('log:info', "data with #{params} fetched ok" )
+                    @publishEvent('log:debug', "data with #{params} fetched ok" )
                     @publishEvent 'tell_viewed', @model.get_url()
                     @view = new View {
                         model:@model
@@ -89,7 +89,7 @@ module.exports = class ListingController extends Controller
         # NOTE: controler by default calls this method and erases ALL attributes, binds and other stuff (even inside mediator object)
         # we need model.attributes to persist accross all controllers for quick access !
         # so before we get rid of everything let's deepCopy this obj
-        @publishEvent('log:info', 'dispose method called listing controller --------')
+        @publishEvent('log:debug', 'dispose method called listing controller --------')
         try
             # if comming from home we won't have a collection ....
             deepCopy = mediator.collections.listings.clone()

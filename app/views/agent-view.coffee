@@ -3,11 +3,11 @@ mediator = require 'mediator'
 module.exports = class View extends View
     initialize: (options) =>
         super
-        @publishEvent('log:info', 'edit view' )
+        @publishEvent('log:debug', 'edit view' )
 
     save_action: =>
-        @publishEvent('log:info', 'custom save_action  caught')
-        @publishEvent('log:info','commmit form')
+        @publishEvent('log:debug', 'custom save_action  caught')
+        @publishEvent('log:debug','commmit form')
         #run model and schema validation
         if _.isUndefined(@form.commit({validate:true}))
             @model.save({},{
@@ -17,7 +17,7 @@ module.exports = class View extends View
                     if @model.id == mediator.models.user.get('id') and (
                         @model.get(['username']) isnt mediator.models.user.get('username') or
                         @model.get(['password']) isnt mediator.models.user.get('user_pass') )
-                        @publishEvent("log:info", "password/username changed relogin required")
+                        @publishEvent("log:debug", "password/username changed relogin required")
                         mediator.models.user.clear()
                         Chaplin.utils.redirectTo {url: '/login'}
                     else

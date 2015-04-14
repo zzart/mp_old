@@ -12,7 +12,7 @@
 
 <li data-role="list-divider">Ostatnio Zmodyfikowane</li>
 
-      <% for item in @latest_modyfied: %>
+      <% for item in @latest_modified: %>
             <li><a href="#oferty/<%= item['id'] %>">
               <%- item['thumbnail_func'] %>
         <h3><%= item['remote_id'] %> <%= item['category_func'] %></h3>

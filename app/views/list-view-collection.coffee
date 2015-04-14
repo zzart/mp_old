@@ -39,12 +39,12 @@ module.exports = class ListView extends CollectionView
         window.collection = @collection_hard
 
     open_column_popup:(event) =>
-        @publishEvent("log:info", "coumn toggle popup")
+        @publishEvent("log:debug", "coumn toggle popup")
         event.preventDefault()
         $('#list-table-popup').popup('open')
 
     query_action: (event) =>
-        @publishEvent("log:info", "query_action called")
+        @publishEvent("log:debug", "query_action called")
 
     select_all_action: =>
         selected = $('#list-table>thead input:checkbox ').prop('checked')
@@ -61,7 +61,7 @@ module.exports = class ListView extends CollectionView
             $("#select-action :selected").removeAttr('selected')
             selected = null
             return
-        @publishEvent('log:info', "performing action #{event.target.value} for offers #{selected}")
+        @publishEvent('log:debug', "performing action #{event.target.value} for offers #{selected}")
         if selected.length > 0
             if event.target.value == 'usun'
                 $("#confirm").popup('open')
@@ -74,7 +74,7 @@ module.exports = class ListView extends CollectionView
                         model.destroy
                             wait: true # we would like confirmation from server before removing it from the collection
                             success: (event) =>
-                                Chaplin.EventBroker.publishEvent('log:info', "Element usunięty id#{model.get('id')}")
+                                Chaplin.EventBroker.publishEvent('log:debug', "Element usunięty id#{model.get('id')}")
                                 self.collection_hard.remove(model)
                                 self.render()
                                 Chaplin.EventBroker.publishEvent 'tell_user', 'Element został usunięty'
@@ -105,17 +105,17 @@ module.exports = class ListView extends CollectionView
         @undelegate 'change', "##{id}", @filter_action
         #for booleans
         if event.target.type == 'checkbox'
-            @publishEvent("log:info", event.target.type )
+            @publishEvent("log:debug", event.target.type )
             value = event.target.checked
         else if event.target.type == 'select-one'
-            @publishEvent("log:info", event.target.type )
+            @publishEvent("log:debug", event.target.type )
             value = parseInt(event.target.value)
         else
             value = event.target.value
 
         if _.isNaN(value)
             @filter = _.omit(@filter, key)
-            @publishEvent("log:info", "omiting #{key}" )
+            @publishEvent("log:debug", "omiting #{key}" )
             # console.log(@filter)
         else
             @filter[key] = value
@@ -186,7 +186,7 @@ module.exports = class ListView extends CollectionView
 
     attach: =>
         super
-        @publishEvent('log:info', 'view: list-view afterRender()')
+        @publishEvent('log:debug', 'view: list-view afterRender()')
         #initialize sorting tables  http://tablesorter.com/docs/
         #można sortować wielokolumnowo przytrzymując shift ;)
         if @collection.length > 1

@@ -27,8 +27,8 @@ module.exports = class Listing extends Model
 
         date_created_func: ->
             @get('date_created').substr?(0,10)
-        date_modyfied_func: ->
-            @get('date_modyfied').substr?(0,10)
+        date_modified_func: ->
+            @get('date_modified').substr?(0,10)
         date_updated_func: ->
             @get('date_updated').substr?(0,10)
         waluta_func: ->
