@@ -121,3 +121,4 @@ additional style to .subscript .ui-controlgroup-controls otherwise subscript fie
 .ui-controlgroup-controls ul {padding:0}
 .division{border: 1px solid; background-color:red}
 .ui-field-contain label {font-weight:bold}
+#client_showed, #client_sent {min-height:40px}

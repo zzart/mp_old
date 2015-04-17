@@ -450,33 +450,3 @@ module.exports = class EditView extends View
                 @init_sortable()
         @init_autocomplete()
         @publishEvent 'jqm_refersh:render'
-
-
-
-        # _remove_resources:(listEditor, itemEditor, extra) =>
-
-        #     # fineuploader doesn't support deleting files later then directly after upload
-        #     # so need to do this by hand
-        #     self = @
-        #     url = "http://localhost:8080/v1/pliki/#{itemEditor.value.uuid}"
-        #     $.ajax(
-        #         url: url
-        #         beforeSend: (xhr) ->
-        #             xhr.setRequestHeader('X-Auth-Token' , mediator.gen_token(url))
-        #         type: "DELETE"
-        #         success: (data, textStatus, jqXHR ) =>
-        #             #lets delete this item from editor
-        #             # console.log('success', data, textStatus, jqXHR)
-        #             items = self.form.fields.resources.getValue()
-        #             new_items = []
-        #             # console.log('all itmes:', items, '  removing ' , itemEditor.value.uuid)
-        #             for i in items
-        #                 if i.uuid is itemEditor.value.uuid
-        #                     self.form.fields.resources.editor.removeItem(i, items.indexOf(i))
-        #                     # console.log('removed:', i, items.indexOf(i))
-        #         error: (jqXHR, textStatus, errorThrown ) ->
-        #             self.publishEvent("tell_user", jqXHR.responseJSON.title or errorThrown)
-        #         #contentType: "application/json"
-        #         # dataType: "json"
-        #         # data: {"file": itemEditor.value.uuid}
-        #     )
