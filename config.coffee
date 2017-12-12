@@ -5,7 +5,7 @@ production = Boolean(process.env.ENVIRONMENT)
 exports.config =
   # See http://brunch.readthedocs.org/en/latest/config.html for documentation.
   # NOTE: WATCH FOR COMMMMMMMMMMMMMMAS !!!!!!!!!!!!!!!!!
-  # NOTE: ALL FILES (in vendor dir)ARE COMPRESSED ANYWAY !!!!!!!!!!!!!!
+  # NOTE: ALL FILES (in vendor dir) ARE COMPRESSED ANYWAY !!!!!!!!!!!!!!
     files:
         javascripts:
             joinTo:
